@@ -1,4 +1,5 @@
 {
+  "integridadSHA256": "472e3a0972bbfdd052d9a33dd676aeb11b5e02422a088924f0c43666d9341aa5",
   "version": "4.2.0",
   "notas": "¡Hola! En esta actualización hemos hecho que el asistente sea mucho más ágil y preciso al entender tus mensajes. Además, mejoramos cómo organiza la memoria y optimizamos el rendimiento general para que todo vaya más fluido y sin distracciones.",
   "downloadUrl": "https://github.com/JUAN3000-CMD/panel-metricas",
@@ -15,7 +16,7 @@
   "umbralObjetivo": 7.00,
   "metaModulosRequeridos": null,
   "eventosCalendario": [
-    { "id": 1710000000000, "fecha": "2026-06-15", "desc": "Prueba del sistema de actualización v4.2.0" }
+    { "id": 1710000000000, "fecha": "2026-06-15", "desc": "Prueba del sistema de actualización oficial v4.2.0" }
   ],
   "memoriaEvolutiva": []
 }
