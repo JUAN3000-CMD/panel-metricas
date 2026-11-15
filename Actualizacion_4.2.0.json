@@ -1,0 +1,21 @@
+{
+  "version": "4.2.0",
+  "notas": "¡Hola! En esta actualización hemos hecho que el asistente sea mucho más ágil y preciso al entender tus mensajes. Además, mejoramos cómo organiza la memoria y optimizamos el rendimiento general para que todo vaya más fluido y sin distracciones.",
+  "downloadUrl": "https://github.com/JUAN3000-CMD/panel-metricas",
+  "modulos": [
+    { "id": "MAT", "nombre": "Matemáticas" },
+    { "id": "PROG", "nombre": "Programación Avanzada" },
+    { "id": "RED", "nombre": "Redes y Sistemas" }
+  ],
+  "notasCurso": {
+    "MAT": [ { "val": 8.5, "peso": 2 } ],
+    "PROG": [ { "val": 9.0, "peso": 3 } ],
+    "RED": []
+  },
+  "umbralObjetivo": 7.00,
+  "metaModulosRequeridos": null,
+  "eventosCalendario": [
+    { "id": 1710000000000, "fecha": "2026-06-15", "desc": "Prueba del sistema de actualización v4.2.0" }
+  ],
+  "memoriaEvolutiva": []
+}
