@@ -1,7 +1,7 @@
 {
   "integridadSHA256": "472e3a0972bbfdd052d9a33dd676aeb11b5e02422a088924f0c43666d9341aa5",
   "version": "4.2.0",
-  "notas": "¡Hola! En esta actualización hemos hecho que el asistente sea mucho más ágil y preciso al entender tus mensajes. Además, mejoramos cómo organiza la memoria y optimizamos el rendimiento general para que todo vaya más fluido y sin distracciones.",
+  "notas": "¡Hola! Esta actualización optimiza el motor de notas ponderadas, agiliza el asistente de lenguaje natural y sincroniza el calendario para que todo funcione aún más fluido.",
   "downloadUrl": "https://github.com/JUAN3000-CMD/panel-metricas",
   "modulos": [
     { "id": "MAT", "nombre": "Matemáticas" },
