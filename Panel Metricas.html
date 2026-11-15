@@ -1768,7 +1768,7 @@
             }
         }
 
-        return `🤖 No tengo datos exactos sobre eso aún. Si quieres que lo guarde, dime: <strong>"recuerda que [lo que quieras]"</strong> o pulsa <strong>[ ? ]</strong> para ver los comandos.`;
+        return `🤖 No tengo datos exactos sobre eso aún. Syri quieres que lo guarde, dime: <strong>"recuerda que [lo que quieras]"</strong> o pulsa <strong>[ ? ]</strong> para ver los comandos.`;
     }
 
     async function generarFirmaIntegridad(payload) {
@@ -1800,7 +1800,7 @@
         actualizarEstadoBotonGuardado(true);
     }
 
-    // 🔒 FUNCIÓN DE IMPORTACIÓN SEGURA CON VERIFICACIÓN CRIPTOGRÁFICA
+    // 🔒 IMPORTACIÓN SEGURA Y ACTUALIZACIÓN AUTOMÁTICA DE VERSIÓN
     function importarDatos(event) {
         const archivo = event.target.files[0];
         if (!archivo) return;
@@ -1838,12 +1838,14 @@
                 metaModulosRequeridos = parsed.metaModulosRequeridos ?? null;
                 eventosCalendario = parsed.eventosCalendario || [];
                 
+                // ⭐ AQUÍ ESTÁ LA CLAVE: EL JSON ACTUALIZA LA VERSIÓN DE FORMA AUTOMÁTICA
                 if (parsed.version) {
                     APP_INFO.version = parsed.version; 
                     localStorage.setItem('smr_ultima_version_aplicada', parsed.version);
                     
                     const badgeVersion = document.getElementById('footer-version-badge');
                     if (badgeVersion) badgeVersion.textContent = 'v' + parsed.version;
+                    
                     const elModVer = document.getElementById('modal-version-val');
                     if (elModVer) elModVer.textContent = `v${parsed.version} (Build ${APP_INFO.anioDesarrollo})`;
                 }
