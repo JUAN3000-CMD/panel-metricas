@@ -333,7 +333,7 @@
 <div class="top-accent-bar"></div>
 
 <div class="container">
-    <!-- Banner de Actualización Remota integrado -->
+    <!-- Banner de Actualización Remota -->
     <div id="updateBanner" class="update-banner">
         <div class="update-content">
             <span>🚀</span>
@@ -349,7 +349,7 @@
         <div class="header-title-wrapper">
             <div class="header-badge-row">
                 <h1>Panel de Control y Métricas Pro</h1>
-                <span class="software-badge">v4.2.0 • 2026 • IA Local Gratuita</span>
+                <span class="software-badge">v4.0.0 • 2026 • IA Local Gratuita</span>
             </div>
             <p class="subtitle">Consola inteligente de monitorización de indicadores con memoria evolutiva sin suscripciones</p>
         </div>
@@ -575,16 +575,14 @@
 <script>
     const APP_INFO = {
         nombre: "Panel de Control y Métricas Pro",
-        version: "v4.0.0",
+        version: "4.0.0",
         versionLabel: "v4.0.0",
         anioDesarrollo: 2026,
-        // Enlace Raw de tu GitHub Gist ya configurado e incrustado:
         urlManifestRemoto: "https://gist.githubusercontent.com/JUAN3000-CMD/3b1f763a744b03a0874f7972208d7c7e/raw/bb4adae837d2c7fa922de35f3ab6aed148a0c9cb/version.json"
     };
 
-    // 4 meses exactos en milisegundos (~120 días)
     const CUATRO_MESES_MS = 120 * 24 * 60 * 60 * 1000;
-    const MAX_RECUERDOS_MEMORIA = 120; // Límite compacto para que nunca pese demasiado
+    const MAX_RECUERDOS_MEMORIA = 120;
 
     let modulos = [];
     let notasCurso = {}; 
@@ -648,7 +646,6 @@
         return notasLimpias;
     }
 
-    // --- MOTOR DE MEMORIA EVOLUTIVA Y SIMILITUD SEMÁNTICA (GRATUITO Y COMPACTO) ---
     const STOPWORDS_ES = new Set(['el','la','los','las','un','una','unos','unas','de','del','al','a','en','con','por','para','que','qué','como','cómo','es','son','fue','era','me','te','se','nos','mi','mis','tu','tus','su','sus','y','o','pero','si','no','lo','le','les','sobre','este','esta','esto','estos','estas','ese','esa','eso','ya','muy','mas','más']);
 
     function extraerTokensLimpios(texto) {
@@ -791,14 +788,13 @@
         actualizarEstadoBotonGuardado(localStorage.getItem('smr_respaldo_creado') === 'true');
         inicializarBienvenidaAleatoria();
         actualizarDisplayTemporizador();
-        verificarActualizaciones(); // <--- Comprobación automática del Gist al cargar
+        verificarActualizaciones();
         
         const hoy = new Date().toISOString().split('T')[0];
         document.getElementById('inputFechaEvento').value = hoy;
         renderizarEventosCalendario();
     });
 
-    // --- SISTEMA DE ACTUALIZACIÓN REMOTA AUTOMÁTICA ---
     async function verificarActualizaciones() {
         if (!APP_INFO.urlManifestRemoto) return;
         try {
@@ -806,14 +802,16 @@
             if (!respuesta.ok) return;
             const datosRemotos = await respuesta.json();
             
-            if (datosRemotos.version && datosRemotos.version !== APP_INFO.version) {
+            const versionAplicadaLocal = localStorage.getItem('smr_ultima_version_aplicada');
+
+            if (datosRemotos.version && datosRemotos.version !== APP_INFO.version && datosRemotos.version !== versionAplicadaLocal) {
                 const banner = document.getElementById('updateBanner');
                 const titulo = document.getElementById('updateTitle');
                 const texto = document.getElementById('updateText');
                 const enlace = document.getElementById('updateLink');
 
-                titulo.textContent = `Nueva versión ${datosRemotos.version} disponible`;
-                texto.textContent = datosRemotos.notas || 'Mejoras y correcciones aplicadas.';
+                titulo.textContent = `¡Nueva versión ${datosRemotos.version} disponible!`;
+                texto.textContent = datosRemotos.notas || 'Hay una actualización lista para descargar.';
                 
                 if (datosRemotos.downloadUrl) {
                     enlace.href = datosRemotos.downloadUrl;
@@ -830,8 +828,8 @@
         const elVer = document.getElementById('footer-version-badge');
         const elModVer = document.getElementById('modal-version-val');
         if (elYear) elYear.textContent = APP_INFO.anioDesarrollo;
-        if (elVer) elVer.textContent = APP_INFO.version;
-        if (elModVer) elModVer.textContent = `${APP_INFO.version} (Build ${APP_INFO.anioDesarrollo})`;
+        if (elVer) elVer.textContent = 'v' + APP_INFO.version;
+        if (elModVer) elModVer.textContent = `v${APP_INFO.version} (Build ${APP_INFO.anioDesarrollo})`;
     }
 
     function abrirModalAcercaDe() {
@@ -842,7 +840,6 @@
         document.getElementById('modalAcercaDe').style.display = 'none';
     }
 
-    // --- MODO NO MOLESTAR (DND) ---
     function cargarNoMolestarInicial() {
         modoNoMolestar = localStorage.getItem('smr_no_molestar') === 'true';
         actualizarUINoMolestar();
@@ -876,7 +873,6 @@
         }
     }
 
-    // --- CONFIGURACIÓN POMODORO ---
     function abrirModalPomodoro() {
         document.getElementById('inputConfigEstudio').value = minutosEstudio;
         document.getElementById('inputConfigCorto').value = minutosDescansoCorto;
@@ -997,7 +993,6 @@
         }
     }
 
-    // --- GESTIÓN DE CALENDARIO ---
     function agregarEventoCalendario() {
         const fecha = document.getElementById('inputFechaEvento').value;
         const desc = document.getElementById('inputDescEvento').value.trim();
@@ -1060,7 +1055,7 @@
     function inicializarBienvenidaAleatoria() {
         const memCount = cargarMemoriaEvolutiva().length;
         const saludos = [
-            `¡Hola! Soy tu <strong>Asistente Pro NLP (${APP_INFO.version})</strong>. Pídeme que recuerde lo que necesites (ej: <em>"recuerda que el examen de redes es el viernes"</em>) y lo guardaré de forma compacta durante 4 meses antes de usarlo como referencia histórica. 🧠`,
+            `¡Hola! Soy tu <strong>Asistente Pro NLP (v${APP_INFO.version})</strong>. Pídeme que recuerde lo que necesites (ej: <em>"recuerda que el examen de redes es el viernes"</em>) y lo guardaré de forma compacta durante 4 meses antes de usarlo como referencia histórica. 🧠`,
             `¡Bienvenido! Tengo <strong>${memCount}</strong> registros en mi memoria evolutiva local. Escribe <strong>'ayuda'</strong> para ver todo lo que puedo hacer gratis y sin suscripciones.`
         ];
         const saludoAleatorio = saludos[Math.floor(Math.random() * saludos.length)];
@@ -1107,6 +1102,15 @@
 
             const gEv = localStorage.getItem('smr_eventos_calendario');
             if (gEv) eventosCalendario = JSON.parse(gEv);
+
+            const vLocal = localStorage.getItem('smr_ultima_version_aplicada');
+            if (vLocal) {
+                APP_INFO.version = vLocal;
+                const badgeVersion = document.getElementById('footer-version-badge');
+                if (badgeVersion) badgeVersion.textContent = 'v' + vLocal;
+                const elModVer = document.getElementById('modal-version-val');
+                if (elModVer) elModVer.textContent = `v${vLocal} (Build ${APP_INFO.anioDesarrollo})`;
+            }
         } catch(e) {
             console.error("Error leyendo estado local:", e);
         }
@@ -1463,7 +1467,6 @@
         actualizarEstadoBotonGuardado(false);
     }
 
-    // --- ASISTENTE INTELIGENTE NLP CON MEMORIA TEMPORAL DE 4 MESES ---
     function alternarAsistente() {
         const win = document.getElementById('assistantWindow');
         win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
@@ -1479,7 +1482,7 @@
                      `• <strong>"consejo":</strong> Diagnóstico táctico y técnicas de estudio.<br>` +
                      `• <strong>"temporizador" / "no molestar":</strong> Control Pomodoro y DND.<br>` +
                      `• <strong>"simular [nota]":</strong> Calcula el impacto de una nota.<br><br>` +
-                     `📌 <em>Motor:</em> Compromise NLP + Similitud Coseno (${APP_INFO.version})`;
+                     `📌 <em>Motor:</em> Compromise NLP + Similitud Coseno (v${APP_INFO.version})`;
         agregarMensajeChat('bot', guia);
     }
 
@@ -1635,7 +1638,7 @@
 
         if(query.includes('version') || query.includes('versión') || query.includes('programa') || query.includes('acerca')) {
             return `ℹ️ <strong>${APP_INFO.nombre}</strong><br><br>` +
-                   `• Versión: <strong>${APP_INFO.version}</strong> (100% Gratuita)<br>` +
+                   `• Versión: <strong>v${APP_INFO.version}</strong> (100% Gratuita)<br>` +
                    `• Año de desarrollo: <strong>${APP_INFO.anioDesarrollo}</strong><br>` +
                    `• Motor NLP: <strong>Compromise.js + Similitud Coseno</strong>`;
         }
@@ -1797,6 +1800,7 @@
         actualizarEstadoBotonGuardado(true);
     }
 
+    // 🔒 FUNCIÓN DE IMPORTACIÓN SEGURA CON VERIFICACIÓN CRIPTOGRÁFICA
     function importarDatos(event) {
         const archivo = event.target.files[0];
         if (!archivo) return;
@@ -1805,22 +1809,61 @@
         fileReader.onload = async e => {
             try {
                 const parsed = JSON.parse(e.target.result);
+                
+                if (!parsed.integridadSHA256) {
+                    alert("⛔ Error de seguridad: El archivo JSON no está firmado por el sistema y podría ser no válido.");
+                    event.target.value = '';
+                    return;
+                }
+
+                const datosParaVerificar = {
+                    modulos: parsed.modulos || [],
+                    notasCurso: parsed.notasCurso || {},
+                    umbralObjetivo: Number(parsed.umbralObjetivo) || 7.00,
+                    metaModulosRequeridos: parsed.metaModulosRequeridos ?? null,
+                    eventosCalendario: parsed.eventosCalendario || []
+                };
+
+                const firmaCalculada = await generarFirmaIntegridad(datosParaVerificar);
+
+                if (firmaCalculada !== parsed.integridadSHA256) {
+                    alert("⛔ Alerta de seguridad: La firma digital del archivo no coincide. Ha sido manipulado o no pertenece a una actualización oficial.");
+                    event.target.value = '';
+                    return;
+                }
+
                 modulos = sanearModulos(parsed.modulos || []);
                 notasCurso = sanearNotas(parsed.notasCurso || {}, modulos);
                 umbralObjetivo = Number(parsed.umbralObjetivo) || 7.00;
                 metaModulosRequeridos = parsed.metaModulosRequeridos ?? null;
                 eventosCalendario = parsed.eventosCalendario || [];
+                
+                if (parsed.version) {
+                    APP_INFO.version = parsed.version; 
+                    localStorage.setItem('smr_ultima_version_aplicada', parsed.version);
+                    
+                    const badgeVersion = document.getElementById('footer-version-badge');
+                    if (badgeVersion) badgeVersion.textContent = 'v' + parsed.version;
+                    const elModVer = document.getElementById('modal-version-val');
+                    if (elModVer) elModVer.textContent = `v${parsed.version} (Build ${APP_INFO.anioDesarrollo})`;
+                }
+
                 if (Array.isArray(parsed.memoriaEvolutiva)) {
                     guardarMemoriaEvolutiva(parsed.memoriaEvolutiva);
                     mantenerCicloVidaMemoria();
                 }
+
                 event.target.value = '';
                 guardarTodoLocal();
                 actualizarEstadoBotonGuardado(true);
                 cargarEstadoInicial();
-                alert("✅ Datos y memoria evolutiva importados correctamente.");
+                
+                const banner = document.getElementById('updateBanner');
+                if (banner) banner.style.display = 'none';
+
+                alert(`✅ ¡Actualización oficial verificada y aplicada con éxito! Versión v${parsed.version || 'nueva'}.`);
             } catch (err) {
-                alert("⛔ Error al importar el archivo JSON.");
+                alert("⛔ Error al procesar y verificar el archivo JSON.");
                 event.target.value = '';
             }
         };
@@ -1883,7 +1926,7 @@
         contenedorDocumento.innerHTML = `
             <div style="border-bottom: 2.5px solid #0f172a; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-end;">
                 <div>
-                    <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; color: #2563eb; margin-bottom: 4px;">Registro Analítico Oficial (${APP_INFO.nombre} ${APP_INFO.version})</div>
+                    <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; color: #2563eb; margin-bottom: 4px;">Registro Analítico Oficial (${APP_INFO.nombre} v${APP_INFO.version})</div>
                     <h1 style="font-size: 19px; font-weight: 800; margin: 0;">INFORME DE SEGUIMIENTO Y EVALUACIÓN</h1>
                 </div>
                 <div style="text-align: right; font-size: 9.5px; color: #475569;">
