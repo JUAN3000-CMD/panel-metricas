@@ -645,7 +645,7 @@
         version: "4.0.0",
         versionLabel: "v4.0.0",
         anioDesarrollo: 2026,
-        urlManifestRemoto: "https://gist.githubusercontent.com/JUAN3000-CMD/3b1f763a744b03a0874f7972208d7c7e/raw/bb4adae837d2c7fa922de35f3ab6aed148a0c9cb/version.json"
+        urlManifestRemoto: "https://gist.githubusercontent.com/JUAN3000-CMD/3b1f763a744b03a0874f7972208d7c7e/raw/version.json"
     };
 
     const CUATRO_MESES_MS = 120 * 24 * 60 * 60 * 1000;
@@ -865,7 +865,8 @@
     async function verificarActualizaciones() {
         if (!APP_INFO.urlManifestRemoto) return;
         try {
-            const respuesta = await fetch(APP_INFO.urlManifestRemoto + '?t=' + new Date().getTime());
+            const urlLimpia = `${APP_INFO.urlManifestRemoto}?nocache=${Date.now()}`;
+            const respuesta = await fetch(urlLimpia, { cache: "no-store" });
             if (!respuesta.ok) return;
             const datosRemotos = await respuesta.json();
             
@@ -1905,7 +1906,6 @@
                 metaModulosRequeridos = parsed.metaModulosRequeridos ?? null;
                 eventosCalendario = parsed.eventosCalendario || [];
                 
-                // ⭐ AQUÍ ESTÁ LA CLAVE: EL JSON ACTUALIZA LA VERSIÓN DE FORMA AUTOMÁTICA
                 if (parsed.version) {
                     APP_INFO.version = parsed.version; 
                     localStorage.setItem('smr_ultima_version_aplicada', parsed.version);
