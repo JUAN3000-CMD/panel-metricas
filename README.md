@@ -8,11 +8,11 @@ Este proyecto está diseñado para adaptarse a cualquier entorno con un único c
 
 🌐 Versión Web (Siempre actualizada):
 
-Accede directamente desde el navegador de tu ordenador o móvil a través de GitHub Pages (https://juan3000-cmd.github.io/[nombre-del-repositorio]/).
+Accede directamente desde el navegador de tu ordenador o móvil a través de GitHub (https://github.com/JUAN3000-CMD/panel-metricas)
 
 Se actualiza automáticamente cada vez que se publican mejoras en el repositorio.
 
-💻 Versión Local / Portable (Escritorio Offline):
+💻 Versión Local / Portable (Escritorio Offline): (⚠️EN DESARROLLO, AUN NO PUBLICADO⚠️)
 
 Descarga el paquete ejecutable desde la sección Releases para llevarlo en una memoria USB o usarlo sin conexión a internet.
 
