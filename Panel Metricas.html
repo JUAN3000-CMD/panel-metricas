@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Librería gratuita para generar PDF directo -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- Librería NLP gratuita y ultraligera (Compromise) para comprensión de lenguaje natural sin suscripciones -->
+    <!-- Librería NLP gratuita y ultraligera (Compromise) para comprensión de lenguaje natural -->
     <script src="https://unpkg.com/compromise@14.14.3/builds/compromise.min.js"></script>
     <style>
         :root {
@@ -414,9 +414,9 @@
         <div class="header-title-wrapper">
             <div class="header-badge-row">
                 <h1>Panel de Control y Métricas Pro</h1>
-                <span class="software-badge">v4.0.0 • 2026 • IA Local Gratuita</span>
+                <span class="software-badge">v4.1.0 • 2026 • IA Local • MIT</span>
             </div>
-            <p class="subtitle">Consola inteligente de monitorización de indicadores con memoria evolutiva sin suscripciones</p>
+            <p class="subtitle">Consola inteligente de monitorización de indicadores con procesamiento local y memoria evolutiva</p>
         </div>
         <div class="header-actions">
             <button id="btn-save-status" class="btn-save-status" onclick="exportarDatos()" title="Pulsa para guardar copia en archivo JSON">
@@ -527,7 +527,7 @@
     <footer class="app-footer">
         <div class="footer-brand">
             <span class="footer-title">📊 Panel de Control y Métricas Pro</span>
-            <span class="version-pill" id="footer-version-badge">v4.0.0</span>
+            <span class="version-pill" id="footer-version-badge">v4.1.0</span>
             <span>• <strong id="footer-year">2026</strong> • Licencia MIT</span>
         </div>
         <div class="footer-meta">
@@ -545,7 +545,7 @@
             <button class="close-btn" onclick="cerrarModalAcercaDe()">×</button>
         </div>
         <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
-            Suite integral gratuita de seguimiento académico con motor NLP local (Compromise.js), similitud semántica y memoria temporal auto-comprimible a 4 meses.
+            Suite integral de seguimiento académico con motor NLP local (Compromise.js), similitud semántica y memoria temporal auto-comprimible a 4 meses. Bajo Licencia MIT.
         </p>
         <div class="spec-grid">
             <div class="spec-box">
@@ -554,7 +554,7 @@
             </div>
             <div class="spec-box">
                 <div class="spec-label">Versión Actual</div>
-                <div class="spec-val" id="modal-version-val">v4.0.0 (Build 2026)</div>
+                <div class="spec-val" id="modal-version-val">v4.1.0 (Build 2026)</div>
             </div>
             <div class="spec-box">
                 <div class="spec-label">Motor IA Local</div>
@@ -642,8 +642,8 @@
 <script>
     const APP_INFO = {
         nombre: "Panel de Control y Métricas Pro",
-        version: "4.0.0",
-        versionLabel: "v4.0.0",
+        version: "4.1.0",
+        versionLabel: "v4.1.0",
         anioDesarrollo: 2026,
         urlManifestRemoto: "https://gist.githubusercontent.com/JUAN3000-CMD/3b1f763a744b03a0874f7972208d7c7e/raw/version.json"
     };
@@ -1123,8 +1123,11 @@
     function inicializarBienvenidaAleatoria() {
         const memCount = cargarMemoriaEvolutiva().length;
         const saludos = [
-            `¡Hola! Soy tu <strong>Asistente Pro NLP (v${APP_INFO.version})</strong>. Pídeme que recuerde lo que necesites (ej: <em>"recuerda que el examen de redes es el viernes"</em>) y lo guardaré de forma compacta durante 4 meses antes de usarlo como referencia histórica. 🧠`,
-            `¡Bienvenido! Tengo <strong>${memCount}</strong> registros en mi memoria evolutiva local. Escribe <strong>'ayuda'</strong> para ver todo lo que puedo hacer gratis y sin suscripciones.`
+            `¡Hola! Soy tu <strong>Asistente Pro NLP (v${APP_INFO.version})</strong>. Pídeme que recuerde lo que necesites (ej: <em>"recuerda que el examen de redes es el viernes"</em>) y lo guardaré de forma activa durante 4 meses antes de pasarlo a referencia histórica. 🧠`,
+            `¡Bienvenido de nuevo! Tengo <strong>${memCount}</strong> registros en mi memoria evolutiva local. Escribe <strong>'ayuda'</strong> para consultar todos los comandos disponibles.`,
+            `¡Hola! ¿Listo para optimizar tus notas y organizar tus sesiones de estudio hoy? 📈`,
+            `¡Qué tal! Tu panel de métricas está activo y operando 100% de manera local. ¿En qué te puedo echar una mano? 💡`,
+            `¡Hola! Recuerda que puedes pedirme un <strong>'consejo'</strong> de estudio o consultar tu <strong>'resumen'</strong> en cualquier momento. 🚀`
         ];
         const saludoAleatorio = saludos[Math.floor(Math.random() * saludos.length)];
         const container = document.getElementById('assistantMessages');
@@ -1542,7 +1545,7 @@
     }
 
     function mostrarAyudaAsistente() {
-        const guia = `💡 <strong>Guía del Asistente Pro NLP (100% Gratuito):</strong><br><br>` +
+        const guia = `💡 <strong>Guía del Asistente Pro NLP (Procesamiento 100% Local):</strong><br><br>` +
                      `• <strong>"recuerda que [dato]":</strong> Guarda un recuerdo activo. Tras 4 meses pasa a referencia histórica compacta.<br>` +
                      `• <strong>"memoria":</strong> Muestra tus recuerdos activos y referencias históricas.<br>` +
                      `• <strong>"olvidar memoria":</strong> Borra los recuerdos guardados.<br>` +
@@ -1706,7 +1709,7 @@
 
         if(query.includes('version') || query.includes('versión') || query.includes('programa') || query.includes('acerca')) {
             return `ℹ️ <strong>${APP_INFO.nombre}</strong><br><br>` +
-                   `• Versión: <strong>v${APP_INFO.version}</strong> (100% Gratuita - Licencia MIT)<br>` +
+                   `• Versión: <strong>v${APP_INFO.version}</strong> (Licencia MIT)<br>` +
                    `• Año de desarrollo: <strong>${APP_INFO.anioDesarrollo}</strong><br>` +
                    `• Motor NLP: <strong>Compromise.js + Similitud Coseno</strong>`;
         }
