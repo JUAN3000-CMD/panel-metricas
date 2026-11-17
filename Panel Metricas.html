@@ -82,8 +82,9 @@
         .software-badge {
             background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent);
             padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em;
-            display: inline-flex; align-items: center; gap: 4px;
+            display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: transform 0.2s, filter 0.2s;
         }
+        .software-badge:hover { transform: scale(1.05); filter: brightness(0.95); }
 
         .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
@@ -414,7 +415,7 @@
         <div class="header-title-wrapper">
             <div class="header-badge-row">
                 <h1>Panel de Control y Métricas Pro</h1>
-                <span class="software-badge">v4.1.0 • 2026 • IA Local • MIT</span>
+                <span class="software-badge" onclick="abrirModalNovedades()" title="Haz clic para ver el registro de cambios (Changelog)">v4.1.1 • 2026 • IA Local • MIT 📋</span>
             </div>
             <p class="subtitle">Consola inteligente de monitorización de indicadores con procesamiento local y memoria evolutiva</p>
         </div>
@@ -437,12 +438,12 @@
             <div class="metric-status" id="estado-global-txt">Esperando datos</div>
         </div>
         <div class="metric-card card-indigo">
-            <div class="metric-top"><span class="metric-label">Meta de Categorías</span><button class="btn-edit-target" onclick="cambiarMetaModulos()">✏️ Editar</button></div>
+            <div class="metric-top"><span class="metric-label">Meta de Categorías</span><button class="btn-edit-target" onclick="abrirModalMeta()">✏️ Editar</button></div>
             <div class="metric-value" id="modulos-aprobados">0 / 0</div>
             <div class="metric-status" id="estado-aprobados-txt">En seguimiento</div>
         </div>
         <div class="metric-card card-emerald">
-            <div class="metric-top"><span class="metric-label">Umbral Objetivo</span><button class="btn-edit-target" onclick="cambiarObjetivo()">✏️ Editar</button></div>
+            <div class="metric-top"><span class="metric-label">Umbral Objetivo</span><button class="btn-edit-target" onclick="abrirModalObjetivo()">✏️ Editar</button></div>
             <div class="metric-value" id="valor-objetivo">7.00</div>
             <div class="metric-status" id="estado-objetivo-txt" style="color: var(--success-text);">Activo</div>
         </div>
@@ -527,7 +528,7 @@
     <footer class="app-footer">
         <div class="footer-brand">
             <span class="footer-title">📊 Panel de Control y Métricas Pro</span>
-            <span class="version-pill" id="footer-version-badge">v4.1.0</span>
+            <span class="version-pill" id="footer-version-badge">v4.1.1</span>
             <span>• <strong id="footer-year">2026</strong> • Licencia MIT</span>
         </div>
         <div class="footer-meta">
@@ -554,7 +555,7 @@
             </div>
             <div class="spec-box">
                 <div class="spec-label">Versión Actual</div>
-                <div class="spec-val" id="modal-version-val">v4.1.0 (Build 2026)</div>
+                <div class="spec-val" id="modal-version-val">v4.1.1 (Build 2026)</div>
             </div>
             <div class="spec-box">
                 <div class="spec-label">Motor IA Local</div>
@@ -567,6 +568,34 @@
         </div>
         <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
             <button class="btn btn-accent" onclick="cerrarModalAcercaDe()">Entendido</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL NOVEDADES Y CORRECCIONES (CHANGELOG v4.1.1) -->
+<div class="modal-overlay" id="modalNovedades">
+    <div class="modal-card" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>📋 Novedades y Correcciones (v4.1.1)</h3>
+            <button class="close-btn" onclick="cerrarModalNovedades()">×</button>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6; max-height: 300px; overflow-y: auto; padding-right: 4px;">
+            <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.1.1 (Actual):</strong></p>
+            <ul style="padding-left: 18px; margin-bottom: 16px;">
+                <li><strong>Auto-guardado al salir:</strong> Se ha integrado un guardado automático preventivo al cerrar o recargar la pestaña del navegador.</li>
+                <li><strong>Corrección del informe PDF:</strong> Solucionado el error crítico donde las páginas se renderizaban en blanco mediante aislamiento de contenedor.</li>
+                <li><strong>Modales unificados:</strong> Sustitución de los diálogos nativos del navegador por ventanas flotantes estéticas para "Umbral Objetivo" y "Meta de Categorías".</li>
+                <li><strong>Changelog interactivo:</strong> Acceso directo a las notas de la versión haciendo clic en la insignia de la cabecera.</li>
+            </ul>
+            <p style="margin-bottom: 8px;"><strong>✨ Versión 4.0.0:</strong></p>
+            <ul style="padding-left: 18px;">
+                <li>Motor NLP local con Compromise.js y memoria evolutiva de 4 meses.</li>
+                <li>Temporizador Pomodoro configurable y modo No Molestar (DND).</li>
+                <li>Firma digital de integridad SHA-256 para copias de seguridad en JSON.</li>
+            </ul>
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+            <button class="btn btn-accent" onclick="cerrarModalNovedades()">Cerrar</button>
         </div>
     </div>
 </div>
@@ -613,6 +642,42 @@
     </div>
 </div>
 
+<!-- MODAL UMBRAL OBJETIVO -->
+<div class="modal-overlay" id="modalObjetivoConfig">
+    <div class="modal-card" style="max-width: 380px;">
+        <div class="modal-header">
+            <h3>Definir Umbral Objetivo</h3>
+            <button class="close-btn" onclick="cerrarModalObjetivo()">×</button>
+        </div>
+        <div class="form-row" style="margin-bottom: 20px;">
+            <span class="form-label">Umbral (0 a 10):</span>
+            <input type="number" id="inputConfigObjetivo" class="input-text" min="0" max="10" step="0.1" value="7.00">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button class="btn btn-secondary" onclick="cerrarModalObjetivo()">Cancelar</button>
+            <button class="btn btn-accent" onclick="guardarConfigObjetivo()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL META DE CATEGORÍAS -->
+<div class="modal-overlay" id="modalMetaConfig">
+    <div class="modal-card" style="max-width: 380px;">
+        <div class="modal-header">
+            <h3>Meta de Categorías</h3>
+            <button class="close-btn" onclick="cerrarModalMeta()">×</button>
+        </div>
+        <div class="form-row" style="margin-bottom: 20px;">
+            <span class="form-label">Cantidad meta:</span>
+            <input type="number" id="inputConfigMeta" class="input-text" min="1" max="100" value="0">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button class="btn btn-secondary" onclick="cerrarModalMeta()">Cancelar</button>
+            <button class="btn btn-accent" onclick="guardarConfigMeta()">Guardar</button>
+        </div>
+    </div>
+</div>
+
 <!-- ASISTENTE FLOTANTE -->
 <button class="assistant-fab" id="assistantFab" onclick="alternarAsistente()" title="Abrir Asistente IA Local">💬</button>
 
@@ -642,8 +707,8 @@
 <script>
     const APP_INFO = {
         nombre: "Panel de Control y Métricas Pro",
-        version: "4.1.0",
-        versionLabel: "v4.1.0",
+        version: "4.1.1",
+        versionLabel: "v4.1.1",
         anioDesarrollo: 2026,
         urlManifestRemoto: "https://gist.githubusercontent.com/JUAN3000-CMD/3b1f763a744b03a0874f7972208d7c7e/raw/version.json"
     };
@@ -862,6 +927,11 @@
         renderizarEventosCalendario();
     });
 
+    // 🔒 AUTOGUARDADO DE SEGURIDAD AL CERRAR O SALIR DE LA PESTAÑA
+    window.addEventListener('beforeunload', () => {
+        guardarTodoLocal();
+    });
+
     async function verificarActualizaciones() {
         if (!APP_INFO.urlManifestRemoto) return;
         try {
@@ -906,6 +976,60 @@
 
     function cerrarModalAcercaDe() {
         document.getElementById('modalAcercaDe').style.display = 'none';
+    }
+
+    function abrirModalNovedades() {
+        document.getElementById('modalNovedades').style.display = 'flex';
+    }
+
+    function cerrarModalNovedades() {
+        document.getElementById('modalNovedades').style.display = 'none';
+    }
+
+    function abrirModalObjetivo() {
+        document.getElementById('inputConfigObjetivo').value = umbralObjetivo.toFixed(2);
+        document.getElementById('modalObjetivoConfig').style.display = 'flex';
+    }
+
+    function cerrarModalObjetivo() {
+        document.getElementById('modalObjetivoConfig').style.display = 'none';
+    }
+
+    function guardarConfigObjetivo() {
+        const val = parseFloat(document.getElementById('inputConfigObjetivo').value);
+        if (!isNaN(val) && val >= 0 && val <= 10) {
+            umbralObjetivo = val;
+            document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
+            guardarTodoLocal();
+            actualizarEstadoBotonGuardado(false);
+            recalcularGlobal();
+            cerrarModalObjetivo();
+        } else {
+            alert("Por favor, introduce un umbral válido entre 0 y 10.");
+        }
+    }
+
+    function abrirModalMeta() {
+        const metaActual = metaModulosRequeridos !== null ? metaModulosRequeridos : modulos.length;
+        document.getElementById('inputConfigMeta').value = metaActual;
+        document.getElementById('modalMetaConfig').style.display = 'flex';
+    }
+
+    function cerrarModalMeta() {
+        document.getElementById('modalMetaConfig').style.display = 'none';
+    }
+
+    function guardarConfigMeta() {
+        const val = parseInt(document.getElementById('inputConfigMeta').value);
+        if (!isNaN(val) && val >= 0) {
+            metaModulosRequeridos = val;
+            guardarTodoLocal();
+            actualizarEstadoBotonGuardado(false);
+            recalcularGlobal();
+            cerrarModalMeta();
+        } else {
+            alert("Por favor, introduce un número válido de meta.");
+        }
     }
 
     function cargarNoMolestarInicial() {
@@ -1458,27 +1582,6 @@
         });
     }
 
-    function cambiarObjetivo() {
-        const val = prompt("Introduce el umbral objetivo (0 a 10):", umbralObjetivo.toFixed(2));
-        if (val !== null && !isNaN(parseFloat(val)) && val >= 0 && val <= 10) {
-            umbralObjetivo = parseFloat(val);
-            document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
-            guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
-            recalcularGlobal();
-        }
-    }
-
-    function cambiarMetaModulos() {
-        const val = prompt("Introduce la meta numérica de categorías objetivo:", metaModulosRequeridos || modulos.length);
-        if (val !== null) {
-            metaModulosRequeridos = val.trim() === "" ? null : parseInt(val);
-            guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
-            recalcularGlobal();
-        }
-    }
-
     function abrirModal() {
         document.getElementById('modalConfig').style.display = 'flex';
         renderizarListaModulosConfig();
@@ -1994,7 +2097,7 @@
         const codigoDoc = 'INF-' + Date.now().toString().slice(-6);
 
         const contenedorDocumento = document.createElement('div');
-        contenedorDocumento.style.cssText = 'width: 710px; margin: 0 auto; background: #ffffff; color: #0f172a; font-family: "Plus Jakarta Sans", sans-serif; padding: 0;';
+        contenedorDocumento.style.cssText = 'position: fixed; left: -9999px; top: 0; width: 710px; background: #ffffff; color: #0f172a; font-family: "Plus Jakarta Sans", sans-serif; padding: 20px; z-index: -9999;';
         contenedorDocumento.innerHTML = `
             <div style="border-bottom: 2.5px solid #0f172a; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-end;">
                 <div>
@@ -2028,13 +2131,19 @@
             </table>
         `;
 
-        await html2pdf().from(contenedorDocumento).set({
-            margin: [10, 10, 10, 10],
-            filename: `Informe_${codigoDoc}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        }).save();
+        document.body.appendChild(contenedorDocumento);
+
+        try {
+            await html2pdf().from(contenedorDocumento).set({
+                margin: [10, 10, 10, 10],
+                filename: `Informe_${codigoDoc}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).save();
+        } finally {
+            document.body.removeChild(contenedorDocumento);
+        }
     }
 </script>
 </body>
