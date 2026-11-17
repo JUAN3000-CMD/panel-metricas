@@ -582,7 +582,7 @@
         <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6; max-height: 300px; overflow-y: auto; padding-right: 4px;">
             <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.1.1 (Actual):</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
-                <li><strong>Auto-guardado al salir:</strong> Se ha integrado un guardado automático preventivo al cerrar o recargar la pestaña del navegador.</li>
+                <li><strong>Auto-guardado al salir:</strong> Se ha integrado un guardado automático preventivo al cerrar o recargar la pestaña del navegador (`beforeunload`).</li>
                 <li><strong>Corrección del informe PDF:</strong> Solucionado el error crítico donde las páginas se renderizaban en blanco mediante aislamiento de contenedor.</li>
                 <li><strong>Modales unificados:</strong> Sustitución de los diálogos nativos del navegador por ventanas flotantes estéticas para "Umbral Objetivo" y "Meta de Categorías".</li>
                 <li><strong>Changelog interactivo:</strong> Acceso directo a las notas de la versión haciendo clic en la insignia de la cabecera.</li>
@@ -1827,8 +1827,8 @@
         if(query.includes('adios') || query.includes('adiós') || query.includes('hasta luego') || query.includes('chao') || query.includes('nos vemos') || query.includes('me voy')) {
             const estaGuardado = localStorage.getItem('smr_respaldo_creado') === 'true';
             return estaGuardado
-                ? "✅ ¡Hasta luego! Todo está guardado correctamente. Descansa y recarga pilas."
-                : "⚠️ ¡Hasta luego! Recuerda pulsar <strong>💾 Exportar</strong> arriba si quieres llevarte una copia de seguridad JSON.";
+                ? "✅ ¡Hasta luego! Todo se ha guardado automáticamente. Descansa y recarga pilas."
+                : "✅ ¡Hasta luego! He guardado todos tus cambios de forma automática en el navegador.";
         }
 
         if(query.includes('no molestar') || query.includes('silenciar') || query.includes('dnd') || query.includes('molestar')) {
