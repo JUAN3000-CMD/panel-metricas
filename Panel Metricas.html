@@ -2,2149 +2,311 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control y Métricas Pro</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Librería gratuita para generar PDF directo -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- Librería NLP gratuita y ultraligera (Compromise) para comprensión de lenguaje natural -->
-    <script src="https://unpkg.com/compromise@14.14.3/builds/compromise.min.js"></script>
+    <title>Mi Panel Inteligente Pro</title>
     <style>
         :root {
             --bg-body: #f1f5f9; --bg-card: #ffffff; --primary: #0f172a; --secondary: #475569;
             --accent: #2563eb; --accent-hover: #1d4ed8; --accent-light: #eff6ff;
-            --success: #10b981; --success-light: #ecfdf5; --success-text: #047857;
-            --warning: #f59e0b; --warning-light: #fef3c7; --warning-text: #92400e;
-            --danger: #ef4444; --danger-light: #fef2f2; --danger-text: #b91c1c;
-            --purple: #7c3aed; --purple-light: #f3e8ff; --purple-text: #5b21b6;
-            --border-color: #cbd5e1;
-            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.08);
-            --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.1); --font-stack: 'Plus Jakarta Sans', sans-serif;
+            --success: #10b981; --border-color: #cbd5e1;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-
-        [data-theme="dark"] {
-            --bg-body: #0f172a; --bg-card: #1e293b; --primary: #f8fafc; --secondary: #94a3b8;
-            --accent: #3b82f6; --accent-hover: #2563eb; --accent-light: #1e3a8a;
-            --purple: #a78bfa; --purple-light: #2e1065; --purple-text: #ddd6fe;
-            --border-color: #334155; --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3);
-            --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.4);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.3s, border-color 0.3s, color 0.3s; }
-
         body {
-            font-family: var(--font-stack); background-color: var(--bg-body); color: var(--primary); padding-bottom: 40px;
-            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--primary);
+            padding: 24px;
+            max-width: 800px;
+            margin: 0 auto;
         }
-
-        .top-accent-bar {
-            height: 6px; background: linear-gradient(90deg, #2563eb 0%, #6366f1 35%, #ec4899 70%, #10b981 100%); width: 100%; margin-bottom: 30px;
-        }
-
-        .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
-
-        /* Banner de Actualización Remota */
-        .update-banner {
-            background: #eff6ff;
-            border: 1.5px solid #bfdbfe;
-            color: #1e40af;
-            padding: 14px 20px;
+        .card {
+            background: var(--bg-card);
+            padding: 24px;
             border-radius: 14px;
-            margin-bottom: 24px;
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 2px solid var(--border-color);
         }
-        .update-content { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px; }
-        .update-btn {
-            background: var(--accent); color: white; border: none; padding: 8px 16px;
-            border-radius: 8px; cursor: pointer; text-decoration: none; font-weight: 700; font-size: 0.85rem;
-            transition: background 0.2s; white-space: nowrap; text-align: center;
+        h2 { margin-top: 0; color: var(--primary); }
+        .row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        input, select {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            background: var(--bg-body);
+            color: var(--primary);
         }
-        .update-btn:hover { background: var(--accent-hover); }
-
-        header {
-            margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end;
-            border-bottom: 2px solid var(--border-color); padding-bottom: 20px; flex-wrap: wrap; gap: 16px;
+        input:focus, select:focus { border-color: var(--accent); }
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
         }
-
-        .header-title-wrapper { display: flex; flex-direction: column; gap: 8px; }
-        .header-badge-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        
-        h1 { color: var(--primary); font-size: 1.95rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; }
-        .subtitle { color: var(--secondary); font-size: 0.90rem; font-weight: 500; }
-
-        .software-badge {
-            background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent);
-            padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em;
-            display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: transform 0.2s, filter 0.2s;
-        }
-        .software-badge:hover { transform: scale(1.05); filter: brightness(0.95); }
-
-        .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-
-        .btn-save-status {
-            background: var(--warning-light); border: 1.5px solid #f59e0b; color: var(--warning-text);
-            font-family: var(--font-stack); padding: 9px 14px; font-weight: 700; border-radius: 10px;
-            cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;
-        }
-        .btn-save-status:hover { filter: brightness(0.95); }
-        .btn-save-status.saved {
-            background: var(--success-light); border-color: var(--success); color: var(--success-text);
-        }
-
-        .btn-dnd-active {
-            background: var(--purple-light) !important;
-            border-color: var(--purple) !important;
-            color: var(--purple-text) !important;
-        }
-
-        /* DASHBOARD SUPERIOR 2x2 */
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 24px; }
-
-        .metric-card {
-            background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 18px;
-            padding: 24px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between;
-        }
-        .card-blue { border-top: 5px solid #2563eb; }
-        .card-indigo { border-top: 5px solid #6366f1; }
-        .card-emerald { border-top: 5px solid #10b981; }
-        .card-amber { border-top: 5px solid #f59e0b; }
-
-        .metric-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; }
-        .metric-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--secondary); font-weight: 800; }
-        .metric-value { font-size: 2.4rem; font-weight: 800; color: var(--primary); line-height: 1.1; }
-        .metric-status { margin-top: 14px; font-size: 0.85rem; font-weight: 600; color: var(--secondary); }
-
-        .btn-edit-target {
-            background: var(--bg-body); border: 1.5px solid var(--border-color); color: var(--primary);
-            font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 8px; cursor: pointer; white-space: nowrap;
-        }
-        .btn-edit-target:hover { background: var(--accent); color: white; border-color: var(--accent); }
-
-        .timer-modes { display: flex; gap: 4px; margin-bottom: 4px; flex-wrap: wrap; }
-        .btn-tmode {
-            flex: 1; background: var(--bg-body); border: 1px solid var(--border-color); color: var(--secondary);
-            font-size: 0.65rem; font-weight: 700; padding: 4px 6px; border-radius: 6px; cursor: pointer; text-align: center;
-        }
-        .btn-tmode.active { background: var(--accent); color: white; border-color: var(--accent); }
-        .timer-controls { display: flex; gap: 6px; margin-top: 12px; }
-        .btn-tctrl {
-            flex: 1; padding: 8px 10px; font-size: 0.75rem; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--border-color);
-            background: var(--bg-body); color: var(--primary); cursor: pointer; text-align: center;
-        }
-        .btn-tctrl:hover { background: var(--border-color); }
-        .btn-tctrl.primary { background: var(--accent); color: white; border-color: var(--accent); }
-        .btn-tctrl.primary:hover { background: var(--accent-hover); }
-
-        .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
-
-        .chart-card, .table-container, .control-panel, .calendar-section {
-            background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 18px;
-            padding: 20px 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm);
-        }
-        
-        .chart-header {
-            font-size: 0.85rem; font-weight: 800; text-transform: uppercase; color: var(--secondary);
-            margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;
-        }
-        .bars-container { 
-            display: flex; align-items: flex-end; gap: 12px; height: 110px; padding-top: 10px; 
-            border-bottom: 2px solid var(--border-color); overflow-x: auto; padding-bottom: 4px;
-        }
-        .bar-wrapper { flex: 1; min-width: 34px; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; gap: 4px; }
-        .bar-fill { width: 100%; max-width: 32px; border-radius: 6px 6px 0 0; min-height: 4px; }
-        .bar-label { font-size: 0.7rem; font-weight: 700; color: var(--secondary); white-space: nowrap; }
-
-        .calendar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        
-        .calendar-box input[type="date"] {
-            width: 100%; padding: 10px 14px; border: 1.5px solid var(--border-color); border-radius: 10px;
-            background: var(--bg-body); color: var(--primary); font-family: var(--font-stack); font-size: 0.9rem; outline: none; margin-bottom: 12px;
-        }
-        .event-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
-        .event-list { max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-        .event-item {
-            display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px;
-            background: var(--bg-body); border: 1.5px solid var(--border-color); border-radius: 8px; font-size: 0.85rem;
-        }
-
-        .control-panel { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-        .search-box {
-            padding: 9px 14px; border: 1.5px solid var(--border-color); border-radius: 10px;
-            background: var(--bg-body); color: var(--primary); font-family: var(--font-stack); font-size: 0.85rem; outline: none; width: 240px;
-        }
-        .search-box:focus { border-color: var(--accent); }
-        .actions-row { display: flex; gap: 8px; flex-wrap: wrap; }
-
-        .btn {
-            font-family: var(--font-stack); padding: 9px 16px; font-weight: 700; border: 1.5px solid var(--border-color);
-            border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s;
-        }
-        .btn-accent { background: var(--accent); color: white; border-color: var(--accent); }
-        .btn-accent:hover { background: var(--accent-hover); }
-        .btn-secondary { background: var(--bg-body); color: var(--primary); }
-        .btn-secondary:hover { background: var(--border-color); }
-        .btn-success { background: var(--success); color: white; border-color: var(--success); }
+        button:hover { background: var(--accent-hover); }
+        .btn-success { background: var(--success); }
         .btn-success:hover { background: #059669; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.9rem; }
+        th { background: var(--accent-light); color: var(--accent); font-weight: 800; text-transform: uppercase; font-size: 0.75rem; }
 
-        .btn-file-input { position: relative; overflow: hidden; }
-        .btn-file-input input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        /* Asistente Flotante Inteligente */
+        .assistant-box {
+            background: var(--accent-light);
+            border: 2px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+        .assistant-chat {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            height: 120px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .msg-bot { color: var(--accent); font-weight: 600; margin-bottom: 6px; }
+        .msg-user { color: var(--secondary); margin-bottom: 6px; }
 
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 650px; }
-        th { background-color: var(--bg-body); color: var(--primary); font-weight: 800; padding: 14px 18px; border-bottom: 2px solid var(--border-color); font-size: 0.75rem; text-transform: uppercase; }
-        td { padding: 16px 18px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-        tbody tr:hover { background-color: var(--bg-body); }
-
-        .subject-code { font-weight: 800; color: var(--accent); background: var(--accent-light); padding: 2px 8px; border-radius: 6px; font-size: 0.9rem; display: inline-block; margin-bottom: 4px; }
-        .subject-desc { font-size: 0.85rem; color: var(--secondary); font-weight: 600; display: block; }
-
-        .add-note-box { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
-        .input-note {
-            width: 70px; padding: 6px; border: 1.5px solid var(--border-color); border-radius: 8px;
-            text-align: center; font-weight: 600; font-family: var(--font-stack); background: var(--bg-body); color: var(--primary); outline: none;
-        }
-        .input-note:focus { border-color: var(--accent); }
-        .select-weight {
-            padding: 6px; border: 1.5px solid var(--border-color); border-radius: 8px; font-size: 0.8rem;
-            background: var(--bg-body); color: var(--primary); font-weight: 600; outline: none; cursor: pointer;
-        }
-
-        .btn-plus {
-            background: var(--bg-body); color: var(--primary); border: 1.5px solid var(--border-color);
-            width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-        .btn-plus:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
-
-        .tags-holder { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-        .tag {
-            background: var(--bg-body); border: 1.5px solid var(--border-color); color: var(--primary); padding: 3px 8px; border-radius: 6px;
-            font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;
-        }
-        .tag button { background: none; border: none; color: var(--secondary); cursor: pointer; font-weight: 800; padding: 0 2px; }
-        .tag button:hover { color: var(--danger); }
-
-        .score-badge { font-weight: 800; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; display: inline-block; min-width: 50px; text-align: center; }
-        .score-badge.neutral { background: var(--bg-body); color: var(--primary); border: 1.5px solid var(--border-color); }
-        .score-badge.pass { background: #ecfdf5; color: #047857; border: 1.5px solid #a7f3d0; }
-        .score-badge.fail { background: #fef2f2; color: #b91c1c; border: 1.5px solid #fecaca; }
-
-        /* PIE DE PÁGINA PROFESIONAL */
-        .app-footer {
-            margin-top: 32px; padding: 20px 24px; background: var(--bg-card); border: 2px solid var(--border-color);
-            border-radius: 18px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 16px; font-size: 0.82rem; color: var(--secondary);
-        }
-        .footer-brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .footer-title { font-weight: 800; color: var(--primary); }
-        .version-pill {
-            background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent);
-            padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.03em;
-        }
-        .footer-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success); margin-right: 5px; }
-        .btn-about {
-            background: var(--bg-body); border: 1.5px solid var(--border-color); color: var(--primary);
-            padding: 5px 11px; border-radius: 8px; font-family: var(--font-stack); font-size: 0.78rem; font-weight: 700; cursor: pointer;
-        }
-        .btn-about:hover { border-color: var(--accent); color: var(--accent); }
-        .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
-        .spec-box { background: var(--bg-body); border: 1.5px solid var(--border-color); border-radius: 10px; padding: 10px 12px; }
-        .spec-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: var(--secondary); }
-        .spec-val { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-top: 2px; }
-
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
-            display: none; justify-content: center; align-items: center; z-index: 1000; padding: 16px;
-        }
-        .modal-card { 
-            background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 18px; 
-            padding: 24px; width: 100%; max-width: 480px; box-shadow: var(--shadow-md); max-height: 90vh; overflow-y: auto;
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .modal-header h3 { color: var(--primary); font-size: 1.15rem; font-weight: 800; }
-        .close-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--secondary); padding: 4px; }
-        .form-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
-        .form-label { font-size: 0.85rem; font-weight: 700; color: var(--secondary); width: 130px; }
-        .input-text { padding: 8px 12px; border: 1.5px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--primary); font-family: var(--font-stack); font-size: 0.9rem; outline: none; flex: 1; min-width: 0; }
-        .modules-list { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
-        .module-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg-body); border: 1.5px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; color: var(--primary); }
-
-        /* ASISTENTE FLOTANTE */
-        .assistant-fab {
-            position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; background: var(--accent);
-            color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; cursor: pointer; box-shadow: var(--shadow-md); border: none; z-index: 1100;
-            transition: transform 0.2s, background-color 0.2s;
-        }
-        .assistant-fab:hover { transform: scale(1.08); background: var(--accent-hover); }
-        .assistant-fab.dnd-muted { background: var(--purple); }
-
-        .assistant-window {
-            position: fixed; bottom: 88px; right: 20px; width: 400px; max-width: calc(100vw - 40px);
-            height: 510px; max-height: calc(100vh - 110px); background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 18px;
-            box-shadow: var(--shadow-md); display: none; flex-direction: column; z-index: 1100; overflow: hidden;
-        }
-        .assistant-header {
-            background: var(--bg-body); padding: 12px 16px; border-bottom: 2px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .assistant-title { font-size: 0.95rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
-        .assistant-header-actions { display: flex; gap: 6px; align-items: center; }
-        .assistant-help-btn {
-            background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--secondary);
-            width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 800;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .assistant-help-btn:hover { border-color: var(--accent); color: var(--accent); }
-        .assistant-close { 
-            background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--secondary); 
-            font-weight: bold; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 8px;
-        }
-        .assistant-close:hover { background: var(--danger-light); color: var(--danger); }
-        .assistant-messages {
-            flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;
-        }
-        .msg { padding: 10px 14px; border-radius: 12px; max-width: 90%; line-height: 1.45; word-break: break-word; }
-        .msg.bot { background: var(--bg-body); color: var(--primary); align-self: flex-start; border: 1px solid var(--border-color); }
-        .msg.user { background: var(--accent); color: white; align-self: flex-end; }
-        .assistant-suggestions {
-            padding: 8px 12px; display: flex; gap: 6px; overflow-x: auto; background: var(--bg-body); border-top: 1px solid var(--border-color);
-            -webkit-overflow-scrolling: touch;
-        }
-        .suggestion-chip {
-            background: var(--bg-card); border: 1px solid var(--border-color); padding: 5px 10px; border-radius: 12px;
-            font-size: 0.75rem; font-weight: 700; color: var(--secondary); cursor: pointer; white-space: nowrap; flex-shrink: 0;
-        }
-        .suggestion-chip:hover { border-color: var(--accent); color: var(--accent); }
-        .assistant-input-area {
-            padding: 12px; background: var(--bg-card); border-top: 2px solid var(--border-color);
-            display: flex; gap: 8px; align-items: center;
-        }
-        .assistant-input {
-            flex: 1; padding: 8px 12px; border: 1.5px solid var(--border-color); border-radius: 10px;
-            background: var(--bg-body); color: var(--primary); font-family: var(--font-stack); font-size: 0.85rem; outline: none; min-width: 0;
-        }
-        .assistant-input:focus { border-color: var(--accent); }
-        .assistant-send {
-            background: var(--accent); color: white; border: none; width: 36px; height: 36px; border-radius: 10px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;
-        }
-        .assistant-send:hover { background: var(--accent-hover); }
-
-        /* =========================================
-           MEDIA QUERIES - ADAPTACIÓN MÓVIL Y TABLET
-           ========================================= */
-        @media (max-width: 900px) {
-            .charts-grid { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 768px) {
-            .container { padding: 0 16px; }
-            .top-accent-bar { margin-bottom: 20px; }
-            
-            header { align-items: flex-start; padding-bottom: 16px; }
-            h1 { font-size: 1.55rem; }
-            .header-actions { width: 100%; justify-content: flex-start; }
-            .header-actions > button { flex: 1; justify-content: center; min-width: 110px; font-size: 0.8rem; padding: 8px 10px; }
-
-            .dashboard { grid-template-columns: 1fr 1fr; gap: 12px; }
-            .metric-card { padding: 16px; border-radius: 14px; }
-            .metric-value { font-size: 1.9rem; }
-
-            .calendar-grid { grid-template-columns: 1fr; gap: 16px; }
-            .chart-card, .table-container, .control-panel, .calendar-section { padding: 16px; border-radius: 14px; margin-bottom: 16px; }
-
-            .search-box { width: 100%; }
-            .actions-row { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-            .actions-row .btn { width: 100%; font-size: 0.8rem; padding: 9px 10px; }
-
-            .app-footer { flex-direction: column; align-items: flex-start; padding: 16px; gap: 12px; }
-            .footer-meta { width: 100%; justify-content: space-between; }
-        }
-
-        @media (max-width: 480px) {
-            h1 { font-size: 1.35rem; }
-            .dashboard { grid-template-columns: 1fr; }
-            .metric-value { font-size: 2.1rem; }
-
-            .event-input-row { flex-direction: column; }
-            .event-input-row .btn { width: 100%; }
-
-            .actions-row { grid-template-columns: 1fr; }
-
-            .spec-grid { grid-template-columns: 1fr; }
-            
-            #modalConfig .form-row { flex-wrap: wrap; }
-            #modalConfig #nuevoId { max-width: 100% !important; width: 100%; }
-            #modalConfig .btn { width: 100%; }
-
-            .assistant-fab { bottom: 16px; right: 16px; width: 50px; height: 50px; font-size: 1.3rem; }
-            .assistant-window { bottom: 76px; right: 12px; width: calc(100vw - 24px); max-width: none; height: 70vh; }
+        /* Estilo exclusivo para impresión limpia en PDF */
+        @media print {
+            body { background: white; color: black; max-width: 100%; padding: 0; }
+            .card, .assistant-box, .row, button { box-shadow: none; border: 1px solid #ccc; }
+            .no-print { display: none !important; }
         }
     </style>
 </head>
-<body id="main-body">
-<div class="top-accent-bar"></div>
+<body>
 
-<div class="container">
-    <!-- Banner de Actualización Remota -->
-    <div id="updateBanner" class="update-banner">
-        <div class="update-content">
-            <span>🚀</span>
-            <div>
-                <strong id="updateTitle">¡Nueva versión disponible!</strong>
-                <div id="updateText" style="font-size: 13px; color: #1e40af;">Hay una actualización lista para descargar.</div>
-            </div>
+    <div class="card">
+        <h2>📊 Mi Panel Inteligente con IA Local</h2>
+        <p style="color: var(--secondary); font-size: 0.9rem;">Gestiona tus asignaturas, calcula promedios ponderados y habla con el asistente.</p>
+        
+        <div class="row no-print" style="margin-top: 16px;">
+            <input type="text" id="inputId" placeholder="Código (ej: MAT)" style="max-width: 100px;">
+            <input type="text" id="inputNombre" placeholder="Nombre de la asignatura...">
+            <button onclick="agregarAsignatura()">+ Añadir Asignatura</button>
         </div>
-        <a id="updateLink" href="#" target="_blank" class="update-btn">Actualizar Panel</a>
-    </div>
 
-    <header>
-        <div class="header-title-wrapper">
-            <div class="header-badge-row">
-                <h1>Panel de Control y Métricas Pro</h1>
-                <span class="software-badge" onclick="abrirModalNovedades()" title="Haz clic para ver el registro de cambios (Changelog)">v4.1.1 • 2026 • IA Local • MIT 📋</span>
-            </div>
-            <p class="subtitle">Consola inteligente de monitorización de indicadores con procesamiento local y memoria evolutiva</p>
-        </div>
-        <div class="header-actions">
-            <button id="btn-save-status" class="btn-save-status" onclick="exportarDatos()" title="Pulsa para guardar copia en archivo JSON">
-                ⚠️ Sin guardar
-            </button>
-            <button class="btn btn-secondary" onclick="alternarNoMolestar()" id="btn-dnd" title="Silenciar avisos automáticos del asistente">
-                🔔 Avisos: ON
-            </button>
-            <button class="btn btn-secondary" onclick="alternarTema()" id="btn-theme" title="Cambiar Modo Claro/Oscuro">🌙 Tema</button>
-        </div>
-    </header>
-    
-    <!-- DASHBOARD 2x2 -->
-    <div class="dashboard">
-        <div class="metric-card card-blue">
-            <div class="metric-top"><span class="metric-label">Rendimiento Medio Global</span><span>📈</span></div>
-            <div class="metric-value" id="nota-global">0.00</div>
-            <div class="metric-status" id="estado-global-txt">Esperando datos</div>
-        </div>
-        <div class="metric-card card-indigo">
-            <div class="metric-top"><span class="metric-label">Meta de Categorías</span><button class="btn-edit-target" onclick="abrirModalMeta()">✏️ Editar</button></div>
-            <div class="metric-value" id="modulos-aprobados">0 / 0</div>
-            <div class="metric-status" id="estado-aprobados-txt">En seguimiento</div>
-        </div>
-        <div class="metric-card card-emerald">
-            <div class="metric-top"><span class="metric-label">Umbral Objetivo</span><button class="btn-edit-target" onclick="abrirModalObjetivo()">✏️ Editar</button></div>
-            <div class="metric-value" id="valor-objetivo">7.00</div>
-            <div class="metric-status" id="estado-objetivo-txt" style="color: var(--success-text);">Activo</div>
-        </div>
-        <div class="metric-card card-amber">
-            <div class="metric-top">
-                <span class="metric-label">Pomodoro y Descanso</span>
-                <button class="btn-edit-target" onclick="abrirModalPomodoro()" title="Configurar minutos cómodamente">⚙️ Config</button>
-            </div>
-            <div class="timer-modes" style="margin-bottom: 2px;">
-                <button class="btn-tmode active" id="tmode-work" onclick="cambiarModoPomodoro(minutosEstudio, 'work')">Estudio</button>
-                <button class="btn-tmode" id="tmode-short" onclick="cambiarModoPomodoro(minutosDescansoCorto, 'short')">Desc. C.</button>
-                <button class="btn-tmode" id="tmode-long" onclick="cambiarModoPomodoro(minutosDescansoLargo, 'long')">Desc. L.</button>
-            </div>
-            <div class="metric-value" id="timer-display" style="font-size: 2.2rem;">25:00</div>
-            <div class="timer-controls">
-                <button class="btn-tctrl primary" id="btn-timer-toggle" onclick="toggleTemporizador()">Iniciar</button>
-                <button class="btn-tctrl" onclick="reiniciarTemporizador()">Reiniciar</button>
-            </div>
-            <div class="metric-status" id="estado-timer-txt" style="margin-top: 4px;">Listo para concentrarse</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Asignatura</th>
+                    <th>Nota y Ponderación</th>
+                    <th>Promedio Ponderado</th>
+                    <th class="no-print" style="text-align: right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaCuerpo">
+                <!-- Se llena dinámicamente -->
+            </tbody>
+        </table>
+
+        <div class="no-print" style="margin-top: 16px; display: flex; gap: 8px;">
+            <button class="btn-success" onclick="generarInformePDF()">📥 Emitir Informe (Imprimir / PDF)</button>
         </div>
     </div>
 
-    <!-- GRÁFICAS -->
-    <div class="charts-grid">
-        <div class="chart-card" style="margin-bottom:0;">
-            <div class="chart-header"><span>📊 Visión Comparativa por Categoría</span></div>
-            <div class="bars-container" id="grafica-barras"></div>
+    <!-- ASISTENTE INTELIGENTE MEJORADO -->
+    <div class="assistant-box">
+        <div style="font-weight: 800; font-size: 0.9rem; margin-bottom: 8px; color: var(--accent);">🧠 Asistente Pro con Razonamiento Local</div>
+        <div class="assistant-chat" id="chatVentana">
+            <div class="msg-bot">🤖 ¡Hola! Soy tu asistente inteligente. Escribe <strong>'consejo'</strong>, <strong>'chiste'</strong>, <strong>'resumen'</strong> o <strong>'simular 8.5'</strong>.</div>
         </div>
-        <div class="chart-card" style="margin-bottom:0;">
-            <div class="chart-header"><span>📈 Evolución Histórica</span></div>
-            <div class="bars-container" id="grafica-tendencia"></div>
-        </div>
-    </div>
-
-    <!-- CALENDARIO Y AGENDA -->
-    <div class="calendar-section">
-        <div class="chart-header" style="margin-bottom: 12px;"><span>📅 Calendario y Agenda de Exámenes / Tareas</span></div>
-        <div class="calendar-grid">
-            <div class="calendar-box">
-                <input type="date" id="inputFechaEvento">
-                <div class="event-input-row">
-                    <input type="text" id="inputDescEvento" class="input-text" placeholder="Ej: Examen final de Matemáticas..." onkeydown="if(event.key==='Enter') agregarEventoCalendario()">
-                    <button class="btn btn-accent" onclick="agregarEventoCalendario()">+ Agendar</button>
-                </div>
-            </div>
-            <div class="calendar-box">
-                <div style="font-size: 0.8rem; font-weight: 700; color: var(--secondary); margin-bottom: 6px;">Eventos / Tareas programadas:</div>
-                <div class="event-list" id="listaEventosCalendario"></div>
-            </div>
+        <div class="row" style="margin-bottom: 0;">
+            <input type="text" id="inputChat" placeholder="Pregúntame algo o pídeselo a la IA..." onkeydown="if(event.key==='Enter') enviarMensajeChat()">
+            <button onclick="enviarMensajeChat()">Enviar</button>
         </div>
     </div>
-
-    <div class="control-panel">
-        <input type="text" id="buscadorTabla" class="search-box" placeholder="🔍 Buscar categoría..." oninput="filtrarTabla()">
-        <div class="actions-row">
-            <button class="btn btn-secondary" onclick="abrirModal()">⚙️ Gestionar Categorías</button>
-            <button class="btn btn-secondary" onclick="exportarDatos()">💾 Exportar</button>
-            <div class="btn btn-secondary btn-file-input">
-                📂 Importar <input type="file" id="importFile" accept=".json" onchange="importarDatos(event)">
-            </div>
-            <button class="btn btn-success" onclick="descargarPDF()">📥 Emitir Informe PDF</button>
-        </div>
-    </div>
-
-    <div class="table-container">
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 28%;">Categoría</th>
-                        <th style="width: 45%;">Registros Parciales (Nota y Ponderación)</th>
-                        <th style="text-align: center;">Promedio Ponderado</th>
-                        <th style="text-align: center;">Estatus</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-body"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- PIE DE PÁGINA PROFESIONAL -->
-    <footer class="app-footer">
-        <div class="footer-brand">
-            <span class="footer-title">📊 Panel de Control y Métricas Pro</span>
-            <span class="version-pill" id="footer-version-badge">v4.1.1</span>
-            <span>• <strong id="footer-year">2026</strong> • Licencia MIT</span>
-        </div>
-        <div class="footer-meta">
-            <span><span class="status-dot"></span>NLP Local + Memoria Temporal (4m)</span>
-            <button class="btn-about" onclick="abrirModalAcercaDe()">ℹ️ Acerca del sistema</button>
-        </div>
-    </footer>
-</div>
-
-<!-- MODAL ACERCA DEL SISTEMA -->
-<div class="modal-overlay" id="modalAcercaDe">
-    <div class="modal-card" style="max-width: 470px;">
-        <div class="modal-header">
-            <h3>ℹ️ Información del Software</h3>
-            <button class="close-btn" onclick="cerrarModalAcercaDe()">×</button>
-        </div>
-        <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
-            Suite integral de seguimiento académico con motor NLP local (Compromise.js), similitud semántica y memoria temporal auto-comprimible a 4 meses. Bajo Licencia MIT.
-        </p>
-        <div class="spec-grid">
-            <div class="spec-box">
-                <div class="spec-label">Programa</div>
-                <div class="spec-val">Métricas Pro NLP</div>
-            </div>
-            <div class="spec-box">
-                <div class="spec-label">Versión Actual</div>
-                <div class="spec-val" id="modal-version-val">v4.1.1 (Build 2026)</div>
-            </div>
-            <div class="spec-box">
-                <div class="spec-label">Motor IA Local</div>
-                <div class="spec-val">Compromise + Coseno TF-IDF</div>
-            </div>
-            <div class="spec-box">
-                <div class="spec-label">Licencia y Uso</div>
-                <div class="spec-val">MIT (Uso libre / académico)</div>
-            </div>
-        </div>
-        <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
-            <button class="btn btn-accent" onclick="cerrarModalAcercaDe()">Entendido</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL NOVEDADES Y CORRECCIONES (CHANGELOG v4.1.1) -->
-<div class="modal-overlay" id="modalNovedades">
-    <div class="modal-card" style="max-width: 500px;">
-        <div class="modal-header">
-            <h3>📋 Novedades y Correcciones (v4.1.1)</h3>
-            <button class="close-btn" onclick="cerrarModalNovedades()">×</button>
-        </div>
-        <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6; max-height: 300px; overflow-y: auto; padding-right: 4px;">
-            <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.1.1 (Actual):</strong></p>
-            <ul style="padding-left: 18px; margin-bottom: 16px;">
-                <li><strong>Auto-guardado al salir:</strong> Se ha integrado un guardado automático preventivo al cerrar o recargar la pestaña del navegador (`beforeunload`).</li>
-                <li><strong>Corrección del informe PDF:</strong> Solucionado el error crítico donde las páginas se renderizaban en blanco mediante aislamiento de contenedor.</li>
-                <li><strong>Modales unificados:</strong> Sustitución de los diálogos nativos del navegador por ventanas flotantes estéticas para "Umbral Objetivo" y "Meta de Categorías".</li>
-                <li><strong>Changelog interactivo:</strong> Acceso directo a las notas de la versión haciendo clic en la insignia de la cabecera.</li>
-            </ul>
-            <p style="margin-bottom: 8px;"><strong>✨ Versión 4.0.0:</strong></p>
-            <ul style="padding-left: 18px;">
-                <li>Motor NLP local con Compromise.js y memoria evolutiva de 4 meses.</li>
-                <li>Temporizador Pomodoro configurable y modo No Molestar (DND).</li>
-                <li>Firma digital de integridad SHA-256 para copias de seguridad en JSON.</li>
-            </ul>
-        </div>
-        <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
-            <button class="btn btn-accent" onclick="cerrarModalNovedades()">Cerrar</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL GESTIÓN CATEGORÍAS -->
-<div class="modal-overlay" id="modalConfig">
-    <div class="modal-card">
-        <div class="modal-header">
-            <h3>Gestionar Categorías</h3>
-            <button class="close-btn" onclick="cerrarModal()">×</button>
-        </div>
-        <div class="form-row" style="margin-bottom: 12px;">
-            <input type="text" id="nuevoId" class="input-text" placeholder="Cód." style="max-width: 80px;" onkeydown="if(event.key==='Enter') crearModulo()">
-            <input type="text" id="nuevoNombre" class="input-text" placeholder="Nombre de la categoría" onkeydown="if(event.key==='Enter') crearModulo()">
-            <button class="btn btn-accent" onclick="crearModulo()">+ Añadir</button>
-        </div>
-        <div class="modules-list" id="listaModulosConfig"></div>
-    </div>
-</div>
-
-<!-- MODAL TEMPORIZADOR -->
-<div class="modal-overlay" id="modalPomodoroConfig">
-    <div class="modal-card" style="max-width: 400px;">
-        <div class="modal-header">
-            <h3>Configurar Temporizador</h3>
-            <button class="close-btn" onclick="cerrarModalPomodoro()">×</button>
-        </div>
-        <div class="form-row">
-            <span class="form-label">Estudio (min):</span>
-            <input type="number" id="inputConfigEstudio" class="input-text" min="1" max="180" value="25">
-        </div>
-        <div class="form-row">
-            <span class="form-label">Desc. Corto (min):</span>
-            <input type="number" id="inputConfigCorto" class="input-text" min="1" max="60" value="5">
-        </div>
-        <div class="form-row" style="margin-bottom: 20px;">
-            <span class="form-label">Desc. Largo (min):</span>
-            <input type="number" id="inputConfigLargo" class="input-text" min="1" max="120" value="15">
-        </div>
-        <div style="display: flex; justify-content: flex-end; gap: 8px;">
-            <button class="btn btn-secondary" onclick="cerrarModalPomodoro()">Cancelar</button>
-            <button class="btn btn-accent" onclick="guardarConfigPomodoro()">Guardar Cambios</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL UMBRAL OBJETIVO -->
-<div class="modal-overlay" id="modalObjetivoConfig">
-    <div class="modal-card" style="max-width: 380px;">
-        <div class="modal-header">
-            <h3>Definir Umbral Objetivo</h3>
-            <button class="close-btn" onclick="cerrarModalObjetivo()">×</button>
-        </div>
-        <div class="form-row" style="margin-bottom: 20px;">
-            <span class="form-label">Umbral (0 a 10):</span>
-            <input type="number" id="inputConfigObjetivo" class="input-text" min="0" max="10" step="0.1" value="7.00">
-        </div>
-        <div style="display: flex; justify-content: flex-end; gap: 8px;">
-            <button class="btn btn-secondary" onclick="cerrarModalObjetivo()">Cancelar</button>
-            <button class="btn btn-accent" onclick="guardarConfigObjetivo()">Guardar</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL META DE CATEGORÍAS -->
-<div class="modal-overlay" id="modalMetaConfig">
-    <div class="modal-card" style="max-width: 380px;">
-        <div class="modal-header">
-            <h3>Meta de Categorías</h3>
-            <button class="close-btn" onclick="cerrarModalMeta()">×</button>
-        </div>
-        <div class="form-row" style="margin-bottom: 20px;">
-            <span class="form-label">Cantidad meta:</span>
-            <input type="number" id="inputConfigMeta" class="input-text" min="1" max="100" value="0">
-        </div>
-        <div style="display: flex; justify-content: flex-end; gap: 8px;">
-            <button class="btn btn-secondary" onclick="cerrarModalMeta()">Cancelar</button>
-            <button class="btn btn-accent" onclick="guardarConfigMeta()">Guardar</button>
-        </div>
-    </div>
-</div>
-
-<!-- ASISTENTE FLOTANTE -->
-<button class="assistant-fab" id="assistantFab" onclick="alternarAsistente()" title="Abrir Asistente IA Local">💬</button>
-
-<div class="assistant-window" id="assistantWindow">
-    <div class="assistant-header">
-        <div class="assistant-title" id="assistantTitle">🧠 Asistente Pro NLP</div>
-        <div class="assistant-header-actions">
-            <button class="assistant-help-btn" onclick="mostrarAyudaAsistente()" title="Ver Guía y Memoria">?</button>
-            <button class="assistant-close" onclick="alternarAsistente()" title="Cerrar">×</button>
-        </div>
-    </div>
-    <div class="assistant-messages" id="assistantMessages"></div>
-    <div class="assistant-suggestions">
-        <div class="suggestion-chip" onclick="enviarSugerencia('resumen')">📊 Resumen</div>
-        <div class="suggestion-chip" onclick="enviarSugerencia('consejo')">🎯 Consejo</div>
-        <div class="suggestion-chip" onclick="enviarSugerencia('memoria')">🧠 Memoria</div>
-        <div class="suggestion-chip" onclick="enviarSugerencia('temporizador')">⏱️ Pomodoro</div>
-        <div class="suggestion-chip" onclick="enviarSugerencia('no molestar')">🔕 DND</div>
-        <div class="suggestion-chip" onclick="enviarSugerencia('chiste')">😂 Chiste</div>
-    </div>
-    <div class="assistant-input-area">
-        <input type="text" id="assistantInput" class="assistant-input" placeholder="Ej: recuerda que el examen es el lunes..." onkeydown="if(event.key==='Enter') enviarMensajeAsistente()">
-        <button class="assistant-send" onclick="enviarMensajeAsistente()">➤</button>
-    </div>
-</div>
 
 <script>
-    const APP_INFO = {
-        nombre: "Panel de Control y Métricas Pro",
-        version: "4.1.1",
-        versionLabel: "v4.1.1",
-        anioDesarrollo: 2026,
-        urlManifestRemoto: "https://gist.githubusercontent.com/JUAN3000-CMD/3b1f763a744b03a0874f7972208d7c7e/raw/version.json"
-    };
-
-    const CUATRO_MESES_MS = 120 * 24 * 60 * 60 * 1000;
-    const MAX_RECUERDOS_MEMORIA = 120;
-
-    let modulos = [];
-    let notasCurso = {}; 
-    let eventosCalendario = [];
-    let umbralObjetivo = 7.00; 
-    let metaModulosRequeridos = null; 
-    let ultimosChistesUsados = []; 
-    let historialUltimasRespuestas = [];
-    let modoNoMolestar = false;
-
-    let minutosEstudio = 25;
-    let minutosDescansoCorto = 5;
-    let minutosDescansoLargo = 15;
-
-    let timerInterval = null;
-    let tiempoRestanteSegundos = 25 * 60;
-    let duracionTotalSegundos = 25 * 60;
-    let temporizadorActivo = false;
-    let tipoPomodoroActual = 'work';
-
-    function escaparHTML(str) {
-        const div = document.createElement('div');
-        div.textContent = String(str);
-        return div.innerHTML
-            .replace(/"/g, '\u0026quot;')
-            .replace(/'/g, '\u0026#039;');
-    }
-
-    function sanearModulos(listaBruta) {
-        if (!Array.isArray(listaBruta)) return [];
-        return listaBruta.slice(0, 100).map(m => ({
-            id: String(m?.id || "").trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 15),
-            nombre: String(m?.nombre || "").trim().replace(/[<>]/g, '').slice(0, 80)
-        })).filter(m => m.id.length > 0 && m.nombre.length > 0);
-    }
-
-    function sanearNotas(objetoNotasBruto, listaModulosValidos) {
-        let notasLimpias = {};
-        if (!objetoNotasBruto || typeof objetoNotasBruto !== 'object' || Array.isArray(objetoNotasBruto)) {
-            listaModulosValidos.forEach(m => { notasLimpias[m.id] = []; });
-            return notasLimpias;
-        }
-        const clavesPermitidas = Object.keys(objetoNotasBruto).slice(0, 100);
-        const mapaTemp = {};
-        clavesPermitidas.forEach(k => {
-            const idLimpio = String(k).trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 15);
-            if (Array.isArray(objetoNotasBruto[k])) {
-                mapaTemp[idLimpio] = objetoNotasBruto[k].slice(0, 200).map(item => {
-                    const valRaw = typeof item === 'number' ? item : Number(item?.val ?? 0);
-                    const pesoRaw = typeof item === 'number' ? 1 : Number(item?.peso ?? 1);
-                    return {
-                        val: (!isNaN(valRaw) && isFinite(valRaw)) ? Math.max(0, Math.min(10, valRaw)) : 0,
-                        peso: (!isNaN(pesoRaw) && isFinite(pesoRaw)) ? Math.max(1, Math.min(5, Math.round(pesoRaw))) : 1
-                    };
-                });
-            }
-        });
-        listaModulosValidos.forEach(m => {
-            notasLimpias[m.id] = mapaTemp[m.id] || [];
-        });
-        return notasLimpias;
-    }
-
-    const STOPWORDS_ES = new Set(['el','la','los','las','un','una','unos','unas','de','del','al','a','en','con','por','para','que','qué','como','cómo','es','son','fue','era','me','te','se','nos','mi','mis','tu','tus','su','sus','y','o','pero','si','no','lo','le','les','sobre','este','esta','esto','estos','estas','ese','esa','eso','ya','muy','mas','más']);
-
-    function extraerTokensLimpios(texto) {
-        let normalizado = texto.toLowerCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-            .replace(/[^a-z0-9\s]/g, ' ');
-
-        if (typeof window.nlp === 'function') {
-            try {
-                const doc = window.nlp(normalizado);
-                const terminos = doc.terms().out('array');
-                return terminos
-                    .map(t => t.trim())
-                    .filter(t => t.length > 2 && !STOPWORDS_ES.has(t));
-            } catch (e) {}
-        }
-
-        return normalizado.split(/\s+/)
-            .filter(t => t.length > 2 && !STOPWORDS_ES.has(t));
-    }
-
-    function calcularSimilitudCoseno(tokensA, tokensB) {
-        if (!tokensA.length || !tokensB.length) return 0;
-        const freqA = {}, freqB = {};
-        tokensA.forEach(t => freqA[t] = (freqA[t] || 0) + 1);
-        tokensB.forEach(t => freqB[t] = (freqB[t] || 0) + 1);
-
-        const vocabulario = new Set([...tokensA, ...tokensB]);
-        let productoPunto = 0, magA = 0, magB = 0;
-
-        vocabulario.forEach(palabra => {
-            const a = freqA[palabra] || 0;
-            const b = freqB[palabra] || 0;
-            productoPunto += a * b;
-            magA += a * a;
-            magB += b * b;
-        });
-
-        if (magA === 0 || magB === 0) return 0;
-        return productoPunto / (Math.sqrt(magA) * Math.sqrt(magB));
-    }
-
-    function cargarMemoriaEvolutiva() {
-        try {
-            const raw = localStorage.getItem('smr_memoria_evolutiva');
-            return raw ? JSON.parse(raw) : [];
-        } catch (e) {
-            return [];
-        }
-    }
-
-    function guardarMemoriaEvolutiva(lista) {
-        const recortada = lista.slice(-MAX_RECUERDOS_MEMORIA);
-        localStorage.setItem('smr_memoria_evolutiva', JSON.stringify(recortada));
-    }
-
-    function mantenerCicloVidaMemoria() {
-        const ahora = Date.now();
-        let memoria = cargarMemoriaEvolutiva();
-        let huboCambios = false;
-
-        memoria = memoria.map(item => {
-            const antiguedad = ahora - (item.ts || ahora);
-            if (antiguedad >= CUATRO_MESES_MS && item.estado !== 'referencia') {
-                huboCambios = true;
-                const resumenCompacto = item.v.length > 85 ? item.v.slice(0, 82) + '...' : item.v;
-                return {
-                    ...item,
-                    v: resumenCompacto,
-                    estado: 'referencia'
-                };
-            }
-            return item;
-        });
-
-        if (huboCambios) {
-            guardarMemoriaEvolutiva(memoria);
-        }
-    }
-
-    function registrarNuevoRecuerdo(claveOriginal, valorOriginal) {
-        let memoria = cargarMemoriaEvolutiva();
-        const tokens = extraerTokensLimpios(claveOriginal + ' ' + valorOriginal);
-        const claveLimpia = claveOriginal.trim().slice(0, 90);
-        const valorLimpio = valorOriginal.trim().slice(0, 260);
-
-        const idxExistente = memoria.findIndex(m => calcularSimilitudCoseno(m.tk, tokens) > 0.85);
-        const nuevoRegistro = {
-            k: claveLimpia,
-            v: valorLimpio,
-            tk: tokens.slice(0, 18),
-            ts: Date.now(),
-            estado: 'activo'
-        };
-
-        if (idxExistente !== -1) {
-            memoria[idxExistente] = nuevoRegistro;
-        } else {
-            memoria.push(nuevoRegistro);
-        }
-
-        guardarMemoriaEvolutiva(memoria);
-        return nuevoRegistro;
-    }
-
-    function buscarEnMemoriaEvolutiva(consulta) {
-        const memoria = cargarMemoriaEvolutiva();
-        if (memoria.length === 0) return null;
-
-        const tokensConsulta = extraerTokensLimpios(consulta);
-        if (tokensConsulta.length === 0) return null;
-
-        let mejorActivo = { score: 0, item: null };
-        let mejorReferencia = { score: 0, item: null };
-
-        memoria.forEach(item => {
-            const sim = calcularSimilitudCoseno(tokensConsulta, item.tk || []);
-            if (item.estado === 'referencia') {
-                if (sim > mejorReferencia.score) mejorReferencia = { score: sim, item };
-            } else {
-                if (sim > mejorActivo.score) mejorActivo = { score: sim, item };
-            }
-        });
-
-        if (mejorActivo.score >= 0.38) {
-            return { tipo: 'activo', similitud: mejorActivo.score, dato: mejorActivo.item };
-        }
-        if (mejorReferencia.score >= 0.35) {
-            return { tipo: 'referencia', similitud: mejorReferencia.score, dato: mejorReferencia.item };
-        }
-        return null;
-    }
+    // Memoria de datos
+    let asignaturas = [];
+    let notasGlobales = {}; // { 'MAT': [{val: 8, peso: 1}, {val: 9, peso: 2}] }
 
     window.addEventListener('DOMContentLoaded', () => {
-        mantenerCicloVidaMemoria();
-        inicializarInfoSistema();
-        cargarTemaInicial();
-        cargarNoMolestarInicial();
-        cargarEstadoInicial();
-        actualizarEstadoBotonGuardado(localStorage.getItem('smr_respaldo_creado') === 'true');
-        inicializarBienvenidaAleatoria();
-        actualizarDisplayTemporizador();
-        verificarActualizaciones();
-        
-        const hoy = new Date().toISOString().split('T')[0];
-        document.getElementById('inputFechaEvento').value = hoy;
-        renderizarEventosCalendario();
-    });
-
-    // 🔒 AUTOGUARDADO DE SEGURIDAD AL CERRAR O SALIR DE LA PESTAÑA
-    window.addEventListener('beforeunload', () => {
-        guardarTodoLocal();
-    });
-
-    async function verificarActualizaciones() {
-        if (!APP_INFO.urlManifestRemoto) return;
-        try {
-            const urlLimpia = `${APP_INFO.urlManifestRemoto}?nocache=${Date.now()}`;
-            const respuesta = await fetch(urlLimpia, { cache: "no-store" });
-            if (!respuesta.ok) return;
-            const datosRemotos = await respuesta.json();
-            
-            const versionAplicadaLocal = localStorage.getItem('smr_ultima_version_aplicada');
-
-            if (datosRemotos.version && datosRemotos.version !== APP_INFO.version && datosRemotos.version !== versionAplicadaLocal) {
-                const banner = document.getElementById('updateBanner');
-                const titulo = document.getElementById('updateTitle');
-                const texto = document.getElementById('updateText');
-                const enlace = document.getElementById('updateLink');
-
-                titulo.textContent = `¡Nueva versión ${datosRemotos.version} disponible!`;
-                texto.textContent = datosRemotos.notas || 'Hay una actualización lista para descargar.';
-                
-                if (datosRemotos.downloadUrl) {
-                    enlace.href = datosRemotos.downloadUrl;
-                }
-                banner.style.display = 'flex';
-            }
-        } catch (error) {
-            console.log("Modo offline activo: sin conexión al Gist de versiones.");
-        }
-    }
-
-    function inicializarInfoSistema() {
-        const elYear = document.getElementById('footer-year');
-        const elVer = document.getElementById('footer-version-badge');
-        const elModVer = document.getElementById('modal-version-val');
-        if (elYear) elYear.textContent = APP_INFO.anioDesarrollo;
-        if (elVer) elVer.textContent = 'v' + APP_INFO.version;
-        if (elModVer) elModVer.textContent = `v${APP_INFO.version} (Build ${APP_INFO.anioDesarrollo})`;
-    }
-
-    function abrirModalAcercaDe() {
-        document.getElementById('modalAcercaDe').style.display = 'flex';
-    }
-
-    function cerrarModalAcercaDe() {
-        document.getElementById('modalAcercaDe').style.display = 'none';
-    }
-
-    function abrirModalNovedades() {
-        document.getElementById('modalNovedades').style.display = 'flex';
-    }
-
-    function cerrarModalNovedades() {
-        document.getElementById('modalNovedades').style.display = 'none';
-    }
-
-    function abrirModalObjetivo() {
-        document.getElementById('inputConfigObjetivo').value = umbralObjetivo.toFixed(2);
-        document.getElementById('modalObjetivoConfig').style.display = 'flex';
-    }
-
-    function cerrarModalObjetivo() {
-        document.getElementById('modalObjetivoConfig').style.display = 'none';
-    }
-
-    function guardarConfigObjetivo() {
-        const val = parseFloat(document.getElementById('inputConfigObjetivo').value);
-        if (!isNaN(val) && val >= 0 && val <= 10) {
-            umbralObjetivo = val;
-            document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
-            guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
-            recalcularGlobal();
-            cerrarModalObjetivo();
-        } else {
-            alert("Por favor, introduce un umbral válido entre 0 y 10.");
-        }
-    }
-
-    function abrirModalMeta() {
-        const metaActual = metaModulosRequeridos !== null ? metaModulosRequeridos : modulos.length;
-        document.getElementById('inputConfigMeta').value = metaActual;
-        document.getElementById('modalMetaConfig').style.display = 'flex';
-    }
-
-    function cerrarModalMeta() {
-        document.getElementById('modalMetaConfig').style.display = 'none';
-    }
-
-    function guardarConfigMeta() {
-        const val = parseInt(document.getElementById('inputConfigMeta').value);
-        if (!isNaN(val) && val >= 0) {
-            metaModulosRequeridos = val;
-            guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
-            recalcularGlobal();
-            cerrarModalMeta();
-        } else {
-            alert("Por favor, introduce un número válido de meta.");
-        }
-    }
-
-    function cargarNoMolestarInicial() {
-        modoNoMolestar = localStorage.getItem('smr_no_molestar') === 'true';
-        actualizarUINoMolestar();
-    }
-
-    function alternarNoMolestar(forzarEstado = null) {
-        modoNoMolestar = (forzarEstado !== null) ? forzarEstado : !modoNoMolestar;
-        localStorage.setItem('smr_no_molestar', modoNoMolestar.toString());
-        actualizarUINoMolestar();
-        return modoNoMolestar;
-    }
-
-    function actualizarUINoMolestar() {
-        const btn = document.getElementById('btn-dnd');
-        const fab = document.getElementById('assistantFab');
-        const title = document.getElementById('assistantTitle');
-        if (!btn) return;
-
-        if (modoNoMolestar) {
-            btn.classList.add('btn-dnd-active');
-            btn.innerHTML = '🔕 No Molestar';
-            btn.title = 'Modo No Molestar activado: el chat no se abrirá automáticamente';
-            if (fab) fab.classList.add('dnd-muted');
-            if (title) title.innerHTML = '🔕 Asistente Pro NLP <span style="font-size:0.7rem; opacity:0.8;">(Silenciado)</span>';
-        } else {
-            btn.classList.remove('btn-dnd-active');
-            btn.innerHTML = '🔔 Avisos: ON';
-            btn.title = 'Avisos activos: el asistente te avisará al terminar ciclos';
-            if (fab) fab.classList.remove('dnd-muted');
-            if (title) title.innerHTML = '🧠 Asistente Pro NLP';
-        }
-    }
-
-    function abrirModalPomodoro() {
-        document.getElementById('inputConfigEstudio').value = minutosEstudio;
-        document.getElementById('inputConfigCorto').value = minutosDescansoCorto;
-        document.getElementById('inputConfigLargo').value = minutosDescansoLargo;
-        document.getElementById('modalPomodoroConfig').style.display = 'flex';
-    }
-
-    function cerrarModalPomodoro() {
-        document.getElementById('modalPomodoroConfig').style.display = 'none';
-    }
-
-    function guardarConfigPomodoro() {
-        const est = parseInt(document.getElementById('inputConfigEstudio').value);
-        const cor = parseInt(document.getElementById('inputConfigCorto').value);
-        const lar = parseInt(document.getElementById('inputConfigLargo').value);
-
-        if (!isNaN(est) && est > 0 && est <= 180) minutosEstudio = est;
-        if (!isNaN(cor) && cor > 0 && cor <= 60) minutosDescansoCorto = cor;
-        if (!isNaN(lar) && lar > 0 && lar <= 120) minutosDescansoLargo = lar;
-
-        cerrarModalPomodoro();
-
-        if (tipoPomodoroActual === 'work') cambiarModoPomodoro(minutosEstudio, 'work');
-        else if (tipoPomodoroActual === 'short') cambiarModoPomodoro(minutosDescansoCorto, 'short');
-        else cambiarModoPomodoro(minutosDescansoLargo, 'long');
-    }
-
-    function cambiarModoPomodoro(minutos, tipo) {
-        if (temporizadorActivo) {
-            if (!confirm("Hay un temporizador en curso. ¿Deseas cambiar de modo y reiniciar el contador?")) return;
-            detenerTemporizador();
-        }
-        tipoPomodoroActual = tipo;
-        duracionTotalSegundos = minutos * 60;
-        tiempoRestanteSegundos = duracionTotalSegundos;
-
-        document.querySelectorAll('.btn-tmode').forEach(b => b.classList.remove('active'));
-        if (tipo === 'work') document.getElementById('tmode-work').classList.add('active');
-        if (tipo === 'short') document.getElementById('tmode-short').classList.add('active');
-        if (tipo === 'long') document.getElementById('tmode-long').classList.add('active');
-
-        const txtEstado = document.getElementById('estado-timer-txt');
-        if (tipo === 'work') txtEstado.innerText = `Modo estudio (${minutos} min)`;
-        else txtEstado.innerText = `Descanso (${minutos} min) ☕`;
-
-        actualizarDisplayTemporizador();
-    }
-
-    function actualizarDisplayTemporizador() {
-        const mins = Math.floor(tiempoRestanteSegundos / 60);
-        const secs = tiempoRestanteSegundos % 60;
-        document.getElementById('timer-display').innerText = 
-            `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
-
-    function toggleTemporizador() {
-        if (temporizadorActivo) {
-            detenerTemporizador();
-        } else {
-            iniciarTemporizador();
-        }
-    }
-
-    function iniciarTemporizador() {
-        if (tiempoRestanteSegundos <= 0) tiempoRestanteSegundos = duracionTotalSegundos;
-        temporizadorActivo = true;
-        document.getElementById('btn-timer-toggle').innerText = 'Pausar';
-        document.getElementById('btn-timer-toggle').style.background = 'var(--warning)';
-        document.getElementById('btn-timer-toggle').style.borderColor = 'var(--warning)';
-        
-        document.getElementById('estado-timer-txt').innerText = tipoPomodoroActual === 'work' ? "¡Concentración máxima en marcha! 🚀" : "Descansando... relájate 🍃";
-
-        timerInterval = setInterval(() => {
-            tiempoRestanteSegundos--;
-            actualizarDisplayTemporizador();
-
-            if (tiempoRestanteSegundos <= 0) {
-                detenerTemporizador();
-                dispararAlertaDescanso();
-            }
-        }, 1000);
-    }
-
-    function detenerTemporizador() {
-        temporizadorActivo = false;
-        clearInterval(timerInterval);
-        const btn = document.getElementById('btn-timer-toggle');
-        btn.innerText = 'Iniciar';
-        btn.style.background = 'var(--accent)';
-        btn.style.borderColor = 'var(--accent)';
-        document.getElementById('estado-timer-txt').innerText = "Pausado";
-    }
-
-    function reiniciarTemporizador() {
-        detenerTemporizador();
-        tiempoRestanteSegundos = duracionTotalSegundos;
-        actualizarDisplayTemporizador();
-        document.getElementById('estado-timer-txt').innerText = "Reiniciado y listo";
-    }
-
-    function dispararAlertaDescanso() {
-        if (tipoPomodoroActual === 'work') {
-            document.getElementById('estado-timer-txt').innerText = modoNoMolestar 
-                ? "¡Ciclo completado! (Silenciado 🔕)" 
-                : "¡Ciclo completado! Hora de descansar ☕";
-            agregarMensajeChat('bot', `⏰ <strong>¡Aviso de Descanso!</strong> Has completado tu sesión de estudio de ${minutosEstudio} minutos. Levántate, estira las piernas y cambia a <em>Desc. C. (${minutosDescansoCorto} min)</em>. 🌿`);
-            if (!modoNoMolestar && document.getElementById('assistantWindow').style.display !== 'flex') {
-                alternarAsistente();
-            }
-        } else {
-            document.getElementById('estado-timer-txt').innerText = modoNoMolestar 
-                ? "¡Descanso terminado! (Silenciado 🔕)" 
-                : "¡Descanso terminado! De vuelta al estudio 💪";
-            agregarMensajeChat('bot', "🔔 <strong>¡Fin del descanso!</strong> Vuelve a configurar tu temporizador en modo <em>Estudio</em> cuando estés listo.");
-            if (!modoNoMolestar && document.getElementById('assistantWindow').style.display !== 'flex') {
-                alternarAsistente();
-            }
-        }
-    }
-
-    function agregarEventoCalendario() {
-        const fecha = document.getElementById('inputFechaEvento').value;
-        const desc = document.getElementById('inputDescEvento').value.trim();
-        if (!fecha || !desc) {
-            alert("Por favor, selecciona una fecha y escribe una descripción para el evento.");
-            return;
-        }
-        eventosCalendario.push({ id: Date.now(), fecha, desc });
-        document.getElementById('inputDescEvento').value = '';
-        renderizarEventosCalendario();
-        guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
-    }
-
-    function eliminarEventoCalendario(id) {
-        eventosCalendario = eventosCalendario.filter(ev => ev.id !== id);
-        renderizarEventosCalendario();
-        guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
-    }
-
-    function renderizarEventosCalendario() {
-        const contenedor = document.getElementById('listaEventosCalendario');
-        contenedor.innerHTML = '';
-        if (eventosCalendario.length === 0) {
-            contenedor.innerHTML = '<div style="font-size: 0.8rem; color: var(--secondary); text-align: center; padding: 10px;">No hay tareas ni exámenes programados.</div>';
-            return;
-        }
-        const ordenados = [...eventosCalendario].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-        ordenados.forEach(ev => {
-            const item = document.createElement('div');
-            item.className = 'event-item';
-            item.innerHTML = `
-                <div style="word-break: break-word;">
-                    <strong style="color: var(--accent); font-size: 0.8rem; margin-right: 6px;">[${ev.fecha}]</strong>
-                    <span>${escaparHTML(ev.desc)}</span>
-                </div>
-                <button class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem; flex-shrink: 0;" onclick="eliminarEventoCalendario(${ev.id})">×</button>
-            `;
-            contenedor.appendChild(item);
-        });
-    }
-
-    function actualizarEstadoBotonGuardado(estaGuardado) {
-        const btn = document.getElementById('btn-save-status');
-        if (!btn) return;
-        if (estaGuardado) {
-            btn.classList.add('saved');
-            btn.innerHTML = '✅ Guardado';
-            btn.title = 'Todos tus datos están guardados.';
-            localStorage.setItem('smr_respaldo_creado', 'true');
-        } else {
-            btn.classList.remove('saved');
-            btn.innerHTML = '⚠️ Sin guardar';
-            btn.title = 'Hay cambios sin guardar en archivo JSON.';
-            localStorage.setItem('smr_respaldo_creado', 'false');
-        }
-    }
-
-    function inicializarBienvenidaAleatoria() {
-        const memCount = cargarMemoriaEvolutiva().length;
-        const saludos = [
-            `¡Hola! Soy tu <strong>Asistente Pro NLP (v${APP_INFO.version})</strong>. Pídeme que recuerde lo que necesites (ej: <em>"recuerda que el examen de redes es el viernes"</em>) y lo guardaré de forma activa durante 4 meses antes de pasarlo a referencia histórica. 🧠`,
-            `¡Bienvenido de nuevo! Tengo <strong>${memCount}</strong> registros en mi memoria evolutiva local. Escribe <strong>'ayuda'</strong> para consultar todos los comandos disponibles.`,
-            `¡Hola! ¿Listo para optimizar tus notas y organizar tus sesiones de estudio hoy? 📈`,
-            `¡Qué tal! Tu panel de métricas está activo y operando 100% de manera local. ¿En qué te puedo echar una mano? 💡`,
-            `¡Hola! Recuerda que puedes pedirme un <strong>'consejo'</strong> de estudio o consultar tu <strong>'resumen'</strong> en cualquier momento. 🚀`
-        ];
-        const saludoAleatorio = saludos[Math.floor(Math.random() * saludos.length)];
-        const container = document.getElementById('assistantMessages');
-        if(container && container.children.length === 0) {
-            container.innerHTML = `<div class="msg bot">${saludoAleatorio}</div>`;
-        }
-    }
-
-    function cargarTemaInicial() {
-        const tema = localStorage.getItem('smr_tema') || 'light';
-        if (tema === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-            document.getElementById('btn-theme').innerText = '☀️ Tema';
-        }
-    }
-
-    function alternarTema() {
-        const actual = document.body.getAttribute('data-theme');
-        if (actual === 'dark') {
-            document.body.removeAttribute('data-theme');
-            localStorage.setItem('smr_tema', 'light');
-            document.getElementById('btn-theme').innerText = '🌙 Tema';
-        } else {
-            document.body.setAttribute('data-theme', 'dark');
-            localStorage.setItem('smr_tema', 'dark');
-            document.getElementById('btn-theme').innerText = '☀️ Tema';
-        }
-    }
-
-    function cargarEstadoInicial() {
-        try {
-            const gM = localStorage.getItem('smr_modulos_list');
-            if (gM !== null) modulos = sanearModulos(JSON.parse(gM));
-            
-            const gO = localStorage.getItem('smr_umbral_objetivo');
-            if (gO) umbralObjetivo = parseFloat(gO) || 7.00;
-
-            const gMe = localStorage.getItem('smr_meta_modulos');
-            if (gMe && gMe !== "null") metaModulosRequeridos = parseInt(gMe) || null;
-
-            const gN = localStorage.getItem('smr_calificaciones'); 
-            if (gN) notasCurso = sanearNotas(JSON.parse(gN), modulos);
-
-            const gEv = localStorage.getItem('smr_eventos_calendario');
-            if (gEv) eventosCalendario = JSON.parse(gEv);
-
-            const vLocal = localStorage.getItem('smr_ultima_version_aplicada');
-            if (vLocal) {
-                APP_INFO.version = vLocal;
-                const badgeVersion = document.getElementById('footer-version-badge');
-                if (badgeVersion) badgeVersion.textContent = 'v' + vLocal;
-                const elModVer = document.getElementById('modal-version-val');
-                if (elModVer) elModVer.textContent = `v${vLocal} (Build ${APP_INFO.anioDesarrollo})`;
-            }
-        } catch(e) {
-            console.error("Error leyendo estado local:", e);
-        }
-
-        modulos.forEach(m => { if (!notasCurso[m.id]) notasCurso[m.id] = []; });
-        document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
+        const guardadoAsig = localStorage.getItem('panel_asig');
+        const guardadoNotas = localStorage.getItem('panel_notas');
+        if (guardadoAsig) asignaturas = JSON.parse(guardadoAsig);
+        if (guardadoNotas) notasGlobales = JSON.parse(guardadoNotas);
         renderizarTabla();
-        renderizarEventosCalendario();
+    });
+
+    function guardarTodo() {
+        localStorage.setItem('panel_asig', JSON.stringify(asignaturas));
+        localStorage.setItem('panel_notas', JSON.stringify(notasGlobales));
     }
 
-    function guardarTodoLocal() {
-        localStorage.setItem('smr_modulos_list', JSON.stringify(modulos));
-        localStorage.setItem('smr_calificaciones', JSON.stringify(notasCurso));
-        localStorage.setItem('smr_umbral_objetivo', umbralObjetivo.toString());
-        localStorage.setItem('smr_meta_modulos', metaModulosRequeridos !== null ? metaModulosRequeridos.toString() : "null");
-        localStorage.setItem('smr_eventos_calendario', JSON.stringify(eventosCalendario));
+    function agregarAsignatura() {
+        const id = document.getElementById('inputId').value.trim().toUpperCase();
+        const nombre = document.getElementById('inputNombre').value.trim();
+
+        if (!id || !nombre) {
+            alert("Introduce un código corto y un nombre para la asignatura.");
+            return;
+        }
+
+        asignaturas.push({ id, nombre });
+        if (!notasGlobales[id]) notasGlobales[id] = [];
+
+        document.getElementById('inputId').value = '';
+        document.getElementById('inputNombre').value = '';
+        guardarTodo();
+        renderizarTabla();
+    }
+
+    function eliminarAsignatura(id) {
+        asignaturas = asignaturas.filter(a => a.id !== id);
+        delete notasGlobales[id];
+        guardarTodo();
+        renderizarTabla();
+    }
+
+    function agregarNota(id) {
+        const notaVal = prompt(`Introduce una nota (0 a 10) para ${id}:`);
+        if (notaVal === null) return;
+        const num = parseFloat(notaVal.replace(',', '.'));
+
+        if (isNaN(num) || num < 0 || num > 10) {
+            alert("Por favor, introduce un número válido entre 0 y 10.");
+            return;
+        }
+
+        const pesoVal = prompt(`Introduce el peso de esta nota (1 = Normal, 2 = Medio, 3 = Examen):`, "1");
+        const pesoNum = parseInt(pesoVal) || 1;
+
+        if (!notasGlobales[id]) notasGlobales[id] = [];
+        notasGlobales[id].push({ val: num, peso: Math.max(1, Math.min(3, pesoNum)) });
+
+        guardarTodo();
+        renderizarTabla();
     }
 
     function renderizarTabla() {
-        const tbody = document.getElementById('tabla-body');
+        const tbody = document.getElementById('tablaCuerpo');
         tbody.innerHTML = '';
 
-        if (modulos.length === 0) {
-            const trVacio = document.createElement('tr');
-            trVacio.innerHTML = `
-                <td colspan="4" style="text-align: center; padding: 40px 20px; color: var(--secondary);">
-                    <div style="font-size: 1.5rem; margin-bottom: 8px;">📭</div>
-                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--primary);">No hay categorías creadas todavía</div>
-                    <div style="font-size: 0.85rem; margin-top: 4px;">Usa el botón <strong>⚙️ Gestionar Categorías</strong> para empezar.</div>
+        if (asignaturas.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--secondary);">No hay asignaturas registradas.</td></tr>`;
+            return;
+        }
+
+        asignaturas.forEach(a => {
+            const arrNotas = notasGlobales[a.id] || [];
+            let promedio = 0;
+            let desglose = '<span style="color: #94a3b8; font-style: italic;">Sin notas</span>';
+
+            if (arrNotas.length > 0) {
+                let sumaP = 0, sumaPesos = 0;
+                const partes = arrNotas.map(n => {
+                    sumaP += (n.val * n.peso);
+                    sumaPesos += n.peso;
+                    return n.peso > 1 ? `${n.val} (x${n.peso})` : `${n.val}`;
+                });
+                promedio = sumaP / sumaPesos;
+                desglose = partes.join(' · ');
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>[${a.id}]</strong> ${a.nombre}</td>
+                <td>
+                    ${desglose} 
+                    <button class="no-print" style="padding: 2px 6px; font-size: 0.75rem; margin-left: 6px;" onclick="agregarNota('${a.id}')">+ Nota</button>
+                </td>
+                <td><strong>${arrNotas.length > 0 ? promedio.toFixed(2) : '-'}</strong></td>
+                <td class="no-print" style="text-align: right;">
+                    <button style="background: #ef4444; padding: 4px 8px; font-size: 0.8rem;" onclick="eliminarAsignatura('${a.id}')">Eliminar</button>
                 </td>
             `;
-            tbody.appendChild(trVacio);
-            recalcularGlobal();
-            return;
-        }
-
-        modulos.forEach(m => {
-            if (!notasCurso[m.id]) notasCurso[m.id] = [];
-            const tr = document.createElement('tr');
-            tr.className = 'fila-modulo';
-            tr.setAttribute('data-nombre', (m.id + ' ' + m.nombre).toLowerCase());
-            tr.id = `row-${m.id}`;
-
-            const tdCat = document.createElement('td');
-            const divSub = document.createElement('div');
-            const spanCode = document.createElement('span');
-            spanCode.className = 'subject-code';
-            spanCode.textContent = m.id;
-            const spanDesc = document.createElement('span');
-            spanDesc.className = 'subject-desc';
-            spanDesc.textContent = m.nombre;
-            divSub.append(spanCode, spanDesc);
-            tdCat.appendChild(divSub);
-
-            const tdNotas = document.createElement('td');
-            const divAdd = document.createElement('div');
-            divAdd.className = 'add-note-box';
-            
-            const inp = document.createElement('input');
-            inp.type = 'number';
-            inp.className = 'input-note';
-            inp.min = '0'; inp.max = '10'; inp.step = '0.01'; inp.placeholder = 'Nota';
-            inp.id = `input-val-${m.id}`;
-            inp.onkeydown = (e) => { if (e.key === 'Enter') agregarNotaAcumulada(m.id); };
-
-            const sel = document.createElement('select');
-            sel.className = 'select-weight';
-            sel.id = `input-peso-${m.id}`;
-            sel.innerHTML = `<option value="1">Peso x1 (Normal)</option><option value="2">Peso x2 (Medio)</option><option value="3">Peso x3 (Examen)</option>`;
-
-            const btnPlus = document.createElement('button');
-            btnPlus.className = 'btn-plus';
-            btnPlus.textContent = '+';
-            btnPlus.onclick = () => agregarNotaAcumulada(m.id);
-
-            divAdd.append(inp, sel, btnPlus);
-
-            const divTags = document.createElement('div');
-            divTags.className = 'tags-holder';
-            divTags.id = `tags-${m.id}`;
-            tdNotas.append(divAdd, divTags);
-
-            const tdProm = document.createElement('td');
-            tdProm.style.textAlign = 'center';
-            tdProm.innerHTML = `<span class="score-badge neutral media-final">0.00</span>`;
-
-            const tdEst = document.createElement('td');
-            tdEst.style.textAlign = 'center';
-            tdEst.innerHTML = `<span class="score-badge neutral boletin-final">0</span>`;
-
-            tr.append(tdCat, tdNotas, tdProm, tdEst);
             tbody.appendChild(tr);
-            actualizarFilaUI(m.id);
-        });
-        recalcularGlobal();
-    }
-
-    function agregarNotaAcumulada(id) {
-        const inputVal = document.getElementById(`input-val-${id}`);
-        const selectPeso = document.getElementById(`input-peso-${id}`);
-        const valor = parseFloat(inputVal.value);
-        const peso = parseInt(selectPeso.value);
-
-        if (!isNaN(valor) && valor >= 0 && valor <= 10) {
-            notasCurso[id].push({ val: valor, peso: peso });
-            inputVal.value = '';
-            inputVal.focus();
-            actualizarFilaUI(id);
-            guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
-        }
-    }
-
-    function borrarNotaIndex(id, index) {
-        notasCurso[id].splice(index, 1);
-        actualizarFilaUI(id);
-        guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
-    }
-
-    function actualizarFilaUI(id) {
-        const holder = document.getElementById(`tags-${id}`);
-        if (!holder) return;
-        holder.innerHTML = '';
-        
-        const arr = notasCurso[id] || [];
-        arr.forEach((item, idx) => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'tag';
-            const valNum = typeof item.val === 'number' ? item.val : parseFloat(item);
-            const pesoNum = typeof item.peso === 'number' ? item.peso : 1;
-            const pesoTexto = pesoNum > 1 ? ` (x${pesoNum})` : '';
-            wrapper.textContent = `${valNum.toFixed(2)}${pesoTexto} `;
-            const b = document.createElement('button');
-            b.textContent = '×';
-            b.onclick = () => borrarNotaIndex(id, idx);
-            wrapper.appendChild(b);
-            holder.appendChild(wrapper);
-        });
-
-        const row = document.getElementById(`row-${id}`);
-        if (!row) return;
-        const bMedia = row.querySelector('.media-final');
-        const bBoletin = row.querySelector('.boletin-final');
-
-        if (arr.length > 0) {
-            let sumaPonderada = 0, sumaPesos = 0;
-            arr.forEach(n => {
-                const valNota = typeof n.val === 'number' ? n.val : parseFloat(n);
-                const pesoNota = typeof n.peso === 'number' ? n.peso : 1;
-                sumaPonderada += (valNota * pesoNota);
-                sumaPesos += pesoNota;
-            });
-            const promedio = sumaPonderada / sumaPesos;
-            const entero = Math.round(promedio);
-            bMedia.innerText = promedio.toFixed(2);
-            bBoletin.innerText = entero;
-            const cls = entero >= 5 ? "score-badge pass" : "score-badge fail";
-            bMedia.className = cls + " media-final";
-            bBoletin.className = cls + " boletin-final";
-        } else {
-            bMedia.innerText = '0.00'; bBoletin.innerText = '0';
-            bMedia.className = "score-badge neutral media-final"; 
-            bBoletin.className = "score-badge neutral boletin-final";
-        }
-        recalcularGlobal();
-    }
-
-    function recalcularGlobal() {
-        let suma = 0, evaluados = 0, aprobados = 0;
-        const metaMeta = metaModulosRequeridos !== null ? metaModulosRequeridos : modulos.length;
-        const contenedorGrafica = document.getElementById('grafica-barras');
-        const contenedorTendencia = document.getElementById('grafica-tendencia');
-        contenedorGrafica.innerHTML = '';
-        contenedorTendencia.innerHTML = '';
-
-        let todasLasNotasCronologicas = [];
-
-        if (modulos.length === 0) {
-            contenedorGrafica.innerHTML = '<div style="font-size:0.75rem; color:var(--secondary); margin:auto;">Sin categorías</div>';
-            contenedorTendencia.innerHTML = '<div style="font-size:0.75rem; color:var(--secondary); margin:auto;">Sin historial</div>';
-            document.getElementById('nota-global').innerText = '0.00';
-            document.getElementById('modulos-aprobados').innerText = '0 / 0';
-            document.getElementById('estado-global-txt').innerText = "Esperando datos";
-            document.getElementById('estado-aprobados-txt').innerText = "En seguimiento";
-            return;
-        }
-
-        modulos.forEach(m => {
-            const arr = notasCurso[m.id] || [];
-            let promedio = 0;
-            if (arr.length > 0) {
-                let sP = 0, sPe = 0;
-                arr.forEach(n => {
-                    const vN = typeof n.val === 'number' ? n.val : parseFloat(n);
-                    const pN = typeof n.peso === 'number' ? n.peso : 1;
-                    sP += (vN * pN);
-                    sPe += pN;
-                    todasLasNotasCronologicas.push(vN);
-                });
-                promedio = sP / sPe;
-                suma += promedio; 
-                evaluados++;
-                if (Math.round(promedio) >= 5) aprobados++;
-            }
-
-            let pct = arr.length > 0 ? Math.max(12, Math.min(100, ((promedio - 4) / 6) * 100)) : 0;
-            const colorBarra = promedio >= 5 ? '#10b981' : (arr.length > 0 ? '#ef4444' : 'var(--border-color)');
-            
-            const barWrapper = document.createElement('div');
-            barWrapper.className = 'bar-wrapper';
-            
-            const valDiv = document.createElement('div');
-            valDiv.style.cssText = 'font-size: 0.65rem; font-weight: 700; color: var(--secondary);';
-            valDiv.textContent = arr.length > 0 ? promedio.toFixed(1) : '-';
-
-            const fillDiv = document.createElement('div');
-            fillDiv.className = 'bar-fill';
-            fillDiv.style.height = `${pct}%`;
-            fillDiv.style.background = colorBarra;
-
-            const lblSpan = document.createElement('span');
-            lblSpan.className = 'bar-label';
-            lblSpan.textContent = m.id;
-
-            barWrapper.append(valDiv, fillDiv, lblSpan);
-            contenedorGrafica.appendChild(barWrapper);
-        });
-
-        if (todasLasNotasCronologicas.length === 0) {
-            contenedorTendencia.innerHTML = '<div style="font-size:0.75rem; color:var(--secondary); margin:auto;">Sin historial</div>';
-        } else {
-            todasLasNotasCronologicas.forEach((nota, idx) => {
-                let pctT = Math.max(12, Math.min(100, ((nota - 4) / 6) * 100));
-                let colorT = nota >= 5 ? '#3b82f6' : '#ef4444';
-                const tWrapper = document.createElement('div');
-                tWrapper.className = 'bar-wrapper';
-                tWrapper.innerHTML = `
-                    <div style="font-size: 0.60rem; font-weight: 700; color: var(--secondary);">${nota.toFixed(1)}</div>
-                    <div class="bar-fill" style="height: ${pctT}%; background: ${colorT}; border-radius: 50% 50% 0 0; width: 16px;"></div>
-                    <span class="bar-label">#${idx+1}</span>
-                `;
-                contenedorTendencia.appendChild(tWrapper);
-            });
-        }
-
-        const global = evaluados > 0 ? (suma / evaluados) : 0;
-        document.getElementById('nota-global').innerText = global.toFixed(2);
-        document.getElementById('modulos-aprobados').innerText = `${aprobados} / ${metaMeta}`;
-
-        const txtG = document.getElementById('estado-global-txt');
-        const txtA = document.getElementById('estado-aprobados-txt');
-        const txtObj = document.getElementById('estado-objetivo-txt');
-
-        if (evaluados === 0) {
-            txtG.innerText = "Esperando datos"; txtA.innerText = "En seguimiento"; txtObj.innerText = "Activo";
-        } else {
-            txtA.innerText = `${aprobados} de ${metaMeta} requeridas`;
-            if (global >= umbralObjetivo && aprobados >= metaMeta) {
-                txtG.innerText = "¡Objetivo conseguido! 🚀"; txtObj.innerText = "Superado con éxito";
-            } else if (global >= 5) {
-                txtG.innerText = "En rango positivo 👍"; txtObj.innerText = "Pendiente subir umbral";
-            } else {
-                txtG.innerText = "Promedio bajo ⚠️"; txtObj.innerText = "Requiere atención";
-            }
-        }
-    }
-
-    function filtrarTabla() {
-        const query = document.getElementById('buscadorTabla').value.toLowerCase();
-        document.querySelectorAll('.fila-modulo').forEach(fila => {
-            const texto = fila.getAttribute('data-nombre');
-            fila.style.display = texto.includes(query) ? '' : 'none';
         });
     }
 
-    function abrirModal() {
-        document.getElementById('modalConfig').style.display = 'flex';
-        renderizarListaModulosConfig();
+    // --- GENERADOR DE INFORME PDF NATIVO (100% FIABLE) ---
+    function generarInformePDF() {
+        window.print(); // Abre el diálogo nativo del navegador permitiendo guardar directamente en PDF sin errores de red.
     }
 
-    function cerrarModal() {
-        document.getElementById('modalConfig').style.display = 'none';
-        renderizarTabla();
-    }
-
-    function renderizarListaModulosConfig() {
-        const lista = document.getElementById('listaModulosConfig');
-        lista.innerHTML = '';
-        if (modulos.length === 0) {
-            lista.innerHTML = '<div style="font-size:0.85rem; color:var(--secondary); text-align:center; padding:12px;">No hay categorías creadas.</div>';
-            return;
-        }
-        modulos.forEach((m, idx) => {
-            const item = document.createElement('div');
-            item.className = 'module-item';
-            
-            const span = document.createElement('span');
-            const strong = document.createElement('strong');
-            strong.textContent = m.id;
-            span.append(strong, ` - ${m.nombre}`);
-
-            const btn = document.createElement('button');
-            btn.className = 'btn btn-secondary';
-            btn.style.cssText = 'padding: 4px 10px; font-size:0.75rem; flex-shrink: 0;';
-            btn.textContent = 'Eliminar';
-            btn.onclick = () => eliminarModulo(idx);
-
-            item.append(span, btn);
-            lista.appendChild(item);
-        });
-    }
-
-    function crearModulo() {
-        const id = document.getElementById('nuevoId').value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 15);
-        const nombre = document.getElementById('nuevoNombre').value.trim().replace(/[<>]/g, '').slice(0, 80);
-        if (id && nombre) {
-            modulos.push({ id, nombre });
-            document.getElementById('nuevoId').value = '';
-            document.getElementById('nuevoNombre').value = '';
-            renderizarListaModulosConfig();
-            guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
-        }
-    }
-
-    function eliminarModulo(idx) {
-        const idEliminar = modulos[idx].id;
-        modulos.splice(idx, 1);
-        delete notasCurso[idEliminar];
-        renderizarListaModulosConfig();
-        guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
-    }
-
-    function alternarAsistente() {
-        const win = document.getElementById('assistantWindow');
-        win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
-        if(win.style.display === 'flex') document.getElementById('assistantInput').focus();
-    }
-
-    function mostrarAyudaAsistente() {
-        const guia = `💡 <strong>Guía del Asistente Pro NLP (Procesamiento 100% Local):</strong><br><br>` +
-                     `• <strong>"recuerda que [dato]":</strong> Guarda un recuerdo activo. Tras 4 meses pasa a referencia histórica compacta.<br>` +
-                     `• <strong>"memoria":</strong> Muestra tus recuerdos activos y referencias históricas.<br>` +
-                     `• <strong>"olvidar memoria":</strong> Borra los recuerdos guardados.<br>` +
-                     `• <strong>"resumen":</strong> Promedio global y métricas actuales.<br>` +
-                     `• <strong>"consejo":</strong> Diagnóstico táctico y técnicas de estudio.<br>` +
-                     `• <strong>"temporizador" / "no molestar":</strong> Control Pomodoro y DND.<br>` +
-                     `• <strong>"simular [nota]":</strong> Calcula el impacto de una nota.<br><br>` +
-                     `📌 <em>Motor:</em> Compromise NLP + Similitud Coseno (v${APP_INFO.version})`;
-        agregarMensajeChat('bot', guia);
-    }
-
-    function enviarSugerencia(texto) {
-        document.getElementById('assistantInput').value = texto;
-        enviarMensajeAsistente();
-    }
-
-    function agregarMensajeChat(remitente, texto) {
+    // --- CEREBRO DE IA LOCAL MEJORADO ---
+    function enviarMensajeChat() {
+        const input = document.getElementById('inputChat');
+        const texto = input.value.trim().toLowerCase();
         if (!texto) return;
-        const container = document.getElementById('assistantMessages');
-        const div = document.createElement('div');
-        div.className = `msg ${remitente}`;
-        div.innerHTML = texto;
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
-    }
 
-    function enviarMensajeAsistente() {
-        const input = document.getElementById('assistantInput');
-        const texto = input.value.trim();
-        if(!texto) {
-            agregarMensajeChat('bot', '⚠️ Escribe una consulta o pulsa <strong>[ ? ]</strong> para ver la guía.');
-            return;
-        }
-
-        agregarMensajeChat('user', escaparHTML(texto));
+        const chat = document.getElementById('chatVentana');
+        chat.innerHTML += `<div class="msg-user">👤 Tú: ${input.value}</div>`;
         input.value = '';
 
         setTimeout(() => {
-            const respuesta = procesarRespuestaAsistente(texto);
-            agregarMensajeChat('bot', respuesta);
+            let respuesta = procesarRazonamientoIA(texto);
+            chat.innerHTML += `<div class="msg-bot">🤖 IA: ${respuesta}</div>`;
+            chat.scrollTop = chat.scrollHeight;
         }, 300);
     }
 
-    function obtenerOpcionSinRepetir(opcionesArray) {
-        let disponibles = opcionesArray.filter(item => !historialUltimasRespuestas.includes(item));
-        if (disponibles.length === 0) {
-            historialUltimasRespuestas = [];
-            disponibles = opcionesArray;
-        }
-        const elegida = disponibles[Math.floor(Math.random() * disponibles.length)];
-        historialUltimasRespuestas.push(elegida);
-        if (historialUltimasRespuestas.length > Math.floor(opcionesArray.length / 2)) historialUltimasRespuestas.shift();
-        return elegida;
-    }
-
-    function obtenerConsejoAvanzado(evaluados, listaModulosConNota, mediaGlobal) {
-        const tipsGenerales = [
-            `<strong>Técnica Pomodoro (${minutosEstudio} min):</strong> Trabaja sin distracciones (activa <em>No Molestar</em>) y descansa ${minutosDescansoCorto} min al terminar.`,
-            "<strong>Active Recall (Recuerdo Activo):</strong> Cierra los apuntes e intenta escribir o explicar en voz alta todo lo que recuerdes sobre el tema antes de volver a leer.",
-            "<strong>Repetición Espaciada:</strong> Repasa un tema nuevo a las 24 horas, a los 3 días y a la semana; así evitas la curva del olvido.",
-            "<strong>Técnica Feynman:</strong> Si no puedes explicar un concepto de forma sencilla como para que lo entienda un niño, aún necesitas repasarlo.",
-            "<strong>Regla de los 2 Minutos:</strong> Si te cuesta empezar, comprométete a estudiar solo 2 minutos. Una vez vencida la resistencia inicial, seguir es mucho más fácil.",
-            "<strong>Regla Visual 20-20-20:</strong> Cada 20 minutos frente a la pantalla, mira un objeto a 6 metros (20 pies) durante 20 segundos para evitar fatiga ocular.",
-            "<strong>Prioriza los pesos altos:</strong> Revisa tus registros con <em>Peso x3 (Examen)</em>, ya que son los que más mueven tu promedio ponderado.",
-            "<strong>Simulacro real:</strong> Haz ejercicios cronometrados sin mirar soluciones para entrenar la gestión de nervios y tiempo."
-        ];
-
-        const tipElegido = obtenerOpcionSinRepetir(tipsGenerales);
-
-        if (evaluados === 0) {
-            return `💡 <strong>Consejo de Arranque:</strong> Aún no has registrado calificaciones. Añade tus primeras notas o agenda tus próximos exámenes en el calendario.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
-        }
-
-        let listaOrdenada = [...listaModulosConNota].sort((a, b) => a.promedio - b.promedio);
-        let critico = listaOrdenada[0];
-        let mejor = listaOrdenada[listaOrdenada.length - 1];
-
-        if (critico.promedio < 5) {
-            const faltante = (5 - critico.promedio).toFixed(2);
-            return `🎯 <strong>Prioridad Alta en ${escaparHTML(critico.nombre)} (${escaparHTML(critico.id)}):</strong> Tu promedio actual es <strong>${critico.promedio.toFixed(2)}</strong> (te faltan <strong>${faltante}</strong> puntos para aprobar). Dedícale el próximo bloque de estudio.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
-        }
-
-        if (mediaGlobal < umbralObjetivo) {
-            const diffObj = (umbralObjetivo - mediaGlobal).toFixed(2);
-            return `📊 <strong>Camino al Objetivo (${umbralObjetivo.toFixed(2)}):</strong> Tienes todas las evaluadas aprobadas, pero estás a <strong>${diffObj}</strong> puntos de tu umbral. Refuerza <strong>${escaparHTML(critico.nombre)}</strong> (${critico.promedio.toFixed(2)}) para subir la media global.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
-        }
-
-        return `🏆 <strong>Rendimiento Excelente (${mediaGlobal.toFixed(2)}):</strong> Destacas especialmente en <strong>${escaparHTML(mejor.nombre)}</strong> (${mejor.promedio.toFixed(2)}). Mantén la constancia sin confiarte.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
-    }
-
-    function procesarRespuestaAsistente(queryRaw) {
-        const query = queryRaw.toLowerCase().trim();
-
-        if (query === 'olvidar memoria' || query === 'borrar memoria') {
-            localStorage.removeItem('smr_memoria_evolutiva');
-            return `🧹 <strong>Memoria evolutiva limpiada:</strong> Se han eliminado todos los recuerdos almacenados.`;
-        }
-
-        if (query === 'memoria' || query === 'que recuerdas' || query === 'qué recuerdas') {
-            const mem = cargarMemoriaEvolutiva();
-            if (mem.length === 0) {
-                return `🧠 <strong>Memoria vacía:</strong> Aún no me has pedido que recuerde nada. Prueba con: <em>"recuerda que el examen de SQL es el martes"</em>.`;
-            }
-            const activos = mem.filter(m => m.estado !== 'referencia');
-            const refs = mem.filter(m => m.estado === 'referencia');
-            let html = `🧠 <strong>Estado de la Memoria (${mem.length}/${MAX_RECUERDOS_MEMORIA}):</strong><br><br>`;
-            if (activos.length > 0) {
-                html += `<strong>📌 Recuerdos Activos (< 4 meses):</strong><br>`;
-                activos.slice(-5).forEach(a => {
-                    html += `• ${escaparHTML(a.v)}<br>`;
-                });
-            }
-            if (refs.length > 0) {
-                html += `<br><strong>📚 Referencias Históricas (≥ 4 meses):</strong><br>`;
-                refs.slice(-3).forEach(r => {
-                    html += `• <em>${escaparHTML(r.v)}</em><br>`;
-                });
-            }
-            return html;
-        }
-
-        const patronesGuardar = /^(recuerda que|recuerda|acuerdate de que|acuérdate de que|guarda que|anota que|aprende que|aprender:)\s+/i;
-        if (patronesGuardar.test(queryRaw.trim())) {
-            const contenido = queryRaw.trim().replace(patronesGuardar, '').trim();
-            if (contenido.length < 4) {
-                return `⚠️ Dime qué quieres que recuerde con un poco más de detalle.`;
-            }
-            if (contenido.includes('=')) {
-                const partes = contenido.split('=');
-                registrarNuevoRecuerdo(partes[0], partes.slice(1).join('='));
-            } else {
-                registrarNuevoRecuerdo(contenido, contenido);
-            }
-            return `🧠 <strong>¡Guardado en memoria activa!</strong> Recordaré esto con prioridad máxima durante los próximos <strong>4 meses</strong>; después pasará a ser una referencia histórica compacta para consultas parecidas.`;
-        }
-
-        let suma = 0, evaluados = 0, aprobados = 0;
-        const metaMeta = metaModulosRequeridos !== null ? metaModulosRequeridos : modulos.length;
-        let totalNotasPonderadasAcumuladas = 0;
-        let totalPesosAcumulados = 0;
-        let listaModulosConNota = [];
-
-        modulos.forEach(m => {
-            const arr = notasCurso[m.id] || [];
-            if(arr.length > 0) {
-                let sP = 0, sPe = 0;
-                arr.forEach(n => {
-                    sP += (n.val * n.peso);
-                    sPe += n.peso;
-                    totalNotasPonderadasAcumuladas += (n.val * n.peso);
-                    totalPesosAcumulados += n.peso;
-                });
-                let prom = sP / sPe;
-                suma += prom;
-                evaluados++;
-                if(Math.round(prom) >= 5) aprobados++;
-                listaModulosConNota.push({ id: m.id, nombre: m.nombre, promedio: prom, notas: arr });
-            }
+    function procesarRazonamientoIA(q) {
+        // Cálculo global actual
+        let sumaTotal = 0, cuentaTotal = 0;
+        Object.keys(notasGlobales).forEach(id => {
+            const arr = notasGlobales[id];
+            arr.forEach(n => {
+                sumaTotal += (n.val * n.peso);
+                cuentaTotal += n.peso;
+            });
         });
-        let mediaGlobal = evaluados > 0 ? (suma / evaluados) : 0;
+        let mediaGlobal = cuentaTotal > 0 ? (sumaTotal / cuentaTotal) : 0;
 
-        if(query.includes('version') || query.includes('versión') || query.includes('programa') || query.includes('acerca')) {
-            return `ℹ️ <strong>${APP_INFO.nombre}</strong><br><br>` +
-                   `• Versión: <strong>v${APP_INFO.version}</strong> (Licencia MIT)<br>` +
-                   `• Año de desarrollo: <strong>${APP_INFO.anioDesarrollo}</strong><br>` +
-                   `• Motor NLP: <strong>Compromise.js + Similitud Coseno</strong>`;
+        if (q.includes('resumen') || q.includes('como voy')) {
+            if (asignaturas.length === 0) return "📊 Aún no has creado ninguna asignatura.";
+            return `📊 Tienes <strong>${asignaturas.length}</strong> asignaturas registradas. Tu promedio global ponderado actual es de <strong>${mediaGlobal.toFixed(2)} / 10</strong>.`;
         }
 
-        if(query.includes('hola') || query.includes('ey') || query.includes('buenas') || query.includes('buenos dias') || query.includes('buenas tardes') || query.includes('buenas noches')) {
-            return obtenerOpcionSinRepetir([
-                "¡Hola! ¿Qué tal va todo? Pídeme que recuerde algo, consulta tu <strong>'resumen'</strong> o pide un <strong>'consejo'</strong>.",
-                "¡Buenas! Mi motor NLP local está listo. ¿En qué te puedo ayudar hoy?"
-            ]);
-        }
-
-        if(query.includes('adios') || query.includes('adiós') || query.includes('hasta luego') || query.includes('chao') || query.includes('nos vemos') || query.includes('me voy')) {
-            const estaGuardado = localStorage.getItem('smr_respaldo_creado') === 'true';
-            return estaGuardado
-                ? "✅ ¡Hasta luego! Todo se ha guardado automáticamente. Descansa y recarga pilas."
-                : "✅ ¡Hasta luego! He guardado todos tus cambios de forma automática en el navegador.";
-        }
-
-        if(query.includes('no molestar') || query.includes('silenciar') || query.includes('dnd') || query.includes('molestar')) {
-            if (query.includes('desactivar') || query.includes('quitar') || query.includes('activar avisos')) {
-                alternarNoMolestar(false);
-                return "🔔 <strong>Avisos activados:</strong> Volveré a avisarte automáticamente al terminar tus sesiones.";
-            }
-            const nuevoEstado = alternarNoMolestar();
-            return nuevoEstado 
-                ? "🔕 <strong>Modo No Molestar ACTIVADO:</strong> Avisos emergentes silenciados."
-                : "🔔 <strong>Modo No Molestar DESACTIVADO:</strong> Avisos reactivados.";
-        }
-
-        if(query.includes('temporizador') || query.includes('pomodoro') || query.includes('tiempo')) {
-            const mins = Math.floor(tiempoRestanteSegundos / 60);
-            const secs = tiempoRestanteSegundos % 60;
-            return `⏱️ <strong>Estado del Temporizador:</strong><br><br>` +
-                   `• Modo: <strong>${tipoPomodoroActual === 'work' ? 'Estudio' : 'Descanso'}</strong><br>` +
-                   `• Tiempo restante: <strong>${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}</strong><br>` +
-                   `• Estado: <strong>${temporizadorActivo ? "En marcha ⏱️" : "Pausado ⏸️"}</strong>`;
-        }
-
-        if(query.includes('ánimo') || query.includes('animo') || query.includes('mal') || query.includes('cansado') || query.includes('estrés') || query.includes('estres')) {
-            return obtenerOpcionSinRepetir([
-                "❤️ Respira hondo. Un bache o un día gris no define tu esfuerzo ni tu capacidad. ¡Mucho valor!",
-                "☕ Tómate cinco minutos con el temporizador. Tu salud mental está por encima de cualquier nota.",
-                "🌟 Paso a paso se llega lejos. Hoy haz lo que puedas con calma, mañana seguirás avanzando."
-            ]);
-        }
-
-        if(query.includes('consejo') || query.includes('mejorar') || query.includes('tip') || query.includes('estudiar')) {
-            return obtenerConsejoAvanzado(evaluados, listaModulosConNota, mediaGlobal);
-        }
-
-        if(query.includes('chiste') || query.includes('broma') || query.includes('reir') || query.includes('reír')) {
-            const chistes = [
-                "— ¿Qué hace un programador en la playa?<br>— ¡Hacer un castillo de arena y que le salga error de compilación! 🏖️",
-                "— ¿Por qué los programadores prefieren el invierno?<br>— ¡Porque hay menos bugs en la calle! ❄️",
-                "— ¿Cuál es el animal más antiguo del mundo?<br>— La cebra... porque está en blanco y negro 🦓",
-                "— ¿Cómo se comunican dos electricistas?<br>— De forma muy corriente ⚡",
-                "— Camarero, hay un pelo en mi sopa.<br>— No se preocupe, es un extra de proteínas para el estudio 🍲",
-                "— ¿Qué le dice un GIF a un PNG?<br>— ¡Anímate hombre, que la vida son dos cuadros! 🎬",
-                "— ¿Cuál es el colmo de un astrónomo?<br>— Enamorarse de una estrella fugaz y perderla de vista 🌠",
-                "— ¿Qué hace una abeja en el gimnasio?<br>— ¡Zum-ba! 🐝",
-                "— ¿Por qué el libro de matemáticas estaba triste?<br>— Porque tenía demasiados problemas 📘",
-                "— ¿Qué le dice un jaguar a otro jaguar?<br>— Jaguar you! 🐆",
-                "— ¿Cuál es el café más peligroso del mundo?<br>— El ex-preso ☕",
-                "— ¿Qué hace un pez en el cine?<br>— ¡Nada! 🐟",
-                "— ¿Cómo se llama el campeón de buceo japonés?<br>— Tokofondo 🤿",
-                "— ¿Y el subcampeón?<br>— Kasitoko 🏊",
-                "— ¿Qué le dice una impresora a otra?<br>— ¿Esa hoja es tuya o es impresión mía? 🖨️",
-                "— ¿Por qué los pájaros no usan Facebook?<br>— Porque ya tienen Twitter 🐦",
-                "— ¿Qué le dice un techo a otro?<br>— Techo de menos 🏠",
-                "— ¿Cuál es la fruta más divertida?<br>— La naranja ja, ja, ja 🍊",
-                "— ¿Qué hace una vaca con los ojos cerrados?<br>— Leche concentrada 🐄",
-                "— ¿Cómo se despiden los químicos?<br>— Ácido un placer 🧪",
-                "— ¿Qué le dice un cable a otro cable?<br>— Somos los intocables 🔌",
-                "— ¿Por qué la computadora fue al médico?<br>— Porque tenía un virus 💻",
-                "— ¿Qué hace un perro con un taladro?<br>— Taladrando 🐶",
-                "— ¿Cuál es el colmo de un jardinero?<br>— Que siempre lo dejen plantado 🌱"
+        if (q.includes('consejo') || q.includes('estudiar')) {
+            const tips = [
+                "💡 <strong>Técnica Pomodoro:</strong> Estudia 25 minutos concentrado sin mirar el móvil y descansa 5.",
+                "🧠 <strong>Active Recall:</strong> Cierra los apuntes e intenta explicar en voz alta lo que acabas de leer.",
+                "🔄 <strong>Repetición espaciada:</strong> Repasa la materia al día siguiente, a los 3 días y a la semana."
             ];
-            let disponibles = chistes.filter(c => !ultimosChistesUsados.includes(c));
-            if (disponibles.length === 0) { ultimosChistesUsados = []; disponibles = chistes; }
-            let elegido = disponibles[Math.floor(Math.random() * disponibles.length)];
-            ultimosChistesUsados.push(elegido);
-            if (ultimosChistesUsados.length > 12) ultimosChistesUsados.shift();
-            return elegido;
+            return tips[Math.floor(Math.random() * tips.length)];
         }
 
-        if(query.includes('simular') || query.includes('simula') || query.includes('calcula')) {
-            const numerosEnQuery = query.match(/(\d+([.,]\d+)?)/g);
-            if (!numerosEnQuery) return `🔮 Indica una nota numérica. Ej: <em>simular 8.5</em>.`;
-            const notaSimulada = parseFloat(numerosEnQuery[numerosEnQuery.length - 1].replace(',', '.'));
-            if(isNaN(notaSimulada) || notaSimulada < 0 || notaSimulada > 10) return `⚠️ Introduce una nota válida entre 0 y 10.`;
-
-            let nuevoTotalPonderado = totalNotasPonderadasAcumuladas + (notaSimulada * 1);
-            let nuevoTotalPesos = totalPesosAcumulados + 1;
-            let mediaSimuladaGlobal = nuevoTotalPesos > 0 ? (nuevoTotalPonderado / nuevoTotalPesos) : notaSimulada;
-
-            return `🔮 <strong>Resultado de Simulación Global:</strong><br><br>` +
-                   `Añadiendo un <strong>${notaSimulada.toFixed(2)}</strong>, tu media global pasaría de <strong>${mediaGlobal.toFixed(2)}</strong> a <strong>${mediaSimuladaGlobal.toFixed(2)}</strong>.`;
+        if (q.includes('simular')) {
+            const nums = q.match(/(\d+([.,]\d+)?)/g);
+            if (!nums) return "🔮 Indica una nota numérica a simular. Ej: <em>simular 8.5</em>";
+            const notaSim = parseFloat(nums[0].replace(',', '.'));
+            let mediaSim = cuentaTotal > 0 ? ((sumaTotal + (notaSim * 1)) / (cuentaTotal + 1)) : notaSim;
+            return `🔮 Simulando añadir un <strong>${notaSim}</strong>: tu promedio global pasaría de <strong>${mediaGlobal.toFixed(2)}</strong> a <strong>${mediaSim.toFixed(2)}</strong>.`;
         }
 
-        if(query.includes('resumen') || query.includes('como voy') || query.includes('cómo voy')) {
-            if(evaluados === 0) return `📊 Aún no hay notas registradas en el panel.`;
-            return `📊 <strong>Resumen Actual:</strong><br><br>` +
-                   `• Promedio Global: <strong>${mediaGlobal.toFixed(2)} / 10</strong><br>` +
-                   `• Superadas: <strong>${aprobados} / ${metaMeta}</strong><br>` +
-                   `• Umbral Objetivo: <strong>${umbralObjetivo.toFixed(2)}</strong>`;
+        if (q.includes('chiste') || q.includes('broma')) {
+            const chistes = [
+                "— ¿Qué hace un programador en la playa?<br>— ¡Hacer castillos de arena y que le salga error de compilación! 🏖️",
+                "— ¿Por qué los programadores prefieren el invierno?<br>— ¡Porque hay menos bugs en la calle! ❄️",
+                "— ¿Cuál es el animal más antiguo?<br>— La cebra... porque está en blanco y negro 🦓",
+                "— ¿Qué le dice una impresora a otra?<br>— ¿Esa hoja es tuya o es impresión mía? 🖨️"
+            ];
+            return chistes[Math.floor(Math.random() * chistes.length)];
         }
 
-        if(query.includes('limpiar') || query.includes('reiniciar')) {
-            document.getElementById('assistantMessages').innerHTML = '<div class="msg bot">✨ Chat reiniciado. ¿En qué te puedo ayudar hoy?</div>';
-            return "";
+        if (q.includes('hola') || q.includes('ey')) {
+            return "¡Hola! Estoy analizando tus notas en tiempo real. ¿En qué te ayudo hoy?";
         }
 
-        if(query.includes('ayuda') || query.includes('comandos')) {
-            mostrarAyudaAsistente();
-            return "";
-        }
-
-        const hallazgo = buscarEnMemoriaEvolutiva(queryRaw);
-        if (hallazgo) {
-            const porcentajeCoincidencia = Math.round(hallazgo.similitud * 100);
-            if (hallazgo.tipo === 'activo') {
-                return `🧠 <strong>Según lo que me pediste recordar</strong> <em>(coincidencia ${porcentajeCoincidencia}%)</em>:<br><br>${escaparHTML(hallazgo.dato.v)}`;
-            } else {
-                return `📚 <strong>Referencia histórica (> 4 meses)</strong> <em>(similitud ${porcentajeCoincidencia}%)</em>:<br><br>` +
-                       `Hace más de 4 meses anotaste algo parecido: <em>"${escaparHTML(hallazgo.dato.v)}"</em>.<br>` +
-                       `<span style="font-size:0.78rem; color:var(--secondary);">Si deseas actualizar este dato, dime "recuerda que..." con la información nueva.</span>`;
-            }
-        }
-
-        return `🤖 No tengo datos exactos sobre eso aún. Si quieres que lo guarde, dime: <strong>"recuerda que [lo que quieras]"</strong> o pulsa <strong>[ ? ]</strong> para ver los comandos.`;
-    }
-
-    async function generarFirmaIntegridad(payload) {
-        const datosCanonicos = JSON.stringify({
-            m: payload.modulos.map(x => [x.id, x.nombre]),
-            n: Object.keys(payload.notasCurso).sort().reduce((acc, k) => {
-                acc[k] = payload.notasCurso[k].map(item => [Number(item.val), Number(item.peso)]);
-                return acc;
-            }, {}),
-            u: Number(payload.umbralObjetivo),
-            r: payload.metaModulosRequeridos === null ? null : Number(payload.metaModulosRequeridos)
-        });
-        const msgBuffer = new TextEncoder().encode("INTEGRITY_V3::" + datosCanonicos + "::ANALYTICS_PRO");
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    async function exportarDatos() {
-        const memoriaEvolutiva = cargarMemoriaEvolutiva();
-        const datosBase = { modulos, notasCurso, umbralObjetivo, metaModulosRequeridos, eventosCalendario, memoriaEvolutiva };
-        const firmaSHA256 = await generarFirmaIntegridad(datosBase);
-        const datosAExportar = { integridadSHA256: firmaSHA256, ...datosBase };
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datosAExportar));
-        const dlAnchorElem = document.createElement('a');
-        dlAnchorElem.setAttribute("href", dataStr);
-        dlAnchorElem.setAttribute("download", "analytics_dashboard_data.json");
-        dlAnchorElem.click();
-        actualizarEstadoBotonGuardado(true);
-    }
-
-    // 🔒 IMPORTACIÓN SEGURA Y ACTUALIZACIÓN AUTOMÁTICA DE VERSIÓN
-    function importarDatos(event) {
-        const archivo = event.target.files[0];
-        if (!archivo) return;
-        const fileReader = new FileReader();
-        fileReader.readAsText(archivo, "UTF-8");
-        fileReader.onload = async e => {
-            try {
-                const parsed = JSON.parse(e.target.result);
-                
-                if (!parsed.integridadSHA256) {
-                    alert("⛔ Error de seguridad: El archivo JSON no está firmado por el sistema y podría ser no válido.");
-                    event.target.value = '';
-                    return;
-                }
-
-                const datosParaVerificar = {
-                    modulos: parsed.modulos || [],
-                    notasCurso: parsed.notasCurso || {},
-                    umbralObjetivo: Number(parsed.umbralObjetivo) || 7.00,
-                    metaModulosRequeridos: parsed.metaModulosRequeridos ?? null,
-                    eventosCalendario: parsed.eventosCalendario || []
-                };
-
-                const firmaCalculada = await generarFirmaIntegridad(datosParaVerificar);
-
-                if (firmaCalculada !== parsed.integridadSHA256) {
-                    alert("⛔ Alerta de seguridad: La firma digital del archivo no coincide. Ha sido manipulado o no pertenece a una actualización oficial.");
-                    event.target.value = '';
-                    return;
-                }
-
-                modulos = sanearModulos(parsed.modulos || []);
-                notasCurso = sanearNotas(parsed.notasCurso || {}, modulos);
-                umbralObjetivo = Number(parsed.umbralObjetivo) || 7.00;
-                metaModulosRequeridos = parsed.metaModulosRequeridos ?? null;
-                eventosCalendario = parsed.eventosCalendario || [];
-                
-                if (parsed.version) {
-                    APP_INFO.version = parsed.version; 
-                    localStorage.setItem('smr_ultima_version_aplicada', parsed.version);
-                    
-                    const badgeVersion = document.getElementById('footer-version-badge');
-                    if (badgeVersion) badgeVersion.textContent = 'v' + parsed.version;
-                    
-                    const elModVer = document.getElementById('modal-version-val');
-                    if (elModVer) elModVer.textContent = `v${parsed.version} (Build ${APP_INFO.anioDesarrollo})`;
-                }
-
-                if (Array.isArray(parsed.memoriaEvolutiva)) {
-                    guardarMemoriaEvolutiva(parsed.memoriaEvolutiva);
-                    mantenerCicloVidaMemoria();
-                }
-
-                event.target.value = '';
-                guardarTodoLocal();
-                actualizarEstadoBotonGuardado(true);
-                cargarEstadoInicial();
-                
-                const banner = document.getElementById('updateBanner');
-                if (banner) banner.style.display = 'none';
-
-                alert(`✅ ¡Actualización oficial verificada y aplicada con éxito! Versión v${parsed.version || 'nueva'}.`);
-            } catch (err) {
-                alert("⛔ Error al procesar y verificar el archivo JSON.");
-                event.target.value = '';
-            }
-        };
-    }
-
-    async function descargarPDF() {
-        let sumaGlobal = 0, evaluados = 0, aprobados = 0;
-        const metaMeta = metaModulosRequeridos !== null ? metaModulosRequeridos : modulos.length;
-
-        const filasTablaHTML = modulos.map(m => {
-            const arr = notasCurso[m.id] || [];
-            let promedio = 0;
-            let desgloseTexto = '<span style="color:#94a3b8; font-style:italic;">Sin registros</span>';
-            let estadoTexto = 'PENDIENTE';
-            let estadoEstilo = 'background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;';
-
-            if (arr.length > 0) {
-                let sP = 0, sPe = 0;
-                const partes = arr.map(n => {
-                    const v = typeof n.val === 'number' ? n.val : parseFloat(n);
-                    const p = typeof n.peso === 'number' ? n.peso : 1;
-                    sP += v * p;
-                    sPe += p;
-                    return p > 1 ? `${v.toFixed(2)} (x${p})` : `${v.toFixed(2)}`;
-                });
-                promedio = sP / sPe;
-                sumaGlobal += promedio;
-                evaluados++;
-                if (Math.round(promedio) >= 5) {
-                    aprobados++;
-                    estadoTexto = 'SUPERADO';
-                    estadoEstilo = 'background:#ecfdf5; color:#047857; border:1px solid #a7f3d0;';
-                } else {
-                    estadoTexto = 'NO SUPERADO';
-                    estadoEstilo = 'background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;';
-                }
-                desgloseTexto = partes.join('  ·  ');
-            }
-
-            return `
-                <tr style="page-break-inside: avoid;">
-                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0;">
-                        <div style="font-weight:800; color:#0f172a; font-size:11px;">${escaparHTML(m.id)}</div>
-                        <div style="color:#475569; font-size:10px; margin-top:2px;">${escaparHTML(m.nombre)}</div>
-                    </td>
-                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; color:#334155; font-size:10.5px;">${desgloseTexto}</td>
-                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:center; font-weight:800;">${arr.length > 0 ? promedio.toFixed(2) : '-'}</td>
-                    <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:center;">
-                        <span style="display:inline-block; padding:3px 8px; border-radius:4px; font-size:8.5px; font-weight:800; ${estadoEstilo}">${estadoTexto}</span>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-
-        const mediaGlobal = evaluados > 0 ? (sumaGlobal / evaluados) : 0;
-        const codigoDoc = 'INF-' + Date.now().toString().slice(-6);
-
-        const contenedorDocumento = document.createElement('div');
-        contenedorDocumento.style.cssText = 'position: fixed; left: -9999px; top: 0; width: 710px; background: #ffffff; color: #0f172a; font-family: "Plus Jakarta Sans", sans-serif; padding: 20px; z-index: -9999;';
-        contenedorDocumento.innerHTML = `
-            <div style="border-bottom: 2.5px solid #0f172a; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-end;">
-                <div>
-                    <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; color: #2563eb; margin-bottom: 4px;">Registro Analítico Oficial (${APP_INFO.nombre} v${APP_INFO.version})</div>
-                    <h1 style="font-size: 19px; font-weight: 800; margin: 0;">INFORME DE SEGUIMIENTO Y EVALUACIÓN</h1>
-                </div>
-                <div style="text-align: right; font-size: 9.5px; color: #475569;">
-                    <div><strong>Ref:</strong> ${codigoDoc}</div>
-                </div>
-            </div>
-            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-                <div style="flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-top: 3px solid #2563eb; border-radius: 6px; padding: 10px;">
-                    <div style="font-size: 8px; font-weight: 800; color: #475569;">Promedio Global</div>
-                    <div style="font-size: 18px; font-weight: 800; margin-top: 3px;">${mediaGlobal.toFixed(2)} / 10</div>
-                </div>
-                <div style="flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-top: 3px solid #10b981; border-radius: 6px; padding: 10px;">
-                    <div style="font-size: 8px; font-weight: 800; color: #475569;">Superadas</div>
-                    <div style="font-size: 18px; font-weight: 800; margin-top: 3px;">${aprobados} de ${metaMeta}</div>
-                </div>
-            </div>
-            <table style="width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1;">
-                <thead>
-                    <tr style="background: #f1f5f9;">
-                        <th style="padding: 8px 12px; text-align: left; font-size: 8.5px;">Categoría</th>
-                        <th style="padding: 8px 12px; text-align: left; font-size: 8.5px;">Registros</th>
-                        <th style="padding: 8px 12px; text-align: center; font-size: 8.5px;">Promedio</th>
-                        <th style="padding: 8px 12px; text-align: center; font-size: 8.5px;">Estatus</th>
-                    </tr>
-                </thead>
-                <tbody>${filasTablaHTML}</tbody>
-            </table>
-        `;
-
-        document.body.appendChild(contenedorDocumento);
-
-        try {
-            await html2pdf().from(contenedorDocumento).set({
-                margin: [10, 10, 10, 10],
-                filename: `Informe_${codigoDoc}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).save();
-        } finally {
-            document.body.removeChild(contenedorDocumento);
-        }
+        return "🤖 He analizado tu consulta, pero no la reconozco del todo. Prueba a escribir <strong>'resumen'</strong>, <strong>'consejo'</strong>, <strong>'simular 9'</strong> o <strong>'chiste'</strong>.";
     }
 </script>
+
 </body>
 </html>
