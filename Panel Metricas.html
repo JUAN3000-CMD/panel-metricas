@@ -340,13 +340,22 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;
         }
         .assistant-send:hover { background: var(--accent-hover); }
+        .summary-actions-row {
+            display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+        }
         .summary-download-btn {
-            display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+            display: inline-flex; align-items: center; gap: 5px;
             background: var(--bg-card); color: var(--accent); border: 1.5px solid var(--accent);
             padding: 5px 10px; border-radius: 8px; font-family: var(--font-stack);
-            font-size: 0.75rem; font-weight: 800; cursor: pointer; text-decoration: none;
+            font-size: 0.74rem; font-weight: 800; cursor: pointer; text-decoration: none;
         }
         .summary-download-btn:hover { background: var(--accent); color: #ffffff; }
+        .summary-download-btn.pdf-btn {
+            color: var(--success-text); border-color: var(--success);
+        }
+        .summary-download-btn.pdf-btn:hover {
+            background: var(--success); color: #ffffff;
+        }
         .assistant-attach-btn {
             background: var(--bg-body); border: 1.5px solid var(--border-color); color: var(--primary);
             width: 36px; height: 36px; border-radius: 10px; cursor: pointer;
@@ -600,7 +609,7 @@
         <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6; max-height: 300px; overflow-y: auto; padding-right: 4px;">
             <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.2.0 (Actual):</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
-                <li><strong>Adjuntar Temas, Resumen Fiable y Descarga Local:</strong> Nuevo botón <code>📎</code> para asignar temas a asignaturas o cargar archivos de texto, extracción de ideas y conceptos clave con botón de descarga <code>.txt</code> 100% offline y saneado.</li>
+                <li><strong>Resumen en PDF, Organizador de Tareas y Planes de Estudio:</strong> Descarga resúmenes y planes en <strong>PDF</strong> o <code>.txt</code>, añade tareas a la agenda por lenguaje natural y genera planes de estudio por días priorizados en local.</li>
                 <li><strong>Informe PDF con Valoración Opcional:</strong> Nuevo selector previo para incluir un resumen explicativo automático (felicitación o mensaje de ánimo según el progreso).</li>
                 <li><strong>Asistente Conversacional y UX:</strong> Normalización Unicode completa, cierre rápido con <code>Esc</code> o clic exterior y optimización general del código base.</li>
             </ul>
@@ -1750,7 +1759,8 @@
                      `• <strong>"recuerda que [dato]":</strong> Guarda un recuerdo activo. Tras 4 meses pasa a referencia histórica compacta.<br>` +
                      `• <strong>"memoria":</strong> Muestra tus recuerdos activos y referencias históricas.<br>` +
                      `• <strong>"olvidar memoria":</strong> Borra los recuerdos guardados.<br>` +
-                     `• <strong>"resumen" / "resume [tema o texto]" / botón 📎:</strong> Adjunta temas, resume en local con conceptos clave y descarga el resumen.<br>` +
+                     `• <strong>"resumen" / "resume [tema o texto]" / botón 📎:</strong> Resume en local y descarga en <strong>PDF</strong> o <strong>.txt</strong>.<br>` +
+                     `• <strong>"añade tarea [texto] en X días" / "organiza tareas" / "plan de estudio de X días":</strong> Organiza tareas y crea planes de estudio en local.<br>` +
                      `• <strong>"consejo":</strong> Diagnóstico táctico y técnicas de estudio.<br>` +
                      `• <strong>"temporizador" / "no molestar":</strong> Control Pomodoro y DND.<br>` +
                      `• <strong>"simular [nota]":</strong> Calcula el impacto de una nota.<br><br>` +
@@ -2000,11 +2010,11 @@
         return limpio;
     }
 
-    function registrarResumenParaDescarga(titulo, asignatura, oraciones, palabrasClave = []) {
+    function registrarResumenParaDescarga(titulo, asignatura, oraciones, palabrasClave = [], subtituloDocumento = 'RESUMEN EJECUTIVO LOCAL') {
         const id = 'res_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
         const fecha = new Date().toLocaleString('es-ES');
         const encabezado = [
-            `RESUMEN EJECUTIVO LOCAL (${APP_INFO.nombre} v${APP_INFO.version})`,
+            `${subtituloDocumento} (${APP_INFO.nombre} v${APP_INFO.version})`,
             `Fecha: ${fecha}`,
             asignatura ? `Asignatura / Categoría: ${asignatura}` : null,
             titulo ? `Tema: ${titulo}` : null,
@@ -2017,9 +2027,78 @@
 
         resumenesDescargablesLocales[id] = {
             nombreArchivo: `resumen_${(titulo || asignatura || 'tema').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 35) || 'tema'}.txt`,
-            contenido: encabezado
+            contenido: encabezado,
+            titulo: titulo || asignatura || 'Resumen Local',
+            asignatura: asignatura || '',
+            fecha,
+            oraciones,
+            palabrasClave,
+            subtituloDocumento
         };
         return id;
+    }
+
+    function descargarResumenPDF(id) {
+        const item = resumenesDescargablesLocales[id];
+        if (!item) return;
+        const ventana = window.open('', '_blank', 'width=820,height=700');
+        if (!ventana) {
+            alert("El navegador bloqueó la ventana del PDF. Permite las ventanas emergentes para este archivo e inténtalo de nuevo.");
+            return;
+        }
+        const itemsHTML = (item.oraciones || []).map((o, idx) => `
+            <li style="margin-bottom: 10px; line-height: 1.55;">
+                <strong>${idx + 1}.</strong> ${escaparHTML(o)}
+            </li>
+        `).join('');
+        const conceptosHTML = item.palabrasClave && item.palabrasClave.length > 0
+            ? `<div style="margin-top: 16px; padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 12px; color: #1e40af;">
+                 <strong>Conceptos clave:</strong> ${item.palabrasClave.map(c => escaparHTML(c)).join(', ')}
+               </div>`
+            : '';
+
+        ventana.document.write(`
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <title>${escaparHTML(item.titulo)}</title>
+                <style>
+                    body { font-family: "Plus Jakarta Sans", Arial, sans-serif; color: #0f172a; margin: 28px; }
+                    ol { padding-left: 18px; margin-top: 14px; font-size: 13.5px; }
+                    @media print { body { margin: 12mm; } }
+                </style>
+            </head>
+            <body>
+                <div style="border-bottom: 2.5px solid #0f172a; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <div style="font-size: 9.5px; font-weight: 800; text-transform: uppercase; color: #2563eb; margin-bottom: 4px;">${escaparHTML(item.subtituloDocumento || 'RESUMEN EJECUTIVO LOCAL')} · ${escaparHTML(APP_INFO.nombre)} v${escaparHTML(APP_INFO.version)}</div>
+                        <h1 style="font-size: 19px; font-weight: 800; margin: 0;">${escaparHTML(item.titulo)}</h1>
+                        ${item.asignatura ? `<div style="font-size: 12px; color: #475569; margin-top: 4px;"><strong>Asignatura:</strong> ${escaparHTML(item.asignatura)}</div>` : ''}
+                    </div>
+                    <div style="text-align: right; font-size: 11px; color: #475569;">
+                        <div>${escaparHTML(item.fecha)}</div>
+                        <div style="margin-top: 3px;">Procesamiento 100% local</div>
+                    </div>
+                </div>
+                <ol>${itemsHTML}</ol>
+                ${conceptosHTML}
+                <script>
+                    window.onload = function() {
+                        setTimeout(function() { window.print(); }, 150);
+                    };
+                <\/script>
+            </body>
+            </html>
+        `);
+        ventana.document.close();
+    }
+
+    function construirBotonesDescargaResumen(idDescarga) {
+        return `<div class="summary-actions-row">` +
+               `<button type="button" class="summary-download-btn pdf-btn" onclick="descargarResumenPDF('${idDescarga}')">📄 Descargar PDF</button>` +
+               `<button type="button" class="summary-download-btn" onclick="descargarResumenLocal('${idDescarga}')">⬇️ Descargar (.txt)</button>` +
+               `</div>`;
     }
 
     function descargarResumenLocal(id) {
@@ -2168,7 +2247,7 @@
         return `📝 <strong>Resumen Fiable Local</strong> <em>(${analisis.oraciones.length} ideas de ${analisis.totalOraciones} · sin terceros)</em>` +
                (encabezadoExtra ? `<div style="font-size:0.78rem; color:var(--secondary); margin-top:3px;">${encabezadoExtra}</div>` : '') +
                `<br>${viñetas}${lineaConceptos}` +
-               `<div><button type="button" class="summary-download-btn" onclick="descargarResumenLocal('${idDescarga}')">⬇️ Descargar resumen (.txt)</button></div>`;
+               construirBotonesDescargaResumen(idDescarga);
     }
 
     function abrirModalAdjuntarTema() {
@@ -2292,6 +2371,160 @@
 
         return `🔍 No encontré registros ni apuntes guardados sobre <strong>"${escaparHTML(argumento)}"</strong>.<br><br>` +
                `Puedes pulsar el botón <strong>📎</strong> del chat para adjuntar un tema o archivo de texto, o escribir <em>"resume: ..."</em> seguido de tu texto.`;
+    }
+
+    // =========================================================================
+    // ORGANIZADOR DE TAREAS Y GENERADOR DE PLANES DE ESTUDIO LOCALES
+    // =========================================================================
+    function sumarDiasISO(dias) {
+        const d = new Date();
+        d.setHours(12, 0, 0, 0);
+        d.setDate(d.getDate() + dias);
+        return d.toISOString().split('T')[0];
+    }
+
+    function ordenarModulosPorPrioridad() {
+        return modulos.map(m => {
+            const arr = notasCurso[m.id] || [];
+            let prom = null;
+            if (arr.length > 0) {
+                let sP = 0, sPe = 0;
+                arr.forEach(n => {
+                    const v = typeof n.val === 'number' ? n.val : parseFloat(n);
+                    const p = typeof n.peso === 'number' ? n.peso : 1;
+                    sP += v * p;
+                    sPe += p;
+                });
+                prom = sP / sPe;
+            }
+            const prioridad = prom === null ? 2 : (prom < 5 ? 0 : (prom < umbralObjetivo ? 1 : 3));
+            return { id: m.id, nombre: m.nombre, prom, prioridad };
+        }).sort((a, b) => a.prioridad - b.prioridad);
+    }
+
+    function manejarOrganizacionTareasYPlan(queryRaw, queryLower) {
+        // 1. Crear tarea rapida y agendarla en el calendario local
+        // Ej: "agrega tarea repasar redes en 2 dias" o "nueva tarea entregar practica"
+        const matchTarea = queryRaw.trim().match(/^(?:anade|añade|agrega|crea|nueva)\s+(?:una\s+)?tarea(?:\s+(?:de|sobre|para))?\s+(.+)$/i);
+        if (matchTarea) {
+            let cuerpo = matchTarea[1].trim();
+            let diasOffset = 1;
+            const matchDias = cuerpo.match(/\b(?:en|para|dentro\s+de)\s+(\d{1,2})\s*d[ií]as?\b/i);
+            if (matchDias) {
+                diasOffset = Math.max(0, Math.min(365, parseInt(matchDias[1], 10)));
+                cuerpo = cuerpo.replace(matchDias[0], '').trim();
+            } else if (/\bhoy\b/i.test(cuerpo)) {
+                diasOffset = 0;
+                cuerpo = cuerpo.replace(/\bhoy\b/i, '').trim();
+            } else if (/\bma[nñ]ana\b/i.test(cuerpo)) {
+                diasOffset = 1;
+                cuerpo = cuerpo.replace(/\bma[nñ]ana\b/i, '').trim();
+            } else if (/\bpasado\s+ma[nñ]ana\b/i.test(cuerpo)) {
+                diasOffset = 2;
+                cuerpo = cuerpo.replace(/\bpasado\s+ma[nñ]ana\b/i, '').trim();
+            }
+
+            const descTarea = sanearTextoEntradaSegura(cuerpo).slice(0, 140);
+            if (!descTarea) {
+                return `⚠️ Indica qué tarea quieres añadir. Ej: <em>"añade tarea repasar temas en 2 días"</em>.`;
+            }
+            const fechaISO = sumarDiasISO(diasOffset);
+            eventosCalendario.push({ id: Date.now(), fecha: fechaISO, desc: descTarea });
+            renderizarEventosCalendario();
+            guardarTodoLocal();
+            actualizarEstadoBotonGuardado(false);
+
+            return `✅ <strong>Tarea añadida a tu agenda:</strong><br><br>` +
+                   `• <strong>Fecha:</strong> ${escaparHTML(fechaISO)}<br>` +
+                   `• <strong>Tarea:</strong> ${escaparHTML(descTarea)}`;
+        }
+
+        // 2. Organizar / priorizar tareas y asignaturas actuales
+        if (/\b(?:organiza(?:r)?|ordena(?:r)?|prioriza(?:r)?|planifica(?:r)?)\s+(?:mis\s+)?tareas\b/i.test(queryLower)) {
+            const pendientesAgenda = [...(eventosCalendario || [])].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+            const priorizadas = ordenarModulosPorPrioridad();
+            const lineasPlan = [];
+
+            if (pendientesAgenda.length > 0) {
+                lineasPlan.push('<strong>1. Orden por fecha en agenda:</strong>');
+                pendientesAgenda.slice(0, 5).forEach((ev, i) => {
+                    lineasPlan.push(`${i + 1}. [${escaparHTML(ev.fecha)}] ${escaparHTML(ev.desc)}`);
+                });
+            }
+
+            if (priorizadas.length > 0) {
+                lineasPlan.push(pendientesAgenda.length > 0 ? '<br><strong>2. Prioridad por rendimiento de asignatura:</strong>' : '<strong>Prioridad por rendimiento de asignatura:</strong>');
+                priorizadas.slice(0, 5).forEach(item => {
+                    const etiqueta = item.prom === null
+                        ? 'Sin nota aún (iniciar base)'
+                        : (item.prom < 5 ? `Crítica (${item.prom.toFixed(2)})` : (item.prom < umbralObjetivo ? `Reforzar (${item.prom.toFixed(2)})` : `Mantener (${item.prom.toFixed(2)})`));
+                    lineasPlan.push(`• <strong>${escaparHTML(item.id)}</strong> (${escaparHTML(item.nombre)}): ${etiqueta}`);
+                });
+            }
+
+            if (lineasPlan.length === 0) {
+                return `📋 Aún no tienes tareas en la agenda ni categorías creadas. Puedes añadir una tarea diciendo <em>"añade tarea repasar apuntes mañana"</em> o crear un plan con <em>"plan de estudio de 5 días"</em>.`;
+            }
+
+            const idOrg = registrarResumenParaDescarga(
+                'Organización de Tareas y Prioridades',
+                '',
+                [
+                    ...pendientesAgenda.slice(0, 5).map(e => `Agenda [${e.fecha}]: ${e.desc}`),
+                    ...priorizadas.slice(0, 5).map(p => `${p.id} (${p.nombre}): ${p.prom === null ? 'Sin nota' : p.prom.toFixed(2)}`)
+                ],
+                ['organizacion', 'agenda', 'prioridades'],
+                'PLAN DE ORGANIZACIÓN LOCAL'
+            );
+
+            return `🗂️ <strong>Tareas Organizadas por Prioridad:</strong><br><br>${lineasPlan.join('<br>')}` +
+                   construirBotonesDescargaResumen(idOrg);
+        }
+
+        // 3. Crear plan de estudio (ej: "plan de estudio de 7 dias" o "crear plan de estudio")
+        if (/\b(?:plan\s+de\s+estudio|crear\s+plan|estudiar\s+en\s+\d+\s*d[ií]as?|rutina\s+de\s+estudio)\b/i.test(queryLower)) {
+            const matchDiasPlan = queryLower.match(/(\d{1,2})\s*d[ií]as?/);
+            const numDias = matchDiasPlan ? Math.max(2, Math.min(21, parseInt(matchDiasPlan[1], 10))) : 5;
+            const priorizadas = ordenarModulosPorPrioridad();
+            const enfoque = priorizadas.length > 0
+                ? priorizadas
+                : [{ id: 'GRAL', nombre: 'Temario principal y repaso activo', prom: null, prioridad: 1 }];
+
+            const diasPlan = [];
+            const resumenTextoDias = [];
+
+            for (let d = 0; d < numDias; d++) {
+                const fechaDia = sumarDiasISO(d);
+                const esUltimo = d === numDias - 1;
+                if (esUltimo && numDias >= 3) {
+                    const lineaDia = `<strong>Día ${d + 1} (${fechaDia}):</strong> Simulacro cronometrado, repaso de errores y descanso (${minutosEstudio}m estudio / ${minutosDescansoCorto}m pausa).`;
+                    diasPlan.push(lineaDia);
+                    resumenTextoDias.push(`Día ${d + 1} (${fechaDia}): Simulacro, repaso de errores y pausa activa.`);
+                } else {
+                    const modA = enfoque[d % enfoque.length];
+                    const modB = enfoque[(d + 1) % enfoque.length];
+                    const bloquesTexto = modA.id !== modB.id && enfoque.length > 1
+                        ? `Bloque 1: <strong>${escaparHTML(modA.nombre)}</strong> (${minutosEstudio}m) · Bloque 2: <strong>${escaparHTML(modB.nombre)}</strong> (${minutosEstudio}m) + Active Recall.`
+                        : `Bloques de <strong>${escaparHTML(modA.nombre)}</strong> (${minutosEstudio}m estudio / ${minutosDescansoCorto}m descanso) + resumen de ideas clave.`;
+                    diasPlan.push(`<strong>Día ${d + 1} (${fechaDia}):</strong> ${bloquesTexto}`);
+                    resumenTextoDias.push(`Día ${d + 1} (${fechaDia}): ${modA.nombre}${modA.id !== modB.id ? ' y ' + modB.nombre : ''} (${minutosEstudio}m).`);
+                }
+            }
+
+            const idPlan = registrarResumenParaDescarga(
+                `Plan de Estudio (${numDias} días)`,
+                enfoque.map(x => x.id).join(', '),
+                resumenTextoDias,
+                ['plan de estudio', 'pomodoro', 'repaso'],
+                'PLAN DE ESTUDIO LOCAL'
+            );
+
+            return `📅 <strong>Plan de Estudio Generado (${numDias} días):</strong><br><br>` +
+                   `${diasPlan.join('<br>')}` +
+                   construirBotonesDescargaResumen(idPlan);
+        }
+
+        return null;
     }
 
     function procesarRespuestaAsistente(queryRaw) {
@@ -2467,6 +2700,11 @@
                    `Añadiendo un <strong>${notaSimulada.toFixed(2)}</strong>, tu media global pasaría de <strong>${mediaGlobal.toFixed(2)}</strong> a <strong>${mediaSimuladaGlobal.toFixed(2)}</strong>.`;
         }
 
+        const respuestaOrganizacionPlan = manejarOrganizacionTareasYPlan(queryRaw, query);
+        if (respuestaOrganizacionPlan) {
+            return respuestaOrganizacionPlan;
+        }
+
         const respuestaResumenTema = manejarComandoResumen(queryRaw);
         if (respuestaResumenTema) {
             return respuestaResumenTema;
@@ -2483,7 +2721,7 @@
                    `• Promedio Global: <strong>${mediaGlobal.toFixed(2)} / 10</strong><br>` +
                    `• Superadas: <strong>${aprobados} / ${metaMeta}</strong><br>` +
                    `• Umbral Objetivo: <strong>${umbralObjetivo.toFixed(2)}</strong>` +
-                   `<div><button type="button" class="summary-download-btn" onclick="descargarResumenLocal('${idResGen}')">⬇️ Descargar resumen (.txt)</button></div>`;
+                   construirBotonesDescargaResumen(idResGen);
         }
 
         if(query.includes('limpiar') || query.includes('reiniciar')) {
