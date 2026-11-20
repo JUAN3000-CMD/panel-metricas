@@ -340,6 +340,26 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;
         }
         .assistant-send:hover { background: var(--accent-hover); }
+        .summary-download-btn {
+            display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+            background: var(--bg-card); color: var(--accent); border: 1.5px solid var(--accent);
+            padding: 5px 10px; border-radius: 8px; font-family: var(--font-stack);
+            font-size: 0.75rem; font-weight: 800; cursor: pointer; text-decoration: none;
+        }
+        .summary-download-btn:hover { background: var(--accent); color: #ffffff; }
+        .assistant-attach-btn {
+            background: var(--bg-body); border: 1.5px solid var(--border-color); color: var(--primary);
+            width: 36px; height: 36px; border-radius: 10px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0;
+        }
+        .assistant-attach-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .attached-topic-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent);
+            padding: 4px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 700;
+            margin: 0 12px 6px 12px; max-width: calc(100% - 24px);
+        }
+
 
         /* =========================================
            MEDIA QUERIES - ADAPTACIÓN MÓVIL Y TABLET
@@ -502,7 +522,7 @@
             <div class="btn btn-secondary btn-file-input">
                 📂 Importar <input type="file" id="importFile" accept=".json" onchange="importarDatos(event)">
             </div>
-            <button class="btn btn-success" onclick="descargarPDF()">📥 Emitir Informe PDF</button>
+            <button class="btn btn-success" onclick="abrirModalPDF()">📥 Emitir Informe PDF</button>
         </div>
     </div>
 
@@ -580,9 +600,9 @@
         <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6; max-height: 300px; overflow-y: auto; padding-right: 4px;">
             <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.2.0 (Actual):</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
-                <li><strong>Preparación para Escritorio (Tauri):</strong> Optimización general del código base y gestión de rutas relativas para futuras compilaciones nativas `.exe` y `.app`.</li>
-                <li><strong>Optimización NLP Local:</strong> Mejora en la velocidad de procesamiento semántico de consultas y tokenización en el asistente.</li>
-                <li><strong>Estabilidad de Memoria:</strong> Refuerzo en el motor de control de vida de recuerdos temporales a 4 meses.</li>
+                <li><strong>Adjuntar Temas, Resumen Fiable y Descarga Local:</strong> Nuevo botón <code>📎</code> para asignar temas a asignaturas o cargar archivos de texto, extracción de ideas y conceptos clave con botón de descarga <code>.txt</code> 100% offline y saneado.</li>
+                <li><strong>Informe PDF con Valoración Opcional:</strong> Nuevo selector previo para incluir un resumen explicativo automático (felicitación o mensaje de ánimo según el progreso).</li>
+                <li><strong>Asistente Conversacional y UX:</strong> Normalización Unicode completa, cierre rápido con <code>Esc</code> o clic exterior y optimización general del código base.</li>
             </ul>
             <p style="margin-bottom: 8px;"><strong>✨ Versión 4.1.1:</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
@@ -656,6 +676,30 @@
     </div>
 </div>
 
+<!-- MODAL EMISIÓN INFORME PDF -->
+<div class="modal-overlay" id="modalPDFConfig">
+    <div class="modal-card" style="max-width: 420px;">
+        <div class="modal-header">
+            <h3>📥 Emitir Informe PDF</h3>
+            <button class="close-btn" onclick="cerrarModalPDF()">×</button>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--secondary); margin-bottom: 14px; line-height: 1.5;">
+            Genera una vista limpia del informe lista para imprimir o guardar como PDF.
+        </p>
+        <label style="display: flex; align-items: flex-start; gap: 10px; background: var(--bg-body); border: 1.5px solid var(--border-color); padding: 12px; border-radius: 10px; cursor: pointer; margin-bottom: 18px;">
+            <input type="checkbox" id="checkResumenPDF" checked style="margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent);">
+            <div style="font-size: 0.83rem; color: var(--primary); line-height: 1.4;">
+                <strong>Incluir valoración y resumen explicativo (Opcional)</strong>
+                <div style="color: var(--secondary); font-size: 0.77rem; margin-top: 2px;">Añade un comentario automático sobre el rendimiento global (felicitación o mensaje de ánimo para seguir mejorando).</div>
+            </div>
+        </label>
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button class="btn btn-secondary" onclick="cerrarModalPDF()">Cancelar</button>
+            <button class="btn btn-success" onclick="confirmarYDescargarPDF()">Generar Informe</button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL META DE CATEGORÍAS -->
 <div class="modal-overlay" id="modalMetaConfig">
     <div class="modal-card" style="max-width: 380px;">
@@ -670,6 +714,39 @@
         <div style="display: flex; justify-content: flex-end; gap: 8px;">
             <button class="btn btn-secondary" onclick="cerrarModalMeta()">Cancelar</button>
             <button class="btn btn-accent" onclick="guardarConfigMeta()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ADJUNTAR Y RESUMIR TEMA DE ASIGNATURA -->
+<div class="modal-overlay" id="modalAdjuntarTema">
+    <div class="modal-card" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>📎 Adjuntar y Resumir Tema</h3>
+            <button class="close-btn" onclick="cerrarModalAdjuntarTema()">×</button>
+        </div>
+        <p style="font-size: 0.83rem; color: var(--secondary); margin-bottom: 14px; line-height: 1.45;">
+            Selecciona una asignatura/categoría, indica el título del tema y pega tus apuntes o sube un archivo de texto/markdown (<code>.txt</code>, <code>.md</code>, <code>.csv</code>). Todo se procesa <strong>100% en local</strong> sin enviarlo a terceros.
+        </p>
+        <div class="form-row" style="margin-bottom: 10px;">
+            <span class="form-label">Asignatura:</span>
+            <select id="selectAsignaturaTema" class="select-weight" style="flex: 1; padding: 8px 10px;"></select>
+        </div>
+        <div class="form-row" style="margin-bottom: 10px;">
+            <span class="form-label">Título del tema:</span>
+            <input type="text" id="inputTituloTema" class="input-text" placeholder="Ej: Tema 3 - Enrutamiento IP y subredes">
+        </div>
+        <div class="form-row" style="margin-bottom: 10px;">
+            <span class="form-label">Archivo local:</span>
+            <input type="file" id="inputArchivoTema" accept=".txt,.md,.markdown,.csv,.log" class="input-text" style="padding: 6px;" onchange="cargarArchivoTemaLocal(event)">
+        </div>
+        <div style="margin-bottom: 14px;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--secondary); margin-bottom: 6px;">Contenido / apuntes del tema:</div>
+            <textarea id="textareaContenidoTema" class="input-text" rows="6" style="width: 100%; resize: vertical; line-height: 1.45;" placeholder="Pega aquí los apuntes o texto del tema que deseas resumir..."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="cerrarModalAdjuntarTema()">Cancelar</button>
+            <button class="btn btn-accent" onclick="ejecutarResumenTemaAdjunto()">✨ Resumir y Descargar</button>
         </div>
     </div>
 </div>
@@ -694,7 +771,9 @@
         <div class="suggestion-chip" onclick="enviarSugerencia('no molestar')">🔕 DND</div>
         <div class="suggestion-chip" onclick="enviarSugerencia('chiste')">😂 Chiste</div>
     </div>
+    <div id="attachedTopicBanner" style="display: none;"></div>
     <div class="assistant-input-area">
+        <button class="assistant-attach-btn" onclick="abrirModalAdjuntarTema()" title="Adjuntar tema de asignatura para resumir">📎</button>
         <input type="text" id="assistantInput" class="assistant-input" placeholder="Ej: recuerda que el examen es el lunes..." onkeydown="if(event.key==='Enter') enviarMensajeAsistente()">
         <button class="assistant-send" onclick="enviarMensajeAsistente()">➤</button>
     </div>
@@ -926,6 +1005,29 @@
     // 🔒 AUTOGUARDADO DE SEGURIDAD AL CERRAR O SALIR DE LA PESTAÑA
     window.addEventListener('beforeunload', () => {
         guardarTodoLocal();
+    });
+
+    // ⌨️ CIERRE RÁPIDO DE MODALES Y ASISTENTE CON TECLA ESCAPE O CLIC FUERA
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                if (modal.style.display === 'flex') {
+                    if (modal.id === 'modalConfig') cerrarModal();
+                    else modal.style.display = 'none';
+                }
+            });
+            const win = document.getElementById('assistantWindow');
+            if (win && win.style.display === 'flex') {
+                win.style.display = 'none';
+            }
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+            if (e.target.id === 'modalConfig') cerrarModal();
+            else e.target.style.display = 'none';
+        }
     });
 
     async function verificarActualizaciones() {
@@ -1648,7 +1750,7 @@
                      `• <strong>"recuerda que [dato]":</strong> Guarda un recuerdo activo. Tras 4 meses pasa a referencia histórica compacta.<br>` +
                      `• <strong>"memoria":</strong> Muestra tus recuerdos activos y referencias históricas.<br>` +
                      `• <strong>"olvidar memoria":</strong> Borra los recuerdos guardados.<br>` +
-                     `• <strong>"resumen":</strong> Promedio global y métricas actuales.<br>` +
+                     `• <strong>"resumen" / "resume [tema o texto]" / botón 📎:</strong> Adjunta temas, resume en local con conceptos clave y descarga el resumen.<br>` +
                      `• <strong>"consejo":</strong> Diagnóstico táctico y técnicas de estudio.<br>` +
                      `• <strong>"temporizador" / "no molestar":</strong> Control Pomodoro y DND.<br>` +
                      `• <strong>"simular [nota]":</strong> Calcula el impacto de una nota.<br><br>` +
@@ -1735,6 +1837,463 @@
         return `🏆 <strong>Rendimiento Excelente (${mediaGlobal.toFixed(2)}):</strong> Destacas especialmente en <strong>${escaparHTML(mejor.nombre)}</strong> (${mejor.promedio.toFixed(2)}). Mantén la constancia sin confiarte.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
     }
 
+    const BASE_CONOCIMIENTO_CONVERSACIONAL = [
+        {
+            tags: ['quien eres', 'quién eres', 'que eres', 'qué eres', 'tu nombre', 'como te llamas', 'cómo te llamas'],
+            respuestas: [
+                "Soy tu <strong>Asistente Pro NLP</strong> integrado en este panel. Funcionando 100% en local para ayudarte con tus métricas, tiempos de estudio, agenda y organización.",
+                "Me llamo <strong>Asistente Pro</strong>. Estoy aquí para analizar tu progreso, recordar datos importantes y echarte una mano cuando necesites enfocarte o despejarte."
+            ]
+        },
+        {
+            tags: ['como estas', 'cómo estás', 'que tal', 'qué tal', 'como vas', 'cómo vas', 'todo bien'],
+            respuestas: [
+                "¡Aquí al 100% de rendimiento y sin consumir datos en la nube! ¿Y tú qué tal llevas la jornada?",
+                "¡Todo en orden por aquí, listo para calcular promedios o guardar lo que necesites! ¿Cómo va tu día?"
+            ]
+        },
+        {
+            tags: ['gracias', 'muchas gracias', 'te lo agradezco', 'genial', 'perfecto', 'de lujo', 'crack', 'buen trabajo'],
+            respuestas: [
+                "¡De nada! Para eso estamos. Si necesitas revisar otra cosa, aquí sigo.",
+                "¡Un placer ayudar! Mucho éxito con lo que estés trabajando ahora.",
+                "¡A ti! Cualquier duda o dato que quieras guardar, solo dímelo."
+            ]
+        },
+        {
+            tags: ['aburrido', 'aburrimiento', 'no tengo ganas', 'procrastinar', 'pereza', 'bloqueado', 'sin ganas'],
+            respuestas: [
+                "Es normal tener momentos de bajón. Prueba la <strong>regla de los 5 minutos</strong>: pon el temporizador solo 5 minutos para hacer la tarea más pequeña. Si luego quieres parar, paras; pero casi siempre arrancas.",
+                "Cuando cuesta arrancar, divide lo que tienes delante en un paso ridículamente pequeño (abrir el documento, leer una página o anotar un dato). ¡El impulso viene después de empezar!"
+            ]
+        },
+        {
+            tags: ['concentrar', 'concentracion', 'concentración', 'foco', 'enfocarme', 'distraigo', 'distraccion', 'distracción'],
+            respuestas: [
+                "Para blindar tu foco: 1) Activa el modo <strong>No Molestar (🔕)</strong> arriba, 2) Pon el móvil lejos o en silencio, y 3) Inicia un bloque Pomodoro de 25 minutos en la tarjeta superior.",
+                "La multitarea reduce mucho el rendimiento. Elige una sola categoría o tarea de tu agenda, inicia el temporizador y ve a por ese único bloque."
+            ]
+        },
+        {
+            tags: ['examen', 'examenes', 'exámenes', 'aprobar', 'suspender', 'nervios', 'nervioso', 'nerviosa'],
+            respuestas: [
+                "Para preparar exámenes con calma: repasa primero los conceptos clave haciendo esquemas de memoria, practica ejercicios reales y asegúrate de dormir bien la noche anterior.",
+                "Los nervios significan que te importa hacerlo bien. Revisa tu calendario arriba para tener claras las fechas y reparte el temario en bloques cortos."
+            ]
+        },
+        {
+            tags: ['dato curioso', 'curiosidad', 'sabias que', 'sabías que', 'dime algo interesante'],
+            respuestas: [
+                "🧠 <strong>Dato curioso:</strong> El cerebro humano consolida gran parte de lo que aprendes durante el sueño profundo; estudiar hasta madrugada sin dormir reduce la retención hasta un 40%.",
+                "⏱️ <strong>Dato curioso:</strong> La técnica Pomodoro nació a finales de los años 80 cuando Francesco Cirillo usó un temporizador de cocina con forma de tomate para superar sus bloqueos de estudio.",
+                "✍️ <strong>Dato curioso:</strong> Tomar notas o hacer esquemas a mano activa más áreas de memoria espacial y comprensión que copiar texto literalmente."
+            ]
+        },
+        {
+            tags: ['fecha', 'que dia es', 'qué día es', 'hora', 'que hora es', 'qué hora es', 'hoy'],
+            respuestas: [
+                () => {
+                    const ahora = new Date();
+                    const fechaStr = ahora.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                    const horaStr = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                    return `📅 Hoy es <strong>${fechaStr}</strong> y son las <strong>${horaStr}</strong>.`;
+                }
+            ]
+        },
+        {
+            tags: ['agenda', 'eventos', 'tareas', 'calendario', 'pendiente', 'pendientes', 'proximo examen', 'próximo examen'],
+            respuestas: [
+                () => {
+                    if (!eventosCalendario || eventosCalendario.length === 0) {
+                        return "📅 No tienes eventos ni tareas agendadas en el calendario ahora mismo. Puedes añadirlos en la sección <em>Calendario y Agenda</em>.";
+                    }
+                    const ordenados = [...eventosCalendario].sort((a, b) => new Date(a.fecha) - new Date(b.fecha)).slice(0, 4);
+                    const lista = ordenados.map(e => `• <strong>${escaparHTML(e.fecha)}:</strong> ${escaparHTML(e.desc)}`).join('<br>');
+                    return `📅 <strong>Próximos eventos en tu agenda:</strong><br><br>${lista}`;
+                }
+            ]
+        },
+        {
+            tags: ['categorias', 'categorías', 'modulos', 'módulos', 'asignaturas', 'materias', 'lista'],
+            respuestas: [
+                () => {
+                    if (!modulos || modulos.length === 0) {
+                        return "📂 Todavía no has creado ninguna categoría. Pulsa en <strong>⚙️ Gestionar Categorías</strong> para añadir la primera.";
+                    }
+                    const lista = modulos.map(m => {
+                        const arr = notasCurso[m.id] || [];
+                        let txtNota = 'Sin registros';
+                        if (arr.length > 0) {
+                            let sP = 0, sPe = 0;
+                            arr.forEach(n => { sP += n.val * n.peso; sPe += n.peso; });
+                            txtNota = `Promedio: <strong>${(sP / sPe).toFixed(2)}</strong>`;
+                        }
+                        return `• <strong>${escaparHTML(m.id)}</strong> (${escaparHTML(m.nombre)}): ${txtNota}`;
+                    }).join('<br>');
+                    return `📋 <strong>Estado de tus categorías (${modulos.length}):</strong><br><br>${lista}`;
+                }
+            ]
+        }
+    ];
+
+    function buscarEnBaseConversacional(queryRaw) {
+        const qNorm = queryRaw.toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[¿?¡!.,;:]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        const tokensConsulta = extraerTokensLimpios(queryRaw);
+        let mejorEntrada = null;
+        let mejorPuntuacion = 0;
+
+        BASE_CONOCIMIENTO_CONVERSACIONAL.forEach(entrada => {
+            let puntuacion = 0;
+            entrada.tags.forEach(tag => {
+                const tagNorm = tag.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                if (qNorm === tagNorm) {
+                    puntuacion = Math.max(puntuacion, 1.0);
+                } else if (qNorm.includes(tagNorm) && tagNorm.length >= 4) {
+                    puntuacion = Math.max(puntuacion, 0.85);
+                } else {
+                    const tokensTag = extraerTokensLimpios(tagNorm);
+                    const sim = calcularSimilitudCoseno(tokensConsulta, tokensTag);
+                    if (sim > puntuacion) puntuacion = sim;
+                }
+            });
+
+            if (puntuacion > mejorPuntuacion) {
+                mejorPuntuacion = puntuacion;
+                mejorEntrada = entrada;
+            }
+        });
+
+        if (mejorEntrada && mejorPuntuacion >= 0.45) {
+            const elegida = obtenerOpcionSinRepetir(mejorEntrada.respuestas);
+            return typeof elegida === 'function' ? elegida() : elegida;
+        }
+        return null;
+    }
+
+    // =========================================================================
+    // RESUMIDOR EXTRACTIVO LOCAL SEGURO + ADJUNTAR TEMAS + DESCARGA DE RESUMEN
+    // =========================================================================
+    const MAX_CARACTERES_RESUMEN_ENTRADA = 40000;
+    const MAX_ORACIONES_RESUMEN = 6;
+    const resumenesDescargablesLocales = {};
+    let temaAdjuntoActual = null;
+
+    function sanearTextoEntradaSegura(textoBruto) {
+        if (typeof textoBruto !== 'string') return '';
+        let limpio = textoBruto
+            .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ')
+            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ')
+            .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/javascript\s*:/gi, '')
+            .replace(/on[a-z]+\s*=/gi, '')
+            .replace(/\r\n/g, '\n')
+            .trim();
+        if (limpio.length > MAX_CARACTERES_RESUMEN_ENTRADA) {
+            limpio = limpio.slice(0, MAX_CARACTERES_RESUMEN_ENTRADA);
+        }
+        return limpio;
+    }
+
+    function registrarResumenParaDescarga(titulo, asignatura, oraciones, palabrasClave = []) {
+        const id = 'res_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        const fecha = new Date().toLocaleString('es-ES');
+        const encabezado = [
+            `RESUMEN EJECUTIVO LOCAL (${APP_INFO.nombre} v${APP_INFO.version})`,
+            `Fecha: ${fecha}`,
+            asignatura ? `Asignatura / Categoría: ${asignatura}` : null,
+            titulo ? `Tema: ${titulo}` : null,
+            palabrasClave.length ? `Conceptos clave: ${palabrasClave.join(', ')}` : null,
+            '------------------------------------------------------------',
+            ...oraciones.map((o, i) => `${i + 1}. ${o}`),
+            '------------------------------------------------------------',
+            'Generado 100% en local sin envío de datos a terceros.'
+        ].filter(Boolean).join('\n');
+
+        resumenesDescargablesLocales[id] = {
+            nombreArchivo: `resumen_${(titulo || asignatura || 'tema').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 35) || 'tema'}.txt`,
+            contenido: encabezado
+        };
+        return id;
+    }
+
+    function descargarResumenLocal(id) {
+        const item = resumenesDescargablesLocales[id];
+        if (!item) return;
+        const blob = new Blob([item.contenido], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = item.nombreArchivo;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function extraerTextoDeTemaEnPanel(temaBuscado) {
+        const tNorm = temaBuscado.toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .trim();
+
+        const fragmentos = [];
+
+        modulos.forEach(m => {
+            const combinado = `${m.id} ${m.nombre}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (!tNorm || combinado.includes(tNorm) || tNorm.includes(m.id.toLowerCase())) {
+                const arr = notasCurso[m.id] || [];
+                let detalleNotas = 'Sin calificaciones registradas.';
+                if (arr.length > 0) {
+                    let sP = 0, sPe = 0;
+                    const items = arr.map(n => {
+                        const v = typeof n.val === 'number' ? n.val : parseFloat(n);
+                        const p = typeof n.peso === 'number' ? n.peso : 1;
+                        sP += v * p;
+                        sPe += p;
+                        return `${v.toFixed(2)} (x${p})`;
+                    });
+                    detalleNotas = `Promedio ponderado ${(sP / sPe).toFixed(2)} sobre 10 en ${arr.length} registro(s): ${items.join(', ')}.`;
+                }
+                fragmentos.push(`Asignatura ${m.id} (${m.nombre}). ${detalleNotas}`);
+            }
+        });
+
+        eventosCalendario.forEach(ev => {
+            const descNorm = String(ev.desc || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (!tNorm || descNorm.includes(tNorm)) {
+                fragmentos.push(`Evento agendado el ${ev.fecha}: ${ev.desc}.`);
+            }
+        });
+
+        const memoria = cargarMemoriaEvolutiva();
+        memoria.forEach(item => {
+            const memNorm = `${item.k || ''} ${item.v || ''}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (!tNorm || memNorm.includes(tNorm)) {
+                const etiqueta = item.estado === 'referencia' ? 'Referencia histórica' : 'Apunte guardado';
+                fragmentos.push(`${etiqueta}: ${item.v}.`);
+            }
+        });
+
+        return fragmentos.join(' ');
+    }
+
+    function analizarResumenExtractivoSeguro(fuenteBruta, enfoqueTema = '') {
+        const textoLimpio = sanearTextoEntradaSegura(fuenteBruta);
+        if (!textoLimpio) return null;
+
+        const bloques = textoLimpio
+            .split(/\n+/)
+            .flatMap(linea => {
+                const l = linea.trim();
+                if (!l) return [];
+                return l.replace(/([.!?…]+)\s+(?=[A-ZÁÉÍÓÚÑ0-9¿¡])/g, '$1|').split('|');
+            })
+            .map(s => s.replace(/\s+/g, ' ').trim())
+            .filter(s => s.length >= 16 && s.length <= 420);
+
+        if (bloques.length === 0) {
+            const fallbackCorto = textoLimpio.slice(0, 260).trim();
+            return fallbackCorto ? { oraciones: [fallbackCorto], conceptos: [], totalOraciones: 1 } : null;
+        }
+
+        const tokensEnfoque = enfoqueTema ? extraerTokensLimpios(enfoqueTema) : [];
+        const frecuenciaGlobal = {};
+        const todosTokens = extraerTokensLimpios(textoLimpio);
+        todosTokens.forEach(tk => {
+            frecuenciaGlobal[tk] = (frecuenciaGlobal[tk] || 0) + 1;
+        });
+
+        const conceptosClave = Object.entries(frecuenciaGlobal)
+            .filter(([tk, cnt]) => cnt >= 2 || tokensEnfoque.includes(tk))
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 6)
+            .map(([tk]) => tk);
+
+        const puntuadas = bloques.map((oracion, idx) => {
+            const toks = extraerTokensLimpios(oracion);
+            const unicos = new Set(toks);
+            let score = 0;
+
+            unicos.forEach(tk => {
+                score += (frecuenciaGlobal[tk] || 1) * 1.25;
+            });
+
+            if (toks.length < 4) score *= 0.65;
+            if (toks.length >= 7 && toks.length <= 32) score *= 1.15;
+
+            if (tokensEnfoque.length > 0) {
+                score += calcularSimilitudCoseno(toks, tokensEnfoque) * 20;
+            }
+            if (idx === 0) score += 2.0;
+            if (idx === bloques.length - 1) score += 1.2;
+            if (/\b(?:importante|clave|resumen|conclusion|conclusión|definicion|definición|principal|nota|examen|formula|fórmula)\b/i.test(oracion)) {
+                score += 2.0;
+            }
+            return { oracion, idx, score };
+        });
+
+        const limiteOraciones = Math.min(MAX_ORACIONES_RESUMEN, Math.max(2, Math.ceil(bloques.length * 0.35)));
+        const seleccionadas = puntuadas
+            .sort((a, b) => b.score - a.score)
+            .slice(0, limiteOraciones)
+            .sort((a, b) => a.idx - b.idx)
+            .map(item => item.oracion);
+
+        return {
+            oraciones: seleccionadas,
+            conceptos: conceptosClave,
+            totalOraciones: bloques.length
+        };
+    }
+
+    function formatearRespuestaResumenConDescarga(titulo, asignatura, analisis) {
+        if (!analisis || !analisis.oraciones || analisis.oraciones.length === 0) {
+            return `⚠️ No he podido extraer ideas fiables de ese contenido. Prueba con un texto o apunte más claro.`;
+        }
+        const idDescarga = registrarResumenParaDescarga(titulo, asignatura, analisis.oraciones, analisis.conceptos);
+        const viñetas = analisis.oraciones.map(o => `• ${escaparHTML(o)}`).join('<br>');
+        const lineaConceptos = analisis.conceptos && analisis.conceptos.length > 0
+            ? `<div style="margin-top:8px; font-size:0.76rem; color:var(--secondary);">🔑 <strong>Conceptos clave:</strong> ${analisis.conceptos.map(c => escaparHTML(c)).join(', ')}</div>`
+            : '';
+        const encabezadoExtra = [
+            asignatura ? `<strong>Asignatura:</strong> ${escaparHTML(asignatura)}` : null,
+            titulo ? `<strong>Tema:</strong> ${escaparHTML(titulo)}` : null
+        ].filter(Boolean).join(' · ');
+
+        return `📝 <strong>Resumen Fiable Local</strong> <em>(${analisis.oraciones.length} ideas de ${analisis.totalOraciones} · sin terceros)</em>` +
+               (encabezadoExtra ? `<div style="font-size:0.78rem; color:var(--secondary); margin-top:3px;">${encabezadoExtra}</div>` : '') +
+               `<br>${viñetas}${lineaConceptos}` +
+               `<div><button type="button" class="summary-download-btn" onclick="descargarResumenLocal('${idDescarga}')">⬇️ Descargar resumen (.txt)</button></div>`;
+    }
+
+    function abrirModalAdjuntarTema() {
+        const sel = document.getElementById('selectAsignaturaTema');
+        sel.innerHTML = '<option value="">General / Sin categoría específica</option>';
+        modulos.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = `${m.id} - ${m.nombre}`;
+            opt.textContent = `${m.id} - ${m.nombre}`;
+            sel.appendChild(opt);
+        });
+        if (temaAdjuntoActual) {
+            document.getElementById('inputTituloTema').value = temaAdjuntoActual.titulo || '';
+            document.getElementById('textareaContenidoTema').value = temaAdjuntoActual.contenido || '';
+        }
+        document.getElementById('modalAdjuntarTema').style.display = 'flex';
+    }
+
+    function cerrarModalAdjuntarTema() {
+        document.getElementById('modalAdjuntarTema').style.display = 'none';
+    }
+
+    function cargarArchivoTemaLocal(event) {
+        const archivo = event.target.files && event.target.files[0];
+        if (!archivo) return;
+        if (archivo.size > 512000) {
+            alert("Por seguridad y fluidez local, selecciona un archivo de texto de hasta 500 KB.");
+            event.target.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const texto = sanearTextoEntradaSegura(String(e.target.result || ''));
+            document.getElementById('textareaContenidoTema').value = texto;
+            if (!document.getElementById('inputTituloTema').value.trim()) {
+                document.getElementById('inputTituloTema').value = archivo.name.replace(/\.[^/.]+$/, '');
+            }
+        };
+        reader.readAsText(archivo, 'UTF-8');
+    }
+
+    function actualizarBannerTemaAdjunto() {
+        const banner = document.getElementById('attachedTopicBanner');
+        if (!banner) return;
+        if (!temaAdjuntoActual || !temaAdjuntoActual.contenido) {
+            banner.style.display = 'none';
+            banner.innerHTML = '';
+            return;
+        }
+        const etiqueta = temaAdjuntoActual.titulo || 'Tema adjunto';
+        banner.style.display = 'block';
+        banner.innerHTML = `<div class="attached-topic-pill"><span>📎 ${escaparHTML(etiqueta)}</span><button type="button" onclick="limpiarTemaAdjunto()" style="background:none;border:none;color:inherit;font-weight:800;cursor:pointer;">×</button></div>`;
+    }
+
+    function limpiarTemaAdjunto() {
+        temaAdjuntoActual = null;
+        actualizarBannerTemaAdjunto();
+    }
+
+    function ejecutarResumenTemaAdjunto() {
+        const asignatura = document.getElementById('selectAsignaturaTema').value.trim();
+        const titulo = document.getElementById('inputTituloTema').value.trim();
+        const contenidoBruto = document.getElementById('textareaContenidoTema').value;
+        const contenidoLimpio = sanearTextoEntradaSegura(contenidoBruto);
+
+        if (!contenidoLimpio) {
+            alert("Pega el contenido del tema o selecciona un archivo de texto antes de resumir.");
+            return;
+        }
+
+        temaAdjuntoActual = { asignatura, titulo, contenido: contenidoLimpio };
+        actualizarBannerTemaAdjunto();
+        cerrarModalAdjuntarTema();
+
+        if (document.getElementById('assistantWindow').style.display !== 'flex') {
+            alternarAsistente();
+        }
+
+        const etiquetaUsuario = `📎 Resumir tema${asignatura ? ` [${asignatura}]` : ''}: ${titulo || 'Apuntes adjuntos'}`;
+        agregarMensajeChat('user', escaparHTML(etiquetaUsuario));
+
+        const analisis = analizarResumenExtractivoSeguro(contenidoLimpio, `${asignatura} ${titulo}`);
+        const htmlRespuesta = formatearRespuestaResumenConDescarga(titulo || 'Tema adjunto', asignatura, analisis);
+        agregarMensajeChat('bot', htmlRespuesta);
+    }
+
+    function manejarComandoResumen(queryRaw) {
+        const textoTrim = queryRaw.trim();
+        const matchBloque = textoTrim.match(/^(?:resumir|resume|resumen\s+(?:de|sobre|del\s+tema)?)\s*(?:tema\s*:|texto\s*:|:)?\s*([\s\S]+)$/i);
+        const argumento = matchBloque ? matchBloque[1].trim() : '';
+
+        if (!argumento || /^(?:actual|global|panel|notas|metricas|métricas)$/i.test(argumento)) {
+            return null;
+        }
+
+        if (temaAdjuntoActual && temaAdjuntoActual.contenido && /^(?:tema|adjunto|apuntes|este\s+tema|lo\s+adjuntado)$/i.test(argumento)) {
+            const analisisAdj = analizarResumenExtractivoSeguro(temaAdjuntoActual.contenido, temaAdjuntoActual.titulo);
+            return formatearRespuestaResumenConDescarga(temaAdjuntoActual.titulo || 'Tema adjunto', temaAdjuntoActual.asignatura, analisisAdj);
+        }
+
+        const pareceTextoLargo = argumento.length > 65 && /[.!?,;:\n]/.test(argumento);
+        if (pareceTextoLargo) {
+            const analisisTexto = analizarResumenExtractivoSeguro(argumento);
+            return formatearRespuestaResumenConDescarga('Texto pegado', '', analisisTexto);
+        }
+
+        if (temaAdjuntoActual && temaAdjuntoActual.contenido) {
+            const tAd = `${temaAdjuntoActual.asignatura || ''} ${temaAdjuntoActual.titulo || ''}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const argNorm = argumento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (tAd.includes(argNorm) || argNorm.includes(tAd)) {
+                const analisisAd = analizarResumenExtractivoSeguro(temaAdjuntoActual.contenido, argumento);
+                return formatearRespuestaResumenConDescarga(temaAdjuntoActual.titulo || argumento, temaAdjuntoActual.asignatura, analisisAd);
+            }
+        }
+
+        const textoTemaPanel = extraerTextoDeTemaEnPanel(argumento);
+        if (textoTemaPanel.trim().length > 0) {
+            const analisisTema = analizarResumenExtractivoSeguro(textoTemaPanel, argumento);
+            return formatearRespuestaResumenConDescarga(argumento, argumento, analisisTema);
+        }
+
+        return `🔍 No encontré registros ni apuntes guardados sobre <strong>"${escaparHTML(argumento)}"</strong>.<br><br>` +
+               `Puedes pulsar el botón <strong>📎</strong> del chat para adjuntar un tema o archivo de texto, o escribir <em>"resume: ..."</em> seguido de tu texto.`;
+    }
+
     function procesarRespuestaAsistente(queryRaw) {
         const query = queryRaw.toLowerCase().trim();
 
@@ -1746,7 +2305,7 @@
         if (query === 'memoria' || query === 'que recuerdas' || query === 'qué recuerdas') {
             const mem = cargarMemoriaEvolutiva();
             if (mem.length === 0) {
-                return `🧠 <strong>Memoria vacía:</strong> Aún no me has pedido que recuerde nada. Prueba con: <em>"recuerda que el examen de SQL es el martes"</em>.`;
+                return `🧠 <strong>Memoria vacía:</strong> Aún no me has pedido que recuerde nada. Prueba con: <em>"recuerda que la entrega es el viernes"</em>.`;
             }
             const activos = mem.filter(m => m.estado !== 'referencia');
             const refs = mem.filter(m => m.estado === 'referencia');
@@ -1810,12 +2369,12 @@
             return `ℹ️ <strong>${APP_INFO.nombre}</strong><br><br>` +
                    `• Versión: <strong>v${APP_INFO.version}</strong> (Licencia MIT)<br>` +
                    `• Año de desarrollo: <strong>${APP_INFO.anioDesarrollo}</strong><br>` +
-                   `• Motor NLP: <strong>Compromise.js + Similitud Coseno</strong>`;
+                   `• Motor NLP: <strong>Compromise.js + Base Conversacional + Coseno</strong>`;
         }
 
         if(query.includes('hola') || query.includes('ey') || query.includes('buenas') || query.includes('buenos dias') || query.includes('buenas tardes') || query.includes('buenas noches')) {
             return obtenerOpcionSinRepetir([
-                "¡Hola! ¿Qué tal va todo? Pídeme que recuerde algo, consulta tu <strong>'resumen'</strong> o pide un <strong>'consejo'</strong>.",
+                "¡Hola! ¿Qué tal va todo? Podemos charlar un poco, revisar tu <strong>'resumen'</strong>, mirar tu <strong>'agenda'</strong> o guardar algo en memoria.",
                 "¡Buenas! Mi motor NLP local está listo. ¿En qué te puedo ayudar hoy?"
             ]);
         }
@@ -1823,8 +2382,8 @@
         if(query.includes('adios') || query.includes('adiós') || query.includes('hasta luego') || query.includes('chao') || query.includes('nos vemos') || query.includes('me voy')) {
             const estaGuardado = localStorage.getItem('smr_respaldo_creado') === 'true';
             return estaGuardado
-                ? "✅ ¡Hasta luego! Todo se ha guardado automáticamente. Descansa y recarga pilas."
-                : "✅ ¡Hasta luego! He guardado todos tus cambios de forma automática en el navegador.";
+                ? "✅ ¡Hasta luego! Todo está guardado. Descansa y recarga pilas."
+                : "✅ ¡Hasta luego! He guardado todos tus cambios automáticamente en el navegador.";
         }
 
         if(query.includes('no molestar') || query.includes('silenciar') || query.includes('dnd') || query.includes('molestar')) {
@@ -1850,7 +2409,7 @@
         if(query.includes('ánimo') || query.includes('animo') || query.includes('mal') || query.includes('cansado') || query.includes('estrés') || query.includes('estres')) {
             return obtenerOpcionSinRepetir([
                 "❤️ Respira hondo. Un bache o un día gris no define tu esfuerzo ni tu capacidad. ¡Mucho valor!",
-                "☕ Tómate cinco minutos con el temporizador. Tu salud mental está por encima de cualquier nota.",
+                "☕ Tómate cinco minutos con el temporizador. Tu bienestar está por encima de cualquier nota.",
                 "🌟 Paso a paso se llega lejos. Hoy haz lo que puedas con calma, mañana seguirás avanzando."
             ]);
         }
@@ -1908,12 +2467,23 @@
                    `Añadiendo un <strong>${notaSimulada.toFixed(2)}</strong>, tu media global pasaría de <strong>${mediaGlobal.toFixed(2)}</strong> a <strong>${mediaSimuladaGlobal.toFixed(2)}</strong>.`;
         }
 
+        const respuestaResumenTema = manejarComandoResumen(queryRaw);
+        if (respuestaResumenTema) {
+            return respuestaResumenTema;
+        }
+
         if(query.includes('resumen') || query.includes('como voy') || query.includes('cómo voy')) {
             if(evaluados === 0) return `📊 Aún no hay notas registradas en el panel.`;
+            const idResGen = registrarResumenParaDescarga('Resumen General del Panel', '', [
+                `Promedio Global: ${mediaGlobal.toFixed(2)} / 10`,
+                `Categorías superadas: ${aprobados} / ${metaMeta}`,
+                `Umbral Objetivo: ${umbralObjetivo.toFixed(2)} / 10`
+            ], ['promedio', 'objetivo', 'progreso']);
             return `📊 <strong>Resumen Actual:</strong><br><br>` +
                    `• Promedio Global: <strong>${mediaGlobal.toFixed(2)} / 10</strong><br>` +
                    `• Superadas: <strong>${aprobados} / ${metaMeta}</strong><br>` +
-                   `• Umbral Objetivo: <strong>${umbralObjetivo.toFixed(2)}</strong>`;
+                   `• Umbral Objetivo: <strong>${umbralObjetivo.toFixed(2)}</strong>` +
+                   `<div><button type="button" class="summary-download-btn" onclick="descargarResumenLocal('${idResGen}')">⬇️ Descargar resumen (.txt)</button></div>`;
         }
 
         if(query.includes('limpiar') || query.includes('reiniciar')) {
@@ -1938,7 +2508,15 @@
             }
         }
 
-        return `🤖 No tengo datos exactos sobre eso aún. Si quieres que lo guarde, dime: <strong>"recuerda que [lo que quieras]"</strong> o pulsa <strong>[ ? ]</strong> para ver los comandos.`;
+        const respConversacional = buscarEnBaseConversacional(queryRaw);
+        if (respConversacional) {
+            return respConversacional;
+        }
+
+        return obtenerOpcionSinRepetir([
+            `🤖 No tengo un dato exacto sobre eso, pero si quieres que lo guarde para futuras consultas dime: <strong>"recuerda que [tu dato]"</strong>. También puedes preguntarme por tu <strong>resumen</strong>, <strong>agenda</strong>, pedir un <strong>consejo</strong> o un <strong>dato curioso</strong>.`,
+            `💬 Aún no tengo esa información registrada. Si es algo importante para ti, escríbeme <strong>"recuerda que..."</strong> y lo guardaré en mi memoria, o pulsa <strong>[ ? ]</strong> para ver todo lo que sé hacer.`
+        ]);
     }
 
     async function generarFirmaIntegridad(payload) {
@@ -2027,7 +2605,9 @@
                 event.target.value = '';
                 guardarTodoLocal();
                 actualizarEstadoBotonGuardado(true);
-                cargarEstadoInicial();
+                document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
+                renderizarTabla();
+                renderizarEventosCalendario();
                 
                 const banner = document.getElementById('updateBanner');
                 if (banner) banner.style.display = 'none';
@@ -2040,8 +2620,62 @@
         };
     }
 
-    function descargarPDF() {
-        let sumaGlobal = 0, evaluados = 0, aprobados = 0;
+    function abrirModalPDF() {
+        document.getElementById('modalPDFConfig').style.display = 'flex';
+    }
+
+    function cerrarModalPDF() {
+        document.getElementById('modalPDFConfig').style.display = 'none';
+    }
+
+    function confirmarYDescargarPDF() {
+        const incluirResumen = document.getElementById('checkResumenPDF').checked;
+        cerrarModalPDF();
+        descargarPDF(incluirResumen);
+    }
+
+    function generarBloqueValoracionPDF(mediaGlobal, evaluados, aprobados, metaMeta, categoriasPendientes, categoriasNoSuperadas) {
+        let titulo = "";
+        let mensaje = "";
+        let estilosCaja = "";
+
+        if (evaluados === 0) {
+            titulo = "📋 Estado Inicial del Seguimiento";
+            mensaje = "El panel se encuentra preparado y estructurado, aunque todavía no constan registros evaluados. Este informe sirve como punto de partida para ir incorporando resultados y medir la evolución de forma progresiva.";
+            estilosCaja = "background:#f8fafc; border:1px solid #cbd5e1; border-left:4px solid #64748b; color:#334155;";
+        } else if (mediaGlobal >= umbralObjetivo && aprobados >= metaMeta && categoriasNoSuperadas.length === 0) {
+            titulo = "🏆 ¡Enhorabuena! Excelente Rendimiento Global";
+            mensaje = `Los resultados reflejan un desempeño sobresaliente con un promedio global de <strong>${mediaGlobal.toFixed(2)} / 10</strong>, superando el umbral objetivo marcado (${umbralObjetivo.toFixed(2)}) y cumpliendo la meta de categorías (${aprobados} de ${metaMeta}). ¡Felicidades por la constancia, el esfuerzo y la dedicación demostrados!`;
+            estilosCaja = "background:#ecfdf5; border:1px solid #a7f3d0; border-left:4px solid #10b981; color:#065f46;";
+        } else if (mediaGlobal >= 5 && categoriasNoSuperadas.length === 0) {
+            titulo = "👍 Buen Progreso y Resultados Positivos";
+            mensaje = `El balance general es positivo, alcanzando un promedio de <strong>${mediaGlobal.toFixed(2)} / 10</strong> y manteniendo todas las categorías evaluadas superadas (${aprobados} de ${metaMeta}). ¡Buen trabajo! Manteniendo este ritmo y reforzando ligeramente los próximos registros será muy fácil alcanzar el umbral objetivo de ${umbralObjetivo.toFixed(2)}.`;
+            estilosCaja = "background:#eff6ff; border:1px solid #bfdbfe; border-left:4px solid #2563eb; color:#1e40af;";
+        } else {
+            const detalleRefuerzo = categoriasNoSuperadas.length > 0
+                ? ` Conviene centrar los próximos esfuerzos especialmente en <strong>${categoriasNoSuperadas.map(c => escaparHTML(c)).join(', ')}</strong>.`
+                : '';
+            titulo = "💪 Balance de Seguimiento y Ánimo para Continuar";
+            mensaje = `Actualmente el promedio global se sitúa en <strong>${mediaGlobal.toFixed(2)} / 10</strong> con <strong>${aprobados} de ${metaMeta}</strong> categorías superadas.${detalleRefuerzo} Cada registro es una oportunidad para ajustar el ritmo y seguir avanzando: con constancia, organización y paso firme es totalmente posible darle la vuelta a los resultados y alcanzar tus metas. ¡Mucho ánimo y a seguir adelante!`;
+            estilosCaja = "background:#fffbeb; border:1px solid #fde68a; border-left:4px solid #f59e0b; color:#92400e;";
+        }
+
+        const notaPendientes = categoriasPendientes > 0
+            ? `<div style="margin-top:6px; font-size:9.5px; opacity:0.85;"><em>Nota: Quedan ${categoriasPendientes} categoría(s) pendiente(s) de incorporar registros en el panel.</em></div>`
+            : '';
+
+        return `
+            <div style="${estilosCaja} border-radius:8px; padding:14px 16px; margin-bottom:18px; page-break-inside:avoid;">
+                <div style="font-size:11.5px; font-weight:800; margin-bottom:5px;">${titulo}</div>
+                <div style="font-size:10.5px; line-height:1.55;">${mensaje}</div>
+                ${notaPendientes}
+            </div>
+        `;
+    }
+
+    function descargarPDF(incluirResumen = true) {
+        let sumaGlobal = 0, evaluados = 0, aprobados = 0, pendientes = 0;
+        let categoriasNoSuperadas = [];
         const metaMeta = metaModulosRequeridos !== null ? metaModulosRequeridos : modulos.length;
 
         const filasTablaHTML = modulos.map(m => {
@@ -2070,8 +2704,11 @@
                 } else {
                     estadoTexto = 'NO SUPERADO';
                     estadoEstilo = 'background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;';
+                    categoriasNoSuperadas.push(`${m.nombre} (${m.id})`);
                 }
                 desgloseTexto = partes.join(' · ');
+            } else {
+                pendientes++;
             }
 
             return `
@@ -2091,8 +2728,12 @@
 
         const mediaGlobal = evaluados > 0 ? (sumaGlobal / evaluados) : 0;
         const codigoDoc = 'INF-' + Date.now().toString().slice(-6);
+        const fechaEmision = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+        const bloqueResumenHTML = incluirResumen
+            ? generarBloqueValoracionPDF(mediaGlobal, evaluados, aprobados, metaMeta, pendientes, categoriasNoSuperadas)
+            : '';
 
-        const ventana = window.open('', '_blank', 'width=820,height=700');
+        const ventana = window.open('', '_blank', 'width=840,height=740');
         if (!ventana) {
             alert("El navegador bloqueó la ventana del informe. Permite las ventanas emergentes para este archivo e inténtalo de nuevo.");
             return;
@@ -2107,7 +2748,7 @@
                 <style>
                     body { font-family: "Plus Jakarta Sans", Arial, sans-serif; color: #0f172a; margin: 24px; }
                     table { width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; }
-                    th { padding: 8px 12px; text-align: left; font-size: 8.5px; background: #f1f5f9; }
+                    th { padding: 8px 12px; text-align: left; font-size: 8.5px; background: #f1f5f9; text-transform: uppercase; color: #475569; }
                     @media print { body { margin: 10mm; } }
                 </style>
             </head>
@@ -2119,18 +2760,24 @@
                     </div>
                     <div style="text-align: right; font-size: 9.5px; color: #475569;">
                         <div><strong>Ref:</strong> ${codigoDoc}</div>
+                        <div style="margin-top: 2px;">${escaparHTML(fechaEmision)}</div>
                     </div>
                 </div>
-                <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                <div style="display: flex; gap: 12px; margin-bottom: 18px;">
                     <div style="flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-top: 3px solid #2563eb; border-radius: 6px; padding: 10px;">
-                        <div style="font-size: 8px; font-weight: 800; color: #475569;">Promedio Global</div>
+                        <div style="font-size: 8px; font-weight: 800; color: #475569; text-transform: uppercase;">Promedio Global</div>
                         <div style="font-size: 18px; font-weight: 800; margin-top: 3px;">${mediaGlobal.toFixed(2)} / 10</div>
                     </div>
                     <div style="flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-top: 3px solid #10b981; border-radius: 6px; padding: 10px;">
-                        <div style="font-size: 8px; font-weight: 800; color: #475569;">Superadas</div>
+                        <div style="font-size: 8px; font-weight: 800; color: #475569; text-transform: uppercase;">Superadas</div>
                         <div style="font-size: 18px; font-weight: 800; margin-top: 3px;">${aprobados} de ${metaMeta}</div>
                     </div>
+                    <div style="flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-top: 3px solid #6366f1; border-radius: 6px; padding: 10px;">
+                        <div style="font-size: 8px; font-weight: 800; color: #475569; text-transform: uppercase;">Umbral Objetivo</div>
+                        <div style="font-size: 18px; font-weight: 800; margin-top: 3px;">${umbralObjetivo.toFixed(2)} / 10</div>
+                    </div>
                 </div>
+                ${bloqueResumenHTML}
                 <table>
                     <thead>
                         <tr>
