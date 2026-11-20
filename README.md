@@ -57,4 +57,4 @@ Este proyecto está diseñado para adaptarse a cualquier entorno con un único c
 
 ## 📄 Licencia
 
-Este proyecto se distribuye bajo los términos y condiciones de la **Licencia MIT**[cite: 10]. Eres libre de usarlo, modificarlo y compartirlo manteniendo los avisos correspondientes[cite: 10].
+Este proyecto se distribuye bajo los términos y condiciones de la **Licencia MIT**. Eres libre de usarlo, modificarlo y compartirlo manteniendo los avisos correspondientes.
