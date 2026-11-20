@@ -2475,7 +2475,7 @@
         const matchBloque = textoTrim.match(/^(?:resumir|resume|resumen\s+(?:de|sobre|del\s+tema)?)\s*(?:tema\s*:|texto\s*:|:)?\s*([\s\S]+)$/i);
         const argumento = matchBloque ? matchBloque[1].trim() : '';
 
-        if (!argumento || /^(?:actual|global|panel|notas|metricas|métricas)$/i.test(argumento)) {
+        if (!argumento || /^(?:actual|global|panel|notas|metricas|métricas|chiste|chistes|broma|bromas)$/i.test(argumento)) {
             return null;
         }
 
@@ -2667,8 +2667,51 @@
         return null;
     }
 
+    function responderChisteLocal() {
+        const chistes = [
+            "— ¿Qué hace un programador en la playa?<br>— ¡Hacer un castillo de arena y que le salga error de compilación! 🏖️",
+            "— ¿Por qué los programadores prefieren el invierno?<br>— ¡Porque hay menos bugs en la calle! ❄️",
+            "— ¿Cuál es el animal más antiguo del mundo?<br>— La cebra... porque está en blanco y negro 🦓",
+            "— ¿Cómo se comunican dos electricistas?<br>— De forma muy corriente ⚡",
+            "— Camarero, hay un pelo en mi sopa.<br>— No se preocupe, es un extra de proteínas para el estudio 🍲",
+            "— ¿Qué le dice un GIF a un PNG?<br>— ¡Anímate hombre, que la vida son dos cuadros! 🎬",
+            "— ¿Cuál es el colmo de un astrónomo?<br>— Enamorarse de una estrella fugaz y perderla de vista 🌠",
+            "— ¿Qué hace una abeja en el gimnasio?<br>— ¡Zum-ba! 🐝",
+            "— ¿Por qué el libro de matemáticas estaba triste?<br>— Porque tenía demasiados problemas 📘",
+            "— ¿Qué le dice un jaguar a otro jaguar?<br>— Jaguar you! 🐆",
+            "— ¿Cuál es el café más peligroso del mundo?<br>— El ex-preso ☕",
+            "— ¿Qué hace un pez en el cine?<br>— ¡Nada! 🐟",
+            "— ¿Cómo se llama el campeón de buceo japonés?<br>— Tokofondo 🤿",
+            "— ¿Y el subcampeón?<br>— Kasitoko 🏊",
+            "— ¿Qué le dice una impresora a otra?<br>— ¿Esa hoja es tuya o es impresión mía? 🖨️",
+            "— ¿Por qué los pájaros no usan Facebook?<br>— Porque ya tienen Twitter 🐦",
+            "— ¿Qué le dice un techo a otro?<br>— Techo de menos 🏠",
+            "— ¿Cuál es la fruta más divertida?<br>— La naranja ja, ja, ja 🍊",
+            "— ¿Qué hace una vaca con los ojos cerrados?<br>— Leche concentrada 🐄",
+            "— ¿Cómo se despiden los químicos?<br>— Ácido un placer 🧪",
+            "— ¿Qué le dice un cable a otro cable?<br>— Somos los intocables 🔌",
+            "— ¿Por qué la computadora fue al médico?<br>— Porque tenía un virus 💻",
+            "— ¿Qué hace un perro con un taladro?<br>— Taladrando 🐶",
+            "— ¿Cuál es el colmo de un jardinero?<br>— Que siempre lo dejen plantado 🌱"
+        ];
+        let disponibles = chistes.filter(c => !ultimosChistesUsados.includes(c));
+        if (disponibles.length === 0) { ultimosChistesUsados = []; disponibles = chistes; }
+        let elegido = disponibles[Math.floor(Math.random() * disponibles.length)];
+        ultimosChistesUsados.push(elegido);
+        if (ultimosChistesUsados.length > 12) ultimosChistesUsados.shift();
+        return elegido;
+    }
+
+    function esSolicitudDeChiste(queryLower) {
+        return /\b(chiste|chistes|broma|bromas|reir|reír|cuentame\s+un\s+chiste|cuéntame\s+un\s+chiste)\b/i.test(queryLower);
+    }
+
     function procesarRespuestaAsistente(queryRaw) {
         const query = queryRaw.toLowerCase().trim();
+
+        if (esSolicitudDeChiste(query)) {
+            return responderChisteLocal();
+        }
 
         if (query === 'olvidar memoria' || query === 'borrar memoria') {
             localStorage.removeItem('smr_memoria_evolutiva');
@@ -2792,39 +2835,8 @@
             return respuestaFlujoTemaConsejo;
         }
 
-        if(query.includes('chiste') || query.includes('broma') || query.includes('reir') || query.includes('reír')) {
-            const chistes = [
-                "— ¿Qué hace un programador en la playa?<br>— ¡Hacer un castillo de arena y que le salga error de compilación! 🏖️",
-                "— ¿Por qué los programadores prefieren el invierno?<br>— ¡Porque hay menos bugs en la calle! ❄️",
-                "— ¿Cuál es el animal más antiguo del mundo?<br>— La cebra... porque está en blanco y negro 🦓",
-                "— ¿Cómo se comunican dos electricistas?<br>— De forma muy corriente ⚡",
-                "— Camarero, hay un pelo en mi sopa.<br>— No se preocupe, es un extra de proteínas para el estudio 🍲",
-                "— ¿Qué le dice un GIF a un PNG?<br>— ¡Anímate hombre, que la vida son dos cuadros! 🎬",
-                "— ¿Cuál es el colmo de un astrónomo?<br>— Enamorarse de una estrella fugaz y perderla de vista 🌠",
-                "— ¿Qué hace una abeja en el gimnasio?<br>— ¡Zum-ba! 🐝",
-                "— ¿Por qué el libro de matemáticas estaba triste?<br>— Porque tenía demasiados problemas 📘",
-                "— ¿Qué le dice un jaguar a otro jaguar?<br>— Jaguar you! 🐆",
-                "— ¿Cuál es el café más peligroso del mundo?<br>— El ex-preso ☕",
-                "— ¿Qué hace un pez en el cine?<br>— ¡Nada! 🐟",
-                "— ¿Cómo se llama el campeón de buceo japonés?<br>— Tokofondo 🤿",
-                "— ¿Y el subcampeón?<br>— Kasitoko 🏊",
-                "— ¿Qué le dice una impresora a otra?<br>— ¿Esa hoja es tuya o es impresión mía? 🖨️",
-                "— ¿Por qué los pájaros no usan Facebook?<br>— Porque ya tienen Twitter 🐦",
-                "— ¿Qué le dice un techo a otro?<br>— Techo de menos 🏠",
-                "— ¿Cuál es la fruta más divertida?<br>— La naranja ja, ja, ja 🍊",
-                "— ¿Qué hace una vaca con los ojos cerrados?<br>— Leche concentrada 🐄",
-                "— ¿Cómo se despiden los químicos?<br>— Ácido un placer 🧪",
-                "— ¿Qué le dice un cable a otro cable?<br>— Somos los intocables 🔌",
-                "— ¿Por qué la computadora fue al médico?<br>— Porque tenía un virus 💻",
-                "— ¿Qué hace un perro con un taladro?<br>— Taladrando 🐶",
-                "— ¿Cuál es el colmo de un jardinero?<br>— Que siempre lo dejen plantado 🌱"
-            ];
-            let disponibles = chistes.filter(c => !ultimosChistesUsados.includes(c));
-            if (disponibles.length === 0) { ultimosChistesUsados = []; disponibles = chistes; }
-            let elegido = disponibles[Math.floor(Math.random() * disponibles.length)];
-            ultimosChistesUsados.push(elegido);
-            if (ultimosChistesUsados.length > 12) ultimosChistesUsados.shift();
-            return elegido;
+        if (esSolicitudDeChiste(query)) {
+            return responderChisteLocal();
         }
 
         if(query.includes('simular') || query.includes('simula') || query.includes('calcula')) {
