@@ -17,14 +17,22 @@ Este proyecto está diseñado para adaptarse a cualquier entorno con un único c
 ## ✨ Características Principales
 
 - **Gestión Dinámica de Categorías y Ponderaciones:** Crea tus propias asignaturas o áreas, añade calificaciones parciales con pesos configurables (`x1`, `x2`, `x3`) y visualiza el promedio ponderado en tiempo real.
+  
 - **🧠 Asistente Pro NLP Local (100 % autónomo):**
   - Motor NLP nativo en JavaScript puro y similitud del coseno ejecutados íntegramente en tu navegador, sin dependencias externas de librerías ni envío de datos a terceros.
+    
   - **Memoria Evolutiva (4 meses):** Pídele que recuerde fechas o datos (*"recuerda que el examen es el viernes"*). Los recuerdos se mantienen activos durante 120 días y luego pasan automáticamente a referencia histórica compacta.
+    
   - Resúmenes extractivos locales de temas/apuntes (con adjuntos `.txt`/`.md`/`.csv` o texto pegado), organizador de tareas, generador de planes de estudio por días, simulador de impacto de notas, consejos y modo **No Molestar (DND)**.
+    
 - **⏱️ Temporizador Pomodoro Configurable:** Ciclos de estudio, descanso corto y descanso largo personalizables mediante modal con avisos integrados.
+  
 - **📅 Agenda y Calendario:** Registro ordenado de exámenes, entregas y tareas pendientes.
+  
 - **📊 Visualización, Informes y Resúmenes (PDF / TXT):** Gráficas comparativas por categoría, evolución histórica, emisión de informe con valoración automática opcional y descarga de resúmenes/planes en **PDF** o txt.
+  
 - **🔒 Copias de Seguridad Firmadas (SHA-256):** Exportación e importación de datos en formato `.json` con firma digital de integridad (`Web Crypto API`) para detectar archivos corruptos o manipulados.
+  
 - **📱 Diseño Adaptable (Responsive) y Modo Oscuro:** Interfaz optimizada para escritorio, tablets y móviles con cierre rápido mediante `Esc` o clic exterior.
 
 ---
@@ -32,7 +40,9 @@ Este proyecto está diseñado para adaptarse a cualquier entorno con un único c
 ## 📖 Guía Rápida
 
 1. **Configura tus categorías:** Pulsa en *⚙️ Gestionar Categorías* para añadir el código y nombre de tus asignaturas o métricas.
+   
 2. **Define tus metas:** Ajusta el *Umbral Objetivo* y la *Meta de Categorías* desde las tarjetas superiores mediante sus ventanas modales.
+   
 3. **Guarda tus avances:** Los datos se conservan en el almacenamiento local del navegador (`localStorage`) —con guardado preventivo al cerrar la pestaña—, y puedes pulsar *💾 Exportar* para descargar una copia de seguridad en `.json` firmada con SHA-256.
 
 ---
@@ -40,6 +50,7 @@ Este proyecto está diseñado para adaptarse a cualquier entorno con un único c
 ## 🔄 Política de Versiones
 
 - Las actualizaciones de interfaz y nuevas funcionalidades se publican en la rama `main` (versión Web) y se empaquetan periódicamente en GitHub Releases.
+  
 - Las versiones anteriores estables permanecen disponibles en Releases para garantizar la retrocompatibilidad.
 
 ---
