@@ -7,8 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Librería gratuita para generar PDF directo -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- Librería NLP gratuita y ultraligera (Compromise) para comprensión de lenguaje natural -->
     <script src="https://unpkg.com/compromise@14.14.3/builds/compromise.min.js"></script>
     <style>
@@ -2042,7 +2040,7 @@
         };
     }
 
-    async function descargarPDF() {
+    function descargarPDF() {
         let sumaGlobal = 0, evaluados = 0, aprobados = 0;
         const metaMeta = metaModulosRequeridos !== null ? metaModulosRequeridos : modulos.length;
 
@@ -2073,11 +2071,11 @@
                     estadoTexto = 'NO SUPERADO';
                     estadoEstilo = 'background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;';
                 }
-                desgloseTexto = partes.join('  ·  ');
+                desgloseTexto = partes.join(' · ');
             }
 
             return `
-                <tr style="page-break-inside: avoid;">
+                <tr>
                     <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0;">
                         <div style="font-weight:800; color:#0f172a; font-size:11px;">${escaparHTML(m.id)}</div>
                         <div style="color:#475569; font-size:10px; margin-top:2px;">${escaparHTML(m.nombre)}</div>
@@ -2094,54 +2092,67 @@
         const mediaGlobal = evaluados > 0 ? (sumaGlobal / evaluados) : 0;
         const codigoDoc = 'INF-' + Date.now().toString().slice(-6);
 
-        const contenedorDocumento = document.createElement('div');
-        contenedorDocumento.style.cssText = 'position: fixed; left: -9999px; top: 0; width: 710px; background: #ffffff; color: #0f172a; font-family: "Plus Jakarta Sans", sans-serif; padding: 20px; z-index: -9999;';
-        contenedorDocumento.innerHTML = `
-            <div style="border-bottom: 2.5px solid #0f172a; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-end;">
-                <div>
-                    <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; color: #2563eb; margin-bottom: 4px;">Registro Analítico Oficial (${APP_INFO.nombre} v${APP_INFO.version})</div>
-                    <h1 style="font-size: 19px; font-weight: 800; margin: 0;">INFORME DE SEGUIMIENTO Y EVALUACIÓN</h1>
-                </div>
-                <div style="text-align: right; font-size: 9.5px; color: #475569;">
-                    <div><strong>Ref:</strong> ${codigoDoc}</div>
-                </div>
-            </div>
-            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-                <div style="flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-top: 3px solid #2563eb; border-radius: 6px; padding: 10px;">
-                    <div style="font-size: 8px; font-weight: 800; color: #475569;">Promedio Global</div>
-                    <div style="font-size: 18px; font-weight: 800; margin-top: 3px;">${mediaGlobal.toFixed(2)} / 10</div>
-                </div>
-                <div style="flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-top: 3px solid #10b981; border-radius: 6px; padding: 10px;">
-                    <div style="font-size: 8px; font-weight: 800; color: #475569;">Superadas</div>
-                    <div style="font-size: 18px; font-weight: 800; margin-top: 3px;">${aprobados} de ${metaMeta}</div>
-                </div>
-            </div>
-            <table style="width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1;">
-                <thead>
-                    <tr style="background: #f1f5f9;">
-                        <th style="padding: 8px 12px; text-align: left; font-size: 8.5px;">Categoría</th>
-                        <th style="padding: 8px 12px; text-align: left; font-size: 8.5px;">Registros</th>
-                        <th style="padding: 8px 12px; text-align: center; font-size: 8.5px;">Promedio</th>
-                        <th style="padding: 8px 12px; text-align: center; font-size: 8.5px;">Estatus</th>
-                    </tr>
-                </thead>
-                <tbody>${filasTablaHTML}</tbody>
-            </table>
-        `;
-
-        document.body.appendChild(contenedorDocumento);
-
-        try {
-            await html2pdf().from(contenedorDocumento).set({
-                margin: [10, 10, 10, 10],
-                filename: `Informe_${codigoDoc}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).save();
-        } finally {
-            document.body.removeChild(contenedorDocumento);
+        const ventana = window.open('', '_blank', 'width=820,height=700');
+        if (!ventana) {
+            alert("El navegador bloqueó la ventana del informe. Permite las ventanas emergentes para este archivo e inténtalo de nuevo.");
+            return;
         }
+
+        ventana.document.write(`
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <title>Informe ${codigoDoc}</title>
+                <style>
+                    body { font-family: "Plus Jakarta Sans", Arial, sans-serif; color: #0f172a; margin: 24px; }
+                    table { width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; }
+                    th { padding: 8px 12px; text-align: left; font-size: 8.5px; background: #f1f5f9; }
+                    @media print { body { margin: 10mm; } }
+                </style>
+            </head>
+            <body>
+                <div style="border-bottom: 2.5px solid #0f172a; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; color: #2563eb; margin-bottom: 4px;">Registro Analítico Oficial (${escaparHTML(APP_INFO.nombre)} v${escaparHTML(APP_INFO.version)})</div>
+                        <h1 style="font-size: 19px; font-weight: 800; margin: 0;">INFORME DE SEGUIMIENTO Y EVALUACIÓN</h1>
+                    </div>
+                    <div style="text-align: right; font-size: 9.5px; color: #475569;">
+                        <div><strong>Ref:</strong> ${codigoDoc}</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                    <div style="flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-top: 3px solid #2563eb; border-radius: 6px; padding: 10px;">
+                        <div style="font-size: 8px; font-weight: 800; color: #475569;">Promedio Global</div>
+                        <div style="font-size: 18px; font-weight: 800; margin-top: 3px;">${mediaGlobal.toFixed(2)} / 10</div>
+                    </div>
+                    <div style="flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-top: 3px solid #10b981; border-radius: 6px; padding: 10px;">
+                        <div style="font-size: 8px; font-weight: 800; color: #475569;">Superadas</div>
+                        <div style="font-size: 18px; font-weight: 800; margin-top: 3px;">${aprobados} de ${metaMeta}</div>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th>Registros</th>
+                            <th style="text-align: center;">Promedio</th>
+                            <th style="text-align: center;">Estatus</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filasTablaHTML}</tbody>
+                </table>
+                <script>
+                    window.onload = function() {
+                        setTimeout(function() {
+                            window.print();
+                        }, 150);
+                    };
+                <\/script>
+            </body>
+            </html>
+        `);
+        ventana.document.close();
     }
 </script>
 </body>
