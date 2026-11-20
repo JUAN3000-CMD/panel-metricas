@@ -4,11 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Control y Métricas Pro</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Librería NLP gratuita y ultraligera (Compromise) para comprensión de lenguaje natural -->
-    <script src="https://unpkg.com/compromise@14.14.3/builds/compromise.min.js"></script>
+    <!-- Motor NLP 100% autónomo y sin dependencias externas -->
     <style>
         :root {
             --bg-body: #f1f5f9; --bg-card: #ffffff; --primary: #0f172a; --secondary: #475569;
@@ -19,7 +15,7 @@
             --purple: #7c3aed; --purple-light: #f3e8ff; --purple-text: #5b21b6;
             --border-color: #cbd5e1;
             --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.08);
-            --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.1); --font-stack: 'Plus Jakarta Sans', sans-serif;
+            --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.1); --font-stack: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         [data-theme="dark"] {
@@ -588,7 +584,7 @@
             <button class="close-btn" onclick="cerrarModalAcercaDe()">×</button>
         </div>
         <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
-            Suite integral de seguimiento académico con motor NLP local (Compromise.js), similitud semántica y memoria temporal auto-comprimible a 4 meses. Bajo Licencia MIT.
+            Suite integral de seguimiento académico con motor NLP nativo 100% autónomo (sin dependencias externas), similitud semántica y memoria temporal auto-comprimible a 4 meses. Bajo Licencia MIT.
         </p>
         <div class="spec-grid">
             <div class="spec-box">
@@ -601,7 +597,7 @@
             </div>
             <div class="spec-box">
                 <div class="spec-label">Motor IA Local</div>
-                <div class="spec-val">Compromise + Coseno TF-IDF</div>
+                <div class="spec-val">NLP Nativo + Coseno TF-IDF</div>
             </div>
             <div class="spec-box">
                 <div class="spec-label">Licencia y Uso</div>
@@ -884,17 +880,8 @@
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
             .replace(/[^a-z0-9\s]/g, ' ');
 
-        if (typeof window.nlp === 'function') {
-            try {
-                const doc = window.nlp(normalizado);
-                const terminos = doc.terms().out('array');
-                return terminos
-                    .map(t => t.trim())
-                    .filter(t => t.length > 2 && !STOPWORDS_ES.has(t));
-            } catch (e) {}
-        }
-
         return normalizado.split(/\s+/)
+            .map(t => t.trim())
             .filter(t => t.length > 2 && !STOPWORDS_ES.has(t));
     }
 
@@ -1779,7 +1766,7 @@
                      `• <strong>"consejo":</strong> Diagnóstico táctico y técnicas de estudio.<br>` +
                      `• <strong>"temporizador" / "no molestar":</strong> Control Pomodoro y DND.<br>` +
                      `• <strong>"simular [nota]":</strong> Calcula el impacto de una nota.<br><br>` +
-                     `📌 <em>Motor:</em> Compromise NLP + Similitud Coseno (v${APP_INFO.version})`;
+                     `📌 <em>Motor:</em> NLP Nativo Autónomo + Similitud Coseno (v${APP_INFO.version})`;
         agregarMensajeChat('bot', guia);
     }
 
@@ -2200,7 +2187,7 @@
                 <meta charset="UTF-8">
                 <title>${escaparHTML(item.titulo)}</title>
                 <style>
-                    body { font-family: "Plus Jakarta Sans", Arial, sans-serif; color: #0f172a; margin: 28px; }
+                    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #0f172a; margin: 28px; }
                     ol { padding-left: 18px; margin-top: 14px; font-size: 13.5px; }
                     @media print { body { margin: 12mm; } }
                 </style>
@@ -2785,7 +2772,7 @@
             return `ℹ️ <strong>${APP_INFO.nombre}</strong><br><br>` +
                    `• Versión: <strong>v${APP_INFO.version}</strong> (Licencia MIT)<br>` +
                    `• Año de desarrollo: <strong>${APP_INFO.anioDesarrollo}</strong><br>` +
-                   `• Motor NLP: <strong>Compromise.js + Base Conversacional + Coseno</strong>`;
+                   `• Motor NLP: <strong>NLP Nativo Autónomo + Base Conversacional + Coseno</strong>`;
         }
 
         if(query.includes('hola') || query.includes('ey') || query.includes('buenas') || query.includes('buenos dias') || query.includes('buenas tardes') || query.includes('buenas noches')) {
@@ -3137,7 +3124,7 @@
                 <meta charset="UTF-8">
                 <title>Informe ${codigoDoc}</title>
                 <style>
-                    body { font-family: "Plus Jakarta Sans", Arial, sans-serif; color: #0f172a; margin: 24px; }
+                    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #0f172a; margin: 24px; }
                     table { width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; }
                     th { padding: 8px 12px; text-align: left; font-size: 8.5px; background: #f1f5f9; text-transform: uppercase; color: #475569; }
                     @media print { body { margin: 10mm; } }
