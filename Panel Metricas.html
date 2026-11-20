@@ -315,6 +315,21 @@
             flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;
         }
         .msg { padding: 10px 14px; border-radius: 12px; max-width: 90%; line-height: 1.45; word-break: break-word; }
+        .msg-section-divider {
+            margin: 10px 0; border: 0; border-top: 1px dashed var(--border-color);
+        }
+        .msg-index-box {
+            margin: 8px 0 10px 0; padding: 8px 10px;
+            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 9px;
+        }
+        .msg-index-title {
+            font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.04em; color: var(--accent); margin-bottom: 5px;
+        }
+        .msg-index-list {
+            margin: 0; padding-left: 16px; font-size: 0.81rem; line-height: 1.45;
+        }
+        .msg-index-list li { margin-bottom: 3px; }
         .msg.bot { background: var(--bg-body); color: var(--primary); align-self: flex-start; border: 1px solid var(--border-color); }
         .msg.user { background: var(--accent); color: white; align-self: flex-end; }
         .assistant-suggestions {
@@ -1812,6 +1827,127 @@
         return elegida;
     }
 
+    function construirIndiceSeparado(tituloIndice, itemsHTML) {
+        return `<div class="msg-index-box">` +
+               `<div class="msg-index-title">📑 ${escaparHTML(tituloIndice)}</div>` +
+               `<ol class="msg-index-list">${itemsHTML}</ol>` +
+               `</div>`;
+    }
+
+    function extraerTemarioDeTextoLocal(textoLimpio) {
+        const lineas = textoLimpio
+            .split(/\n+/)
+            .map(l => l.replace(/^[#\-*•\d.\s)]+/, '').trim())
+            .filter(l => l.length >= 6 && l.length <= 110);
+
+        const puntos = [];
+        const vistos = new Set();
+
+        lineas.forEach(l => {
+            const clave = l.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (!vistos.has(clave)) {
+                vistos.add(clave);
+                puntos.push(l);
+            }
+        });
+
+        if (puntos.length === 0) {
+            const palabras = extraerTokensLimpios(textoLimpio);
+            const freq = {};
+            palabras.forEach(p => { freq[p] = (freq[p] || 0) + 1; });
+            return Object.entries(freq)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([p]) => `Concepto: ${p}`);
+        }
+
+        return puntos.slice(0, 6);
+    }
+
+    let pendientePreguntarTemario = false;
+    let asuntoPendienteTemario = '';
+
+    function manejarFlujoTemarioYConsejos(queryRaw, queryLower, evaluados, listaModulosConNota, mediaGlobal) {
+        const textoTrim = queryRaw.trim();
+
+        // Si el asistente acaba de preguntar de qué trata y cuál es el temario, responder con temario + recomendaciones
+        if (pendientePreguntarTemario) {
+            pendientePreguntarTemario = false;
+            const asunto = asuntoPendienteTemario || 'Tema indicado';
+            asuntoPendienteTemario = '';
+            const temarioExtraido = extraerTemarioDeTextoLocal(textoTrim);
+            const conceptos = extraerTokensLimpios(textoTrim).slice(0, 5);
+
+            const idGuía = registrarResumenParaDescarga(
+                `Temario y Recomendaciones - ${asunto}`,
+                '',
+                [
+                    ...temarioExtraido.map((t, i) => `Punto ${i + 1}: ${t}`),
+                    `Recomendación 1: Divide el temario en bloques de ${minutosEstudio} min con pausas de ${minutosDescansoCorto} min.`,
+                    `Recomendación 2: Haz autoevaluación (Active Recall) al cerrar cada apartado sin mirar apuntes.`
+                ],
+                conceptos.length ? conceptos : ['temario', 'recomendaciones'],
+                'TEMARIO Y RECOMENDACIONES LOCALES'
+            );
+
+            const indiceItems = temarioExtraido.map((p, idx) => `<li><strong>${idx + 1}.</strong> ${escaparHTML(p)}</li>`).join('');
+
+            return `🧭 <strong>Temario y Recomendaciones para:</strong> ${escaparHTML(asunto)}<br><br>` +
+                   construirIndiceSeparado('Índice del Temario Detectado', indiceItems) +
+                   `<hr class="msg-section-divider">` +
+                   `<strong>💡 Recomendaciones para estudiarlo:</strong><br>` +
+                   `• Empieza por los apartados más extensos o nuevos en bloques de <strong>${minutosEstudio} min</strong> + <strong>${minutosDescansoCorto} min</strong> de descanso.<br>` +
+                   `• Al terminar cada punto del índice, anota de memoria lo esencial y comprueba qué faltó.<br>` +
+                   `• Si quieres un plan por días, dime <em>"plan de estudio de 5 días"</em>.` +
+                   construirBotonesDescargaResumen(idGuía);
+        }
+
+        // Si el usuario pide consejos y hay tema subido, arrancar los consejos directamente sobre ese tema
+        if (queryLower.includes('consejo') || queryLower.includes('mejorar') || queryLower.includes('tip') || queryLower.includes('estudiar')) {
+            if (temaAdjuntoActual && temaAdjuntoActual.contenido) {
+                const tituloTema = temaAdjuntoActual.titulo || 'Tema subido';
+                const asigTema = temaAdjuntoActual.asignatura ? ` (${temaAdjuntoActual.asignatura})` : '';
+                const temario = extraerTemarioDeTextoLocal(temaAdjuntoActual.contenido);
+                const indiceHTML = temario.map((pt, i) => `<li><strong>${i + 1}.</strong> ${escaparHTML(pt)}</li>`).join('');
+
+                const idConsTema = registrarResumenParaDescarga(
+                    `Consejos de Estudio - ${tituloTema}`,
+                    temaAdjuntoActual.asignatura || '',
+                    [
+                        `Tema: ${tituloTema}`,
+                        ...temario.map((t, i) => `Apartado ${i + 1}: ${t}`),
+                        `Estrategia: Bloques de ${minutosEstudio} min con Active Recall y repaso espaciado.`
+                    ],
+                    temario.slice(0, 4),
+                    'CONSEJOS Y TEMARIO LOCAL'
+                );
+
+                return `🎯 <strong>Consejos centrados en tu tema subido:</strong> <strong>${escaparHTML(tituloTema)}</strong>${escaparHTML(asigTema)}<br><br>` +
+                       construirIndiceSeparado('Índice del Tema Subido', indiceHTML) +
+                       `<hr class="msg-section-divider">` +
+                       `<strong>📌 Cómo abordar este tema:</strong><br>` +
+                       `• Comienza por <strong>${escaparHTML(temario[0] || 'el primer apartado')}</strong> en sesiones de <strong>${minutosEstudio} min</strong> y descansa <strong>${minutosDescansoCorto} min</strong>.<br>` +
+                       `• Resume cada apartado con tus propias palabras y resuelve ejemplos prácticos antes de pasar al siguiente.<br>` +
+                       `• Si quieres un calendario por días, pide <em>"plan de estudio de 5 días"</em>.` +
+                       construirBotonesDescargaResumen(idConsTema);
+            }
+
+            // Si NO hay tema subido, preguntar de qué trata el tema y cuál es el temario + dar recomendaciones base
+            const matchAsunto = textoTrim.match(/(?:sobre|de|para)\s+(.+)$/i);
+            pendientePreguntarTemario = true;
+            asuntoPendienteTemario = matchAsunto ? matchAsunto[1].trim() : 'Tu próximo tema de estudio';
+
+            return `🧩 No veo ningún tema subido en el chat ahora mismo.<br><br>` +
+                   `<strong>¿De qué trata y cuál es el temario?</strong> Cuéntame de qué va y pega los puntos del temario (o súbelo con <strong>📎</strong>), y te preparo el índice separado y recomendaciones concretas.<br><br>` +
+                   `<hr class="msg-section-divider">` +
+                   `<strong>💡 Recomendaciones iniciales mientras tanto:</strong><br>` +
+                   `• Divide el temario en bloques cortos de <strong>${minutosEstudio} min</strong> con pausas de <strong>${minutosDescansoCorto} min</strong>.<br>` +
+                   `• Usa <em>Active Recall</em> (recordar sin mirar) al finalizar cada bloque.`;
+        }
+
+        return null;
+    }
+
     function obtenerConsejoAvanzado(evaluados, listaModulosConNota, mediaGlobal) {
         const tipsGenerales = [
             `<strong>Técnica Pomodoro (${minutosEstudio} min):</strong> Trabaja sin distracciones (activa <em>No Molestar</em>) y descansa ${minutosDescansoCorto} min al terminar.`,
@@ -2519,8 +2655,12 @@
                 'PLAN DE ESTUDIO LOCAL'
             );
 
+            const indicePlan = diasPlan.map(dLine => `<li>${dLine}</li>`).join('');
             return `📅 <strong>Plan de Estudio Generado (${numDias} días):</strong><br><br>` +
-                   `${diasPlan.join('<br>')}` +
+                   construirIndiceSeparado('Índice de Días del Plan', indicePlan) +
+                   `<hr class="msg-section-divider">` +
+                   `• Ritmo configurado: <strong>${minutosEstudio} min</strong> estudio / <strong>${minutosDescansoCorto} min</strong> descanso corto.<br>` +
+                   `• Guarda o imprime este plan en PDF/TXT con los botones de abajo.` +
                    construirBotonesDescargaResumen(idPlan);
         }
 
@@ -2647,8 +2787,9 @@
             ]);
         }
 
-        if(query.includes('consejo') || query.includes('mejorar') || query.includes('tip') || query.includes('estudiar')) {
-            return obtenerConsejoAvanzado(evaluados, listaModulosConNota, mediaGlobal);
+        const respuestaFlujoTemaConsejo = manejarFlujoTemarioYConsejos(queryRaw, query, evaluados, listaModulosConNota, mediaGlobal);
+        if (respuestaFlujoTemaConsejo) {
+            return respuestaFlujoTemaConsejo;
         }
 
         if(query.includes('chiste') || query.includes('broma') || query.includes('reir') || query.includes('reír')) {
