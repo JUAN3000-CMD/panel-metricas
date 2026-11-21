@@ -453,7 +453,7 @@
         <div class="header-title-wrapper">
             <div class="header-badge-row">
                 <h1>Panel de Control y Métricas Pro</h1>
-                <span class="software-badge" onclick="abrirModalNovedades()" title="Haz clic para ver el registro de cambios (Changelog)">v4.2.0 • 2026 • IA Local • MIT 📋</span>
+                <span class="software-badge" onclick="abrirModalNovedades()" title="Haz clic para ver el registro de cambios (Changelog)">v4.2.1 • 2026 • IA Local • MIT 📋</span>
             </div>
             <p class="subtitle">Consola inteligente de monitorización de indicadores con procesamiento local y memoria evolutiva</p>
         </div>
@@ -566,7 +566,7 @@
     <footer class="app-footer">
         <div class="footer-brand">
             <span class="footer-title">📊 Panel de Control y Métricas Pro</span>
-            <span class="version-pill" id="footer-version-badge">v4.2.0</span>
+            <span class="version-pill" id="footer-version-badge">v4.2.1</span>
             <span>• <strong id="footer-year">2026</strong> • Licencia MIT</span>
         </div>
         <div class="footer-meta">
@@ -593,7 +593,7 @@
             </div>
             <div class="spec-box">
                 <div class="spec-label">Versión Actual</div>
-                <div class="spec-val" id="modal-version-val">v4.2.0 (Build 2026)</div>
+                <div class="spec-val" id="modal-version-val">v4.2.1 (Build 2026)</div>
             </div>
             <div class="spec-box">
                 <div class="spec-label">Motor IA Local</div>
@@ -610,15 +610,19 @@
     </div>
 </div>
 
-<!-- MODAL NOVEDADES Y CORRECCIONES (CHANGELOG v4.2.0) -->
+<!-- MODAL NOVEDADES Y CORRECCIONES (CHANGELOG v4.2.1) -->
 <div class="modal-overlay" id="modalNovedades">
     <div class="modal-card" style="max-width: 500px;">
         <div class="modal-header">
-            <h3>📋 Novedades y Correcciones (v4.2.0)</h3>
+            <h3>📋 Novedades y Correcciones (v4.2.1)</h3>
             <button class="close-btn" onclick="cerrarModalNovedades()">×</button>
         </div>
         <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6; max-height: 300px; overflow-y: auto; padding-right: 4px;">
-            <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.2.0 (Actual):</strong></p>
+            <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.2.1 (Actual):</strong></p>
+            <ul style="padding-left: 18px; margin-bottom: 16px;">
+                <li><strong>Conversación Natural Mejorada:</strong> Respuestas cortas y contextuales ante saludos o estados de ánimo (<em>"bien"</em>, <em>"todo bien"</em>, <em>"regular"</em>, <em>"cansado"</em>) con sugerencias directas de funciones del panel.</li>
+            </ul>
+            <p style="margin-bottom: 12px;"><strong>✨ Versión 4.2.0:</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
                 <li><strong>Resumen en PDF, Organizador de Tareas y Planes de Estudio:</strong> Descarga resúmenes y planes en <strong>PDF</strong> o <code>.txt</code>, añade tareas a la agenda por lenguaje natural y genera planes de estudio por días priorizados en local.</li>
                 <li><strong>Informe PDF con Valoración Opcional:</strong> Nuevo selector previo para incluir un resumen explicativo automático (felicitación o mensaje de ánimo según el progreso).</li>
@@ -802,8 +806,8 @@
 <script>
     const APP_INFO = {
         nombre: "Panel de Control y Métricas Pro",
-        version: "4.2.0",
-        versionLabel: "v4.2.0",
+        version: "4.2.1",
+        versionLabel: "v4.2.1",
         anioDesarrollo: 2026,
         urlManifestRemoto: "https://gist.githubusercontent.com/JUAN3000-CMD/3b1f763a744b03a0874f7972208d7c7e/raw/version.json"
     };
@@ -1972,6 +1976,69 @@
 
     const BASE_CONOCIMIENTO_CONVERSACIONAL = [
         {
+            tags: ['bien', 'todo bien', 'bastante bien', 'muy bien', 'genial', 'tranquilo', 'tranquila', 'ahi vamos', 'ahí vamos', 'tirando', 'bien por aqui', 'bien por aquí', 'estupendo', 'fenomenal'],
+            respuestas: [
+                "¡Qué bueno saberlo! Por aquí listo para ayudarte: puedes pedir tu <strong>resumen</strong>, ver tu <strong>agenda</strong>, organizar <strong>tareas</strong> o pedir un <strong>consejo</strong>.",
+                "¡Me alegra oírlo! Si quieres aprovechar el rato, prueba con un <strong>plan de estudio</strong>, un <strong>resumen</strong> de apuntes o guarda algo con <strong>recuerda que...</strong>."
+            ]
+        },
+        {
+            tags: ['mal', 'regular', 'cansado', 'cansada', 'agotado', 'agotada', 'estresado', 'estresada', 'liado', 'liada', 'fatal', 'poco animado', 'poco animada'],
+            respuestas: [
+                "Te entiendo; cuando hay días pesados, ir paso a paso ayuda mucho. Si quieres, pon el <strong>temporizador</strong>, revisa tu <strong>agenda</strong> o pide un <strong>consejo</strong> suave.",
+                "Ánimo con eso. No hace falta hacerlo todo de golpe: podemos empezar por organizar <strong>tareas</strong>, sacar un <strong>resumen</strong> rápido o tomarnos un descanso."
+            ]
+        },
+        {
+            tags: ['que te gusta', 'qué te gusta', 'gustos', 'aficiones', 'hobbies', 'pasatiempos', 'que haces en tu tiempo libre', 'qué haces en tu tiempo libre'],
+            respuestas: [
+                "Me gusta ordenar información, calcular promedios ponderados y ayudar a que los planes de estudio o resúmenes queden claros y listos para usar.",
+                "Mi 'pasatiempo' favorito es buscar patrones en tus datos, recordar cosas importantes y darte un empujón cuando toca concentrarse o descansar."
+            ]
+        },
+        {
+            tags: ['musica', 'música', 'cancion', 'canción', 'pelicula', 'película', 'serie', 'libro', 'leer', 'videojuego', 'juego', 'jugar'],
+            respuestas: [
+                "Para estudiar o concentrarte, la música instrumental suave, el lo-fi o el ruido blanco suelen funcionar muy bien porque no compiten con la lectura.",
+                "Si buscas desconectar tras un bloque de estudio, una buena serie corta, leer un rato o dar un paseo ayudan bastante a despejar la mente."
+            ]
+        },
+        {
+            tags: ['dormir', 'sueno', 'sueño', 'descansar', 'descanso', 'madrugar', 'trasnochar', 'siesta'],
+            respuestas: [
+                "Dormir bien es clave para fijar lo que estudias o trabajas. Una siesta corta de 20 minutos puede refrescar la mente, pero dormir mal pasa factura al día siguiente.",
+                "Si notas la cabeza saturada, a veces descansar de verdad o cerrar por hoy rinde más que seguir insistiendo cansado."
+            ]
+        },
+        {
+            tags: ['comer', 'comida', 'hambre', 'cafe', 'café', 'agua', 'beber', 'merendar', 'cenar', 'desayunar'],
+            respuestas: [
+                "Un vaso de agua, algo ligero para comer y un breve respiro hacen maravillas cuando baja el ritmo.",
+                "Si llevas un rato delante de la pantalla, hidratarte y estirar un poco ayuda a mantener la atención sin forzarte."
+            ]
+        },
+        {
+            tags: ['dia', 'día', 'tarde', 'noche', 'manana', 'mañana', 'semana', 'finde', 'fin de semana'],
+            respuestas: [
+                "Cada momento del día tiene su ritmo: a veces toca avanzar a fondo y otras toca bajar revoluciones y organizar lo pendiente.",
+                "Si vas a planificar el día o la semana, empieza por una o dos cosas concretas y deja el resto bien anotado para no llevarlo todo en la cabeza."
+            ]
+        },
+        {
+            tags: ['duda', 'dudas', 'no entiendo', 'explica', 'explicame', 'explícame', 'como funciona', 'cómo funciona', 'para que sirves', 'para qué sirves'],
+            respuestas: [
+                "Puedo ayudarte a resumir apuntes o textos, organizar tareas, armar un plan de estudio por días, simular notas, guardar recuerdos y manejar el temporizador.",
+                "Si algo no queda claro, dime qué necesitas hacer o pega el texto que quieras revisar y lo vamos viendo paso a paso."
+            ]
+        },
+        {
+            tags: ['que opinas', 'qué opinas', 'piensas', 'crees', 'consejo de vida', 'reflexion', 'reflexión'],
+            respuestas: [
+                "La constancia pequeña y sostenida suele ganar a las maratones puntuales. Ir avanzando poco a poco es mucho más sostenible.",
+                "Tener las cosas apuntadas y un orden claro quita mucha presión mental; luego es más fácil centrarse en lo que toca ahora."
+            ]
+        },
+        {
             tags: ['quien eres', 'quién eres', 'que eres', 'qué eres', 'tu nombre', 'como te llamas', 'cómo te llamas'],
             respuestas: [
                 "Soy tu <strong>Asistente Pro NLP</strong> integrado en este panel. Funcionando 100% en local para ayudarte con tus métricas, tiempos de estudio, agenda y organización.",
@@ -2777,8 +2844,8 @@
 
         if(query.includes('hola') || query.includes('ey') || query.includes('buenas') || query.includes('buenos dias') || query.includes('buenas tardes') || query.includes('buenas noches')) {
             return obtenerOpcionSinRepetir([
-                "¡Hola! ¿Qué tal va todo? Podemos charlar un poco, revisar tu <strong>'resumen'</strong>, mirar tu <strong>'agenda'</strong> o guardar algo en memoria.",
-                "¡Buenas! Mi motor NLP local está listo. ¿En qué te puedo ayudar hoy?"
+                "¡Hola! ¿Qué tal va todo? Podemos ver tu <strong>'resumen'</strong>, revisar tu <strong>'agenda'</strong>, organizar <strong>'tareas'</strong>, pedir un <strong>'consejo'</strong>, guardar algo con <strong>'recuerda que...'</strong> o charlar un rato.",
+                "¡Buenas! Por aquí estoy listo en local. ¿Cómo va el día o en qué te puedo echar una mano?"
             ]);
         }
 
@@ -2892,8 +2959,8 @@
         }
 
         return obtenerOpcionSinRepetir([
-            `🤖 No tengo un dato exacto sobre eso, pero si quieres que lo guarde para futuras consultas dime: <strong>"recuerda que [tu dato]"</strong>. También puedes preguntarme por tu <strong>resumen</strong>, <strong>agenda</strong>, pedir un <strong>consejo</strong> o un <strong>dato curioso</strong>.`,
-            `💬 Aún no tengo esa información registrada. Si es algo importante para ti, escríbeme <strong>"recuerda que..."</strong> y lo guardaré en mi memoria, o pulsa <strong>[ ? ]</strong> para ver todo lo que sé hacer.`
+            `💬 De eso en concreto no tengo una respuesta preparada en mi base local, pero podemos seguir charlando o ver algo práctico: pregúntame por tu <strong>resumen</strong>, <strong>agenda</strong>, pide un <strong>consejo</strong>, un <strong>plan de estudio</strong>, un <strong>chiste</strong> o dime <strong>"recuerda que..."</strong> si quieres guardar algo.`,
+            `🙂 Voy un poco limitado en temas generales fuera de mi base local, así que no quiero inventarme nada. Si quieres, charlamos sobre tu día, estudio, descanso o tareas, o pulsa <strong>[ ? ]</strong> para ver lo que sí puedo hacer aquí.`
         ]);
     }
 
