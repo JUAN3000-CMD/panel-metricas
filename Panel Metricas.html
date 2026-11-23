@@ -2529,7 +2529,7 @@
         const matchBloque = textoTrim.match(/^(?:resumir|resume|resumen\s+(?:de|sobre|del\s+tema)?)\s*(?:tema\s*:|texto\s*:|:)?\s*([\s\S]+)$/i);
         const argumento = matchBloque ? matchBloque[1].trim() : '';
 
-        if (!argumento || /^(?:actual|global|panel|notas|metricas|métricas|chiste|chistes|broma|bromas)$/i.test(argumento)) {
+        if (!argumento || /^(?:actual|global|panel|notas|metricas|métricas|asignaturas|categorias|categorías|pendientes|media|chiste|chistes|broma|bromas)$/i.test(argumento)) {
             return null;
         }
 
@@ -2918,16 +2918,37 @@
         }
 
         if(query.includes('resumen') || query.includes('como voy') || query.includes('cómo voy')) {
-            if(evaluados === 0) return `📊 Aún no hay notas registradas en el panel.`;
-            const idResGen = registrarResumenParaDescarga('Resumen General del Panel', '', [
-                `Promedio Global: ${mediaGlobal.toFixed(2)} / 10`,
+            if (modulos.length === 0) {
+                return `📊 Aún no has creado categorías o asignaturas en el panel. Pulsa en <strong>⚙️ Gestionar Categorías</strong> para empezar.`;
+            }
+            const pendientesDePoner = modulos
+                .filter(m => !notasCurso[m.id] || notasCurso[m.id].length === 0)
+                .map(m => `${m.id} (${m.nombre})`);
+
+            const detalleAsignaturas = listaModulosConNota.length > 0
+                ? listaModulosConNota.map(item => `  - ${escaparHTML(item.id)} (${escaparHTML(item.nombre)}): <strong>${item.promedio.toFixed(2)}</strong>`).join('<br>')
+                : '  - Ninguna asignatura evaluada todavía.';
+
+            const textoPendientesHTML = pendientesDePoner.length > 0
+                ? pendientesDePoner.map(p => escaparHTML(p)).join(', ')
+                : 'Ninguna (todas tienen notas registradas ✅)';
+
+            const lineasDescarga = [
+                `Promedio Global: ${evaluados > 0 ? mediaGlobal.toFixed(2) + ' / 10' : 'Sin notas aún'}`,
                 `Categorías superadas: ${aprobados} / ${metaMeta}`,
-                `Umbral Objetivo: ${umbralObjetivo.toFixed(2)} / 10`
-            ], ['promedio', 'objetivo', 'progreso']);
-            return `📊 <strong>Resumen Actual:</strong><br><br>` +
-                   `• Promedio Global: <strong>${mediaGlobal.toFixed(2)} / 10</strong><br>` +
+                `Umbral Objetivo: ${umbralObjetivo.toFixed(2)} / 10`,
+                ...listaModulosConNota.map(item => `Media ${item.id} (${item.nombre}): ${item.promedio.toFixed(2)}`),
+                `Pendientes por poner nota (${pendientesDePoner.length}): ${pendientesDePoner.length > 0 ? pendientesDePoner.join(', ') : 'Ninguna'}`
+            ];
+
+            const idResGen = registrarResumenParaDescarga('Resumen General del Panel', '', lineasDescarga, ['promedio', 'objetivo', 'pendientes', 'progreso']);
+
+            return `📊 <strong>Resumen Actual del Panel:</strong><br><br>` +
+                   `• Promedio Global: <strong>${evaluados > 0 ? mediaGlobal.toFixed(2) + ' / 10' : '0.00 (Sin notas)'}</strong><br>` +
                    `• Superadas: <strong>${aprobados} / ${metaMeta}</strong><br>` +
-                   `• Umbral Objetivo: <strong>${umbralObjetivo.toFixed(2)}</strong>` +
+                   `• Umbral Objetivo: <strong>${umbralObjetivo.toFixed(2)}</strong><br><br>` +
+                   `📚 <strong>Media por asignatura evaluada (${listaModulosConNota.length}):</strong><br>${detalleAsignaturas}<br><br>` +
+                   `⏳ <strong>Pendientes por poner nota (${pendientesDePoner.length}):</strong><br>${textoPendientesHTML}` +
                    construirBotonesDescargaResumen(idResGen);
         }
 
