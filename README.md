@@ -1,4 +1,4 @@
-# 📊 Panel de Control y Métricas Pro (v4.2.0)
+# 📊 Panel de Control y Métricas Pro (v4.2.1)
 
 Consola inteligente de monitorización académica y rendimiento personal con motor NLP nativo 100 % autónomo, memoria temporal evolutiva, sistema Pomodoro integrado y verificación de integridad criptográfica. Gratuito, sin suscripciones y bajo **Licencia MIT**
 
