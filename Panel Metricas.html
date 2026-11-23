@@ -558,6 +558,7 @@
         <input type="text" id="buscadorTabla" class="search-box" placeholder="🔍 Buscar categoría..." oninput="filtrarTabla()">
         <div class="actions-row">
             <button class="btn btn-secondary" onclick="abrirModal()">⚙️ Gestionar Categorías</button>
+            <button class="btn btn-secondary" onclick="abrirModalPonderaciones()">⚖️ Ponderación %</button>
             <button class="btn btn-secondary" onclick="exportarDatos()">💾 Exportar</button>
             <div class="btn btn-secondary btn-file-input">
                 📂 Importar <input type="file" id="importFile" accept=".json" onchange="importarDatos(event)">
@@ -656,6 +657,43 @@
         </div>
         <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
             <button class="btn btn-accent" onclick="cerrarModalNovedades()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PONDERACIÓN PORCENTUAL POR CATEGORÍA -->
+<div class="modal-overlay" id="modalPonderacionesConfig">
+    <div class="modal-card" style="max-width: 520px;">
+        <div class="modal-header">
+            <h3>⚖️ Ponderación por Tipo de Evaluación (%)</h3>
+            <button class="close-btn" onclick="cerrarModalPonderaciones()">×</button>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--secondary); margin-bottom: 12px; line-height: 1.45;">
+            Configura cuánto pesa cada tipo en una categoría (por ejemplo: <strong>Exámenes 80%</strong>, <strong>Tareas 20%</strong>, <strong>Proyectos 0%</strong>). Si dejas todos en <code>0</code> o no lo configuras, se usará el cálculo estándar habitual.
+        </p>
+        <div class="form-row" style="margin-bottom: 12px;">
+            <span class="form-label">Categoría:</span>
+            <select id="selectPondCategoria" class="select-weight" style="flex: 1; padding: 8px 10px;" onchange="cargarValoresPondCategoria()"></select>
+        </div>
+        <div class="form-row" style="margin-bottom: 10px;">
+            <span class="form-label">📝 Exámenes (%):</span>
+            <input type="number" id="inputPondExamen" class="input-text" min="0" max="100" step="1" value="0">
+        </div>
+        <div class="form-row" style="margin-bottom: 10px;">
+            <span class="form-label">📌 Tareas (%):</span>
+            <input type="number" id="inputPondTareas" class="input-text" min="0" max="100" step="1" value="0">
+        </div>
+        <div class="form-row" style="margin-bottom: 12px;">
+            <span class="form-label">🛠️ Proyectos (%):</span>
+            <input type="number" id="inputPondProyectos" class="input-text" min="0" max="100" step="1" value="0">
+        </div>
+        <div id="avisoSumaPond" style="font-size: 0.78rem; color: var(--secondary); margin-bottom: 14px; background: var(--bg-body); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);"></div>
+        <div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="restablecerPondCategoria()">Usar modo normal</button>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary" onclick="cerrarModalPonderaciones()">Cancelar</button>
+                <button class="btn btn-accent" onclick="guardarPondCategoria()">Guardar %</button>
+            </div>
         </div>
     </div>
 </div>
@@ -844,6 +882,7 @@
     let historialUltimasRespuestas = [];
     let modoNoMolestar = false;
 
+    let ponderacionesPorcentaje = {};
     let minutosEstudio = 25;
     let minutosDescansoCorto = 5;
     let minutosDescansoLargo = 15;
@@ -1032,6 +1071,10 @@
         actualizarDisplayTemporizador();
         verificarActualizaciones();
         
+        ['inputPondExamen', 'inputPondTareas', 'inputPondProyectos'].forEach(idInp => {
+            const el = document.getElementById(idInp);
+            if (el) el.addEventListener('input', actualizarAvisoSumaPond);
+        });
         const hoy = new Date().toISOString().split('T')[0];
         document.getElementById('inputFechaEvento').value = hoy;
         renderizarEventosCalendario();
@@ -1431,6 +1474,9 @@
             const gEv = localStorage.getItem('smr_eventos_calendario');
             if (gEv) eventosCalendario = JSON.parse(gEv);
 
+            const gPond = localStorage.getItem('smr_ponderaciones_pct');
+            if (gPond) ponderacionesPorcentaje = JSON.parse(gPond);
+
             const vLocal = localStorage.getItem('smr_ultima_version_aplicada');
             if (vLocal) {
                 APP_INFO.version = vLocal;
@@ -1455,6 +1501,7 @@
         localStorage.setItem('smr_umbral_objetivo', umbralObjetivo.toString());
         localStorage.setItem('smr_meta_modulos', metaModulosRequeridos !== null ? metaModulosRequeridos.toString() : "null");
         localStorage.setItem('smr_eventos_calendario', JSON.stringify(eventosCalendario));
+        localStorage.setItem('smr_ponderaciones_pct', JSON.stringify(ponderacionesPorcentaje));
     }
 
     function renderizarTabla() {
@@ -1504,17 +1551,22 @@
             inp.id = `input-val-${m.id}`;
             inp.onkeydown = (e) => { if (e.key === 'Enter') agregarNotaAcumulada(m.id); };
 
+            const selTipo = document.createElement('select');
+            selTipo.className = 'select-weight';
+            selTipo.id = `input-tipo-${m.id}`;
+            selTipo.innerHTML = `<option value="tareas">📌 Tareas</option><option value="examen">📝 Examen</option><option value="proyecto">🛠️ Proyecto</option>`;
+
             const sel = document.createElement('select');
             sel.className = 'select-weight';
             sel.id = `input-peso-${m.id}`;
-            sel.innerHTML = `<option value="1">Peso x1 (Normal)</option><option value="2">Peso x2 (Medio)</option><option value="3">Peso x3 (Examen)</option>`;
+            sel.innerHTML = `<option value="1">Peso x1</option><option value="2">Peso x2</option><option value="3">Peso x3</option>`;
 
             const btnPlus = document.createElement('button');
             btnPlus.className = 'btn-plus';
             btnPlus.textContent = '+';
             btnPlus.onclick = () => agregarNotaAcumulada(m.id);
 
-            divAdd.append(inp, sel, btnPlus);
+            divAdd.append(inp, selTipo, sel, btnPlus);
 
             const divTags = document.createElement('div');
             divTags.className = 'tags-holder';
@@ -1536,14 +1588,151 @@
         recalcularGlobal();
     }
 
+
+    function tienePorcentajeConfigurado(idModulo) {
+        const cfg = ponderacionesPorcentaje[idModulo];
+        if (!cfg) return false;
+        const ex = Number(cfg.examen || 0);
+        const ta = Number(cfg.tareas || 0);
+        const pr = Number(cfg.proyecto || 0);
+        return (ex + ta + pr) > 0;
+    }
+
+    function obtenerEtiquetaTipoNota(tipo) {
+        if (tipo === 'examen') return 'Examen';
+        if (tipo === 'proyecto') return 'Proyecto';
+        return 'Tareas';
+    }
+
+    function calcularPromedioModulo(idModulo, arrNotas) {
+        if (!Array.isArray(arrNotas) || arrNotas.length === 0) {
+            return { promedio: 0, tieneNotas: false, modoPorcentaje: false };
+        }
+
+        const cfg = ponderacionesPorcentaje[idModulo];
+        const exPct = cfg ? Math.max(0, Number(cfg.examen || 0)) : 0;
+        const taPct = cfg ? Math.max(0, Number(cfg.tareas || 0)) : 0;
+        const prPct = cfg ? Math.max(0, Number(cfg.proyecto || 0)) : 0;
+        const totalPct = exPct + taPct + prPct;
+
+        if (totalPct > 0) {
+            const grupos = { examen: [], tareas: [], proyecto: [] };
+            arrNotas.forEach(n => {
+                const v = typeof n.val === 'number' ? n.val : parseFloat(n);
+                const tipoRaw = (n && n.tipo) ? String(n.tipo).toLowerCase() : ((n && Number(n.peso) === 3) ? 'examen' : 'tareas');
+                const tipoNorm = (tipoRaw === 'examen' || tipoRaw === 'proyecto' || tipoRaw === 'tareas') ? tipoRaw : 'tareas';
+                grupos[tipoNorm].push(v);
+            });
+
+            let sumaPond = 0;
+            let pesoUsado = 0;
+
+            const mapaTipos = [
+                { key: 'examen', pct: exPct },
+                { key: 'tareas', pct: taPct },
+                { key: 'proyecto', pct: prPct }
+            ];
+
+            mapaTipos.forEach(item => {
+                if (item.pct > 0 && grupos[item.key].length > 0) {
+                    const mediaGrupo = grupos[item.key].reduce((a, b) => a + b, 0) / grupos[item.key].length;
+                    sumaPond += mediaGrupo * item.pct;
+                    pesoUsado += item.pct;
+                }
+            });
+
+            if (pesoUsado > 0) {
+                return { promedio: sumaPond / pesoUsado, tieneNotas: true, modoPorcentaje: true, totalPct };
+            }
+        }
+
+        let sumaPonderada = 0, sumaPesos = 0;
+        arrNotas.forEach(n => {
+            const valNota = typeof n.val === 'number' ? n.val : parseFloat(n);
+            const pesoNota = typeof n.peso === 'number' ? n.peso : 1;
+            sumaPonderada += (valNota * pesoNota);
+            sumaPesos += pesoNota;
+        });
+        return { promedio: sumaPesos > 0 ? (sumaPonderada / sumaPesos) : 0, tieneNotas: true, modoPorcentaje: false };
+    }
+
+    function abrirModalPonderaciones() {
+        if (modulos.length === 0) {
+            alert("Primero crea al menos una categoría en 'Gestionar Categorías'.");
+            return;
+        }
+        const sel = document.getElementById('selectPondCategoria');
+        sel.innerHTML = '';
+        modulos.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = `${m.id} - ${m.nombre}`;
+            sel.appendChild(opt);
+        });
+        cargarValoresPondCategoria();
+        document.getElementById('modalPonderacionesConfig').style.display = 'flex';
+    }
+
+    function cerrarModalPonderaciones() {
+        document.getElementById('modalPonderacionesConfig').style.display = 'none';
+    }
+
+    function cargarValoresPondCategoria() {
+        const id = document.getElementById('selectPondCategoria').value;
+        const cfg = ponderacionesPorcentaje[id] || { examen: 0, tareas: 0, proyecto: 0 };
+        document.getElementById('inputPondExamen').value = cfg.examen ?? 0;
+        document.getElementById('inputPondTareas').value = cfg.tareas ?? 0;
+        document.getElementById('inputPondProyectos').value = cfg.proyecto ?? 0;
+        actualizarAvisoSumaPond();
+    }
+
+    function actualizarAvisoSumaPond() {
+        const ex = Math.max(0, parseFloat(document.getElementById('inputPondExamen').value) || 0);
+        const ta = Math.max(0, parseFloat(document.getElementById('inputPondTareas').value) || 0);
+        const pr = Math.max(0, parseFloat(document.getElementById('inputPondProyectos').value) || 0);
+        const suma = ex + ta + pr;
+        const el = document.getElementById('avisoSumaPond');
+        if (!el) return;
+        if (suma === 0) {
+            el.innerHTML = 'ℹ️ Sin porcentajes configurados (0%): se aplicará el cálculo estándar habitual.';
+        } else if (Math.abs(suma - 100) < 0.01) {
+            el.innerHTML = `✅ Suma total: <strong>100%</strong> (Exámenes ${ex}% · Tareas ${ta}% · Proyectos ${pr}%).`;
+        } else {
+            el.innerHTML = `⚖️ Suma actual: <strong>${suma}%</strong>. Se normalizará proporcionalmente sobre los tipos con nota y porcentaje mayor que 0.`;
+        }
+    }
+
+    function guardarPondCategoria() {
+        const id = document.getElementById('selectPondCategoria').value;
+        const ex = Math.max(0, Math.min(100, parseFloat(document.getElementById('inputPondExamen').value) || 0));
+        const ta = Math.max(0, Math.min(100, parseFloat(document.getElementById('inputPondTareas').value) || 0));
+        const pr = Math.max(0, Math.min(100, parseFloat(document.getElementById('inputPondProyectos').value) || 0));
+        ponderacionesPorcentaje[id] = { examen: ex, tareas: ta, proyecto: pr };
+        guardarTodoLocal();
+        actualizarEstadoBotonGuardado(false);
+        actualizarFilaUI(id);
+        cerrarModalPonderaciones();
+    }
+
+    function restablecerPondCategoria() {
+        const id = document.getElementById('selectPondCategoria').value;
+        delete ponderacionesPorcentaje[id];
+        guardarTodoLocal();
+        actualizarEstadoBotonGuardado(false);
+        actualizarFilaUI(id);
+        cargarValoresPondCategoria();
+    }
+
     function agregarNotaAcumulada(id) {
         const inputVal = document.getElementById(`input-val-${id}`);
+        const selectTipo = document.getElementById(`input-tipo-${id}`);
         const selectPeso = document.getElementById(`input-peso-${id}`);
         const valor = parseFloat(inputVal.value);
+        const tipo = selectTipo ? selectTipo.value : 'tareas';
         const peso = parseInt(selectPeso.value);
 
         if (!isNaN(valor) && valor >= 0 && valor <= 10) {
-            notasCurso[id].push({ val: valor, peso: peso });
+            notasCurso[id].push({ val: valor, peso: peso, tipo: tipo });
             inputVal.value = '';
             inputVal.focus();
             actualizarFilaUI(id);
@@ -1570,8 +1759,17 @@
             wrapper.className = 'tag';
             const valNum = typeof item.val === 'number' ? item.val : parseFloat(item);
             const pesoNum = typeof item.peso === 'number' ? item.peso : 1;
-            const pesoTexto = pesoNum > 1 ? ` (x${pesoNum})` : '';
-            wrapper.textContent = `${valNum.toFixed(2)}${pesoTexto} `;
+            const tipoInferido = (item && item.tipo) ? item.tipo : (pesoNum === 3 ? 'examen' : 'tareas');
+            const tipoEtiqueta = obtenerEtiquetaTipoNota(tipoInferido);
+            const cfgPct = ponderacionesPorcentaje[id];
+            let extraTexto = ` · ${tipoEtiqueta}`;
+            if (cfgPct && tienePorcentajeConfigurado(id)) {
+                const pctVal = tipoInferido === 'examen' ? (cfgPct.examen || 0) : (tipoInferido === 'proyecto' ? (cfgPct.proyecto || 0) : (cfgPct.tareas || 0));
+                extraTexto += ` (${pctVal}%)`;
+            } else if (pesoNum > 1) {
+                extraTexto += ` (x${pesoNum})`;
+            }
+            wrapper.textContent = `${valNum.toFixed(2)}${extraTexto} `;
             const b = document.createElement('button');
             b.textContent = '×';
             b.onclick = () => borrarNotaIndex(id, idx);
@@ -1584,15 +1782,9 @@
         const bMedia = row.querySelector('.media-final');
         const bBoletin = row.querySelector('.boletin-final');
 
-        if (arr.length > 0) {
-            let sumaPonderada = 0, sumaPesos = 0;
-            arr.forEach(n => {
-                const valNota = typeof n.val === 'number' ? n.val : parseFloat(n);
-                const pesoNota = typeof n.peso === 'number' ? n.peso : 1;
-                sumaPonderada += (valNota * pesoNota);
-                sumaPesos += pesoNota;
-            });
-            const promedio = sumaPonderada / sumaPesos;
+        const resCalc = calcularPromedioModulo(id, arr);
+        if (resCalc.tieneNotas) {
+            const promedio = resCalc.promedio;
             const entero = Math.round(promedio);
             bMedia.innerText = promedio.toFixed(2);
             bBoletin.innerText = entero;
@@ -1629,17 +1821,14 @@
 
         modulos.forEach(m => {
             const arr = notasCurso[m.id] || [];
+            arr.forEach(n => {
+                const vN = typeof n.val === 'number' ? n.val : parseFloat(n);
+                todasLasNotasCronologicas.push(vN);
+            });
+            const resMod = calcularPromedioModulo(m.id, arr);
             let promedio = 0;
-            if (arr.length > 0) {
-                let sP = 0, sPe = 0;
-                arr.forEach(n => {
-                    const vN = typeof n.val === 'number' ? n.val : parseFloat(n);
-                    const pN = typeof n.peso === 'number' ? n.peso : 1;
-                    sP += (vN * pN);
-                    sPe += pN;
-                    todasLasNotasCronologicas.push(vN);
-                });
-                promedio = sP / sPe;
+            if (resMod.tieneNotas) {
+                promedio = resMod.promedio;
                 suma += promedio; 
                 evaluados++;
                 if (Math.round(promedio) >= 5) aprobados++;
@@ -3147,7 +3336,7 @@
 
     async function exportarDatos() {
         const memoriaEvolutiva = cargarMemoriaEvolutiva();
-        const datosBase = { modulos, notasCurso, umbralObjetivo, metaModulosRequeridos, eventosCalendario, memoriaEvolutiva };
+        const datosBase = { modulos, notasCurso, umbralObjetivo, metaModulosRequeridos, eventosCalendario, ponderacionesPorcentaje, memoriaEvolutiva };
         const firmaSHA256 = await generarFirmaIntegridad(datosBase);
         const datosAExportar = { integridadSHA256: firmaSHA256, ...datosBase };
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datosAExportar));
@@ -3195,6 +3384,9 @@
                 umbralObjetivo = Number(parsed.umbralObjetivo) || 7.00;
                 metaModulosRequeridos = parsed.metaModulosRequeridos ?? null;
                 eventosCalendario = parsed.eventosCalendario || [];
+                if (parsed.ponderacionesPorcentaje && typeof parsed.ponderacionesPorcentaje === 'object') {
+                    ponderacionesPorcentaje = parsed.ponderacionesPorcentaje;
+                }
                 
                 if (parsed.version) {
                     APP_INFO.version = parsed.version; 
