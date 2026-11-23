@@ -326,6 +326,26 @@
             margin: 0; padding-left: 16px; font-size: 0.81rem; line-height: 1.45;
         }
         .msg-index-list li { margin-bottom: 3px; }
+        .help-group {
+            margin-top: 10px;
+            padding: 9px 11px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+        .help-group-title {
+            font-size: 0.74rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+        .help-item {
+            margin-bottom: 7px;
+            line-height: 1.45;
+        }
+        .help-item:last-child { margin-bottom: 0; }
         .msg.bot { background: var(--bg-body); color: var(--primary); align-self: flex-start; border: 1px solid var(--border-color); }
         .msg.user { background: var(--accent); color: white; align-self: flex-end; }
         .assistant-suggestions {
@@ -1761,16 +1781,31 @@
     }
 
     function mostrarAyudaAsistente() {
-        const guia = `💡 <strong>Guía del Asistente Pro NLP (Procesamiento 100% Local):</strong><br><br>` +
-                     `• <strong>"recuerda que [dato]":</strong> Guarda un recuerdo activo. Tras 4 meses pasa a referencia histórica compacta.<br>` +
-                     `• <strong>"memoria":</strong> Muestra tus recuerdos activos y referencias históricas.<br>` +
-                     `• <strong>"olvidar memoria":</strong> Borra los recuerdos guardados.<br>` +
-                     `• <strong>"resumen" / "resume [tema o texto]" / botón 📎:</strong> Resume en local y descarga en <strong>PDF</strong> o <strong>.txt</strong>.<br>` +
-                     `• <strong>"añade tarea [texto] en X días" / "organiza tareas" / "plan de estudio de X días":</strong> Organiza tareas y crea planes de estudio en local.<br>` +
-                     `• <strong>"consejo":</strong> Diagnóstico táctico y técnicas de estudio.<br>` +
-                     `• <strong>"temporizador" / "no molestar":</strong> Control Pomodoro y DND.<br>` +
-                     `• <strong>"simular [nota]":</strong> Calcula el impacto de una nota.<br><br>` +
-                     `📌 <em>Motor:</em> NLP Nativo Autónomo + Similitud Coseno (v${APP_INFO.version})`;
+        const guia = `💡 <strong>Guía del Asistente Pro NLP</strong><br>` +
+                     `<span style="font-size:0.76rem; color:var(--secondary);">Procesamiento 100% local · v${APP_INFO.version}</span>` +
+
+                     `<div class="help-group">` +
+                     `<div class="help-group-title">📊 Notas, Resúmenes y Predicciones</div>` +
+                     `<div class="help-item">• <strong>"resumen"</strong>: Muestra tu rendimiento global, medias por asignatura, pendientes y valoración.</div>` +
+                     `<div class="help-item">• <strong>"pp nota 7"</strong> o <strong>"si saco un 8 en [asignatura]"</strong>: Predice cómo quedaría tu media en esa asignatura (y la global) con esa nueva nota.</div>` +
+                     `<div class="help-item">• <strong>"simular 8.5"</strong>: Calcula el impacto de una nota en tu media global.</div>` +
+                     `<div class="help-item">• <strong>"resume [tema o texto]"</strong> o botón <strong>📎</strong>: Resume apuntes en local con descarga en <strong>PDF</strong> o <strong>.txt</strong>.</div>` +
+                     `</div>` +
+
+                     `<div class="help-group">` +
+                     `<div class="help-group-title">📅 Agenda, Tareas y Estudio</div>` +
+                     `<div class="help-item">• <strong>"añade tarea [texto] en X días"</strong>: Guarda una tarea directamente en tu agenda.</div>` +
+                     `<div class="help-item">• <strong>"organiza tareas"</strong>: Prioriza tus entregas y asignaturas según fechas y notas.</div>` +
+                     `<div class="help-item">• <strong>"plan de estudio de X días"</strong>: Crea un calendario de repaso por días.</div>` +
+                     `<div class="help-item">• <strong>"consejo"</strong>: Diagnóstico táctico y recomendaciones de estudio.</div>` +
+                     `</div>` +
+
+                     `<div class="help-group">` +
+                     `<div class="help-group-title">🧠 Memoria y Enfoque</div>` +
+                     `<div class="help-item">• <strong>"recuerda que [dato]"</strong>: Guarda un recuerdo activo (4 meses) y luego pasa a referencia histórica.</div>` +
+                     `<div class="help-item">• <strong>"memoria"</strong> / <strong>"olvidar memoria"</strong>: Consulta o limpia tus recuerdos guardados.</div>` +
+                     `<div class="help-item">• <strong>"temporizador"</strong> / <strong>"no molestar"</strong>: Estado del Pomodoro y silencio de avisos.</div>` +
+                     `</div>`;
         agregarMensajeChat('bot', guia);
     }
 
@@ -2899,9 +2934,98 @@
             return responderChisteLocal();
         }
 
-        if(query.includes('simular') || query.includes('simula') || query.includes('calcula')) {
+        // Predicción por asignatura / categoría (ej: "pp nota 7", "pp 7", "pp nota 7 x3", "si saco un 7 en pp", "prediccion pp 7")
+        function manejarPrediccionAsignatura(textoOriginal, textoLower) {
+            if (modulos.length === 0) return null;
+
+            const normSinTildes = textoLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const esIntencionPrediccion = /\b(prediccion|predecir|predice|si\s+saco|sacando|con\s+un|con\s+una|nota|peso|x[123])\b/.test(normSinTildes);
+
+            // Buscar módulo coincidente por ID o nombre
+            let moduloMatch = null;
+            for (const m of modulos) {
+                const idNorm = m.id.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const nomNorm = m.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const regexId = new RegExp(`(?:^|[^a-z0-9])${idNorm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:$|[^a-z0-9])`);
+                if (regexId.test(normSinTildes) || (nomNorm.length >= 4 && normSinTildes.includes(nomNorm))) {
+                    moduloMatch = m;
+                    break;
+                }
+            }
+
+            if (!moduloMatch) return null;
+
+            // Extraer posible peso si lo indica (ej: "peso 3", "x3", "examen")
+            let pesoSim = 1;
+            const matchPeso = normSinTildes.match(/(?:peso\s*|\bx\s*)([123])\b/);
+            if (matchPeso) {
+                pesoSim = parseInt(matchPeso[1], 10);
+            } else if (/\bexamen\b/.test(normSinTildes)) {
+                pesoSim = 3;
+            }
+
+            // Quitar el indicador de peso y el ID del módulo para extraer limpiamente la nota
+            let textoParaNota = normSinTildes
+                .replace(/(?:peso\s*|\bx\s*)[123]\b/g, ' ')
+                .replace(new RegExp(`(?:^|[^a-z0-9])${moduloMatch.id.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:$|[^a-z0-9])`, 'g'), ' ');
+
+            const numeros = textoParaNota.match(/(\d+(?:[.,]\d+)?)/g);
+            if (!numeros) {
+                if (esIntencionPrediccion) {
+                    return `🔮 Indica qué nota quieres predecir en <strong>${escaparHTML(moduloMatch.id)} (${escaparHTML(moduloMatch.nombre)})</strong>. Ejemplo: <em>"${escaparHTML(moduloMatch.id.toLowerCase())} nota 7"</em>.`;
+                }
+                return null;
+            }
+
+            const notaPred = parseFloat(numeros[numeros.length - 1].replace(',', '.'));
+            if (isNaN(notaPred) || notaPred < 0 || notaPred > 10) {
+                return `⚠️ Introduce una nota válida entre <strong>0 y 10</strong> para predecir en <strong>${escaparHTML(moduloMatch.id)}</strong>.`;
+            }
+
+            const arrMod = notasCurso[moduloMatch.id] || [];
+            let sP = 0, sPe = 0;
+            arrMod.forEach(n => {
+                const v = typeof n.val === 'number' ? n.val : parseFloat(n);
+                const p = typeof n.peso === 'number' ? n.peso : 1;
+                sP += v * p;
+                sPe += p;
+            });
+
+            const mediaActualMod = sPe > 0 ? (sP / sPe) : null;
+            const mediaNuevaMod = (sP + notaPred * pesoSim) / (sPe + pesoSim);
+            const boletinNuevo = Math.round(mediaNuevaMod);
+
+            // Impacto en la media global del panel
+            const sumaSinMod = evaluados > 0 && mediaActualMod !== null ? (suma - mediaActualMod) : suma;
+            const evalNuevos = mediaActualMod !== null ? evaluados : (evaluados + 1);
+            const mediaGlobalNueva = (sumaSinMod + mediaNuevaMod) / evalNuevos;
+
+            let estadoPred = '';
+            if (mediaNuevaMod >= umbralObjetivo) {
+                estadoPred = `🏆 <strong>¡Superarías el umbral objetivo (${umbralObjetivo.toFixed(2)})</strong> en esta asignatura!`;
+            } else if (boletinNuevo >= 5) {
+                const faltaObj = Math.max(0, umbralObjetivo - mediaNuevaMod).toFixed(2);
+                estadoPred = `✅ <strong>Aprobarías ${escaparHTML(moduloMatch.id)}</strong> (boletín: <strong>${boletinNuevo}</strong>). Te quedarían ${faltaObj} puntos para el objetivo (${umbralObjetivo.toFixed(2)}).`;
+            } else {
+                const faltaAprobar = (5 - mediaNuevaMod).toFixed(2);
+                estadoPred = `⚠️ Con un <strong>${notaPred.toFixed(2)}</strong> aún quedarías en <strong>${mediaNuevaMod.toFixed(2)}</strong> (faltarían ${faltaAprobar} puntos para llegar al 5).`;
+            }
+
+            return `🔮 <strong>Predicción para ${escaparHTML(moduloMatch.id)} (${escaparHTML(moduloMatch.nombre)}):</strong><br><br>` +
+                   `• Nota simulada: <strong>${notaPred.toFixed(2)}</strong> <em>(Peso x${pesoSim})</em><br>` +
+                   `• Media en ${escaparHTML(moduloMatch.id)}: ${mediaActualMod !== null ? `<strong>${mediaActualMod.toFixed(2)}</strong> → ` : ''}<strong>${mediaNuevaMod.toFixed(2)}</strong> <em>(Boletín: ${boletinNuevo})</em><br>` +
+                   `• Media Global del panel: <strong>${mediaGlobal.toFixed(2)}</strong> → <strong>${mediaGlobalNueva.toFixed(2)}</strong><br><br>` +
+                   `${estadoPred}`;
+        }
+
+        const respuestaPrediccion = manejarPrediccionAsignatura(queryRaw, query);
+        if (respuestaPrediccion) {
+            return respuestaPrediccion;
+        }
+
+        if(query.includes('simular') || query.includes('simula') || query.includes('calcula') || query.includes('prediccion') || query.includes('predicción') || query.includes('si saco')) {
             const numerosEnQuery = query.match(/(\d+([.,]\d+)?)/g);
-            if (!numerosEnQuery) return `🔮 Indica una nota numérica. Ej: <em>simular 8.5</em>.`;
+            if (!numerosEnQuery) return `🔮 Indica una nota numérica (y opcionalmente el código de asignatura). Ej: <em>"pp nota 7"</em> o <em>"simular 8.5"</em>.`;
             const notaSimulada = parseFloat(numerosEnQuery[numerosEnQuery.length - 1].replace(',', '.'));
             if(isNaN(notaSimulada) || notaSimulada < 0 || notaSimulada > 10) return `⚠️ Introduce una nota válida entre 0 y 10.`;
 
@@ -2910,7 +3034,8 @@
             let mediaSimuladaGlobal = nuevoTotalPesos > 0 ? (nuevoTotalPonderado / nuevoTotalPesos) : notaSimulada;
 
             return `🔮 <strong>Resultado de Simulación Global:</strong><br><br>` +
-                   `Añadiendo un <strong>${notaSimulada.toFixed(2)}</strong>, tu media global pasaría de <strong>${mediaGlobal.toFixed(2)}</strong> a <strong>${mediaSimuladaGlobal.toFixed(2)}</strong>.`;
+                   `Añadiendo un <strong>${notaSimulada.toFixed(2)}</strong>, tu media global pasaría de <strong>${mediaGlobal.toFixed(2)}</strong> a <strong>${mediaSimuladaGlobal.toFixed(2)}</strong>.<br>` +
+                   `<span style="font-size:0.78rem; color:var(--secondary);">💡 Consejo: Si escribes el código de una categoría (ej: <em>"pp nota 7"</em>), calcularé la predicción exacta para esa asignatura.</span>`;
         }
 
         const respuestaOrganizacionPlan = manejarOrganizacionTareasYPlan(queryRaw, query);
