@@ -400,6 +400,10 @@
             margin: 0 12px 6px 12px; max-width: calc(100% - 24px);
         }
 
+
+        /* =========================================
+           MEDIA QUERIES - ADAPTACIÓN MÓVIL Y TABLET
+           ========================================= */
         @media (max-width: 900px) {
             .charts-grid { grid-template-columns: 1fr; }
         }
@@ -469,7 +473,7 @@
         <div class="header-title-wrapper">
             <div class="header-badge-row">
                 <h1>Panel de Control y Métricas Pro</h1>
-                <span class="software-badge" onclick="abrirModalNovedades()" title="Haz clic para ver el registro de cambios (Changelog)">v4.2.3 • 2026 • IA Local • MIT 📋</span>
+                <span class="software-badge" onclick="abrirModalNovedades()" title="Haz clic para ver el registro de cambios (Changelog)">v4.2.2 • 2026 • IA Local • MIT 📋</span>
             </div>
             <p class="subtitle">Consola inteligente de monitorización de indicadores con procesamiento local y memoria evolutiva</p>
         </div>
@@ -583,7 +587,7 @@
     <footer class="app-footer">
         <div class="footer-brand">
             <span class="footer-title">📊 Panel de Control y Métricas Pro</span>
-            <span class="version-pill" id="footer-version-badge">v4.2.3</span>
+            <span class="version-pill" id="footer-version-badge">v4.2.2</span>
             <span>• <strong id="footer-year">2026</strong> • Licencia MIT</span>
         </div>
         <div class="footer-meta">
@@ -610,7 +614,7 @@
             </div>
             <div class="spec-box">
                 <div class="spec-label">Versión Actual</div>
-                <div class="spec-val" id="modal-version-val">v4.2.3 (Build 2026)</div>
+                <div class="spec-val" id="modal-version-val">v4.2.2 (Build 2026)</div>
             </div>
             <div class="spec-box">
                 <div class="spec-label">Motor IA Local</div>
@@ -627,23 +631,18 @@
     </div>
 </div>
 
-<!-- MODAL NOVEDADES Y CORRECCIONES (CHANGELOG v4.2.3) -->
+<!-- MODAL NOVEDADES Y CORRECCIONES (CHANGELOG v4.2.2) -->
 <div class="modal-overlay" id="modalNovedades">
     <div class="modal-card" style="max-width: 500px;">
         <div class="modal-header">
-            <h3>📋 Novedades y Correcciones (v4.2.3)</h3>
+            <h3>📋 Novedades y Correcciones (v4.2.2)</h3>
             <button class="close-btn" onclick="cerrarModalNovedades()">×</button>
         </div>
         <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6; max-height: 300px; overflow-y: auto; padding-right: 4px;">
-            <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.2.3 (Actual):</strong></p>
+            <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.2.2 (Actual):</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
-                <li><strong>Avisos Progresivos por Fecha en Agenda:</strong> Avisa con margen de <strong>7 días</strong>, a los <strong>4 días</strong>, el <strong>día anterior</strong> y el mismo día (respetando <em>No Molestar</em>).</li>
-                <li><strong>Aviso de Actualización a v4.2.3:</strong> Se actualiza la referencia de versión mínima para notificar a quienes estén en versiones anteriores.</li>
-            </ul>
-            <p style="margin-bottom: 12px;"><strong>✨ Versión 4.2.2:</strong></p>
-            <ul style="padding-left: 18px; margin-bottom: 16px;">
-                <li><strong>Sincronización Automática de Exámenes a Agenda:</strong> Al guardar un examen con <em>"recuerda que..."</em>, se añade también a <strong>Eventos / Tareas programadas</strong> resolviendo la fecha del texto.</li>
-                <li><strong>Aviso de Actualización a v4.2.2:</strong> Se actualiza la referencia de versión mínima para notificar a quienes estén en versiones anteriores.</li>
+                <li><strong>Sistema de Actualizaciones Optimizado:</strong> Comparación directa de versiones al iniciar sin bloqueos de referencia y sincronización automática con el almacenamiento local.</li>
+                <li><strong>Ponderación Porcentual y Predicción por Asignatura:</strong> Configuración de porcentajes por tipo (Exámenes, Tareas, Proyectos) y simulaciones rápidas por categoría en el asistente.</li>
             </ul>
             <p style="margin-bottom: 12px;"><strong>✨ Versión 4.2.1:</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
@@ -657,7 +656,7 @@
             </ul>
             <p style="margin-bottom: 8px;"><strong>✨ Versión 4.1.1:</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
-                <li>Auto-guardado preventivo al cerrar la pestaña (<code>beforeunload</code>).</li>
+                <li>Auto-guardado preventivo al cerrar la pestaña (`beforeunload`).</li>
                 <li>Corrección del informe PDF en blanco mediante contenedor aislado.</li>
             </ul>
         </div>
@@ -870,8 +869,8 @@
 <script>
     const APP_INFO = {
         nombre: "Panel de Control y Métricas Pro",
-        version: "4.2.3",
-        versionLabel: "v4.2.3",
+        version: "4.2.2",
+        versionLabel: "v4.2.2",
         anioDesarrollo: 2026,
         urlManifestRemoto: "https://gist.githubusercontent.com/JUAN3000-CMD/3b1f763a744b03a0874f7972208d7c7e/raw/version.json"
     };
@@ -929,13 +928,9 @@
                 mapaTemp[idLimpio] = objetoNotasBruto[k].slice(0, 200).map(item => {
                     const valRaw = typeof item === 'number' ? item : Number(item?.val ?? 0);
                     const pesoRaw = typeof item === 'number' ? 1 : Number(item?.peso ?? 1);
-                    const pesoLimpio = (!isNaN(pesoRaw) && isFinite(pesoRaw)) ? Math.max(1, Math.min(5, Math.round(pesoRaw))) : 1;
-                    const tipoRaw = (typeof item === 'object' && item?.tipo) ? String(item.tipo).toLowerCase().trim() : (pesoLimpio === 3 ? 'examen' : 'tareas');
-                    const tipoLimpio = (tipoRaw === 'examen' || tipoRaw === 'proyecto' || tipoRaw === 'tareas') ? tipoRaw : 'tareas';
                     return {
                         val: (!isNaN(valRaw) && isFinite(valRaw)) ? Math.max(0, Math.min(10, valRaw)) : 0,
-                        peso: pesoLimpio,
-                        tipo: tipoLimpio
+                        peso: (!isNaN(pesoRaw) && isFinite(pesoRaw)) ? Math.max(1, Math.min(5, Math.round(pesoRaw))) : 1
                     };
                 });
             }
@@ -1088,13 +1083,14 @@
         const hoy = new Date().toISOString().split('T')[0];
         document.getElementById('inputFechaEvento').value = hoy;
         renderizarEventosCalendario();
-        setTimeout(() => verificarAvisosFechasAgenda(true), 450);
     });
 
+    // 🔒 AUTOGUARDADO DE SEGURIDAD AL CERRAR O SALIR DE LA PESTAÑA
     window.addEventListener('beforeunload', () => {
         guardarTodoLocal();
     });
 
+    // ⌨️ CIERRE RÁPIDO DE MODALES Y ASISTENTE CON TECLA ESCAPE O CLIC FUERA
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             document.querySelectorAll('.modal-overlay').forEach(modal => {
@@ -1138,13 +1134,14 @@
             if (!respuesta.ok) return;
             const datosRemotos = await respuesta.json();
 
-            const versionMinimaReferencia = "4.2.3";
-            const versionLocalActual = localStorage.getItem('smr_ultima_version_aplicada') || APP_INFO.version;
+            const versionLocalGuardada = localStorage.getItem('smr_ultima_version_aplicada');
+            const versionLocalActual = (versionLocalGuardada && compararVersionesSemver(versionLocalGuardada, APP_INFO.version) > 0)
+                ? versionLocalGuardada
+                : APP_INFO.version;
 
-            const esMenorQueReferencia = compararVersionesSemver(versionLocalActual, versionMinimaReferencia) < 0;
             const hayVersionSuperior = datosRemotos.version && compararVersionesSemver(versionLocalActual, datosRemotos.version) < 0;
 
-            if (esMenorQueReferencia && hayVersionSuperior) {
+            if (hayVersionSuperior) {
                 const banner = document.getElementById('updateBanner');
                 const titulo = document.getElementById('updateTitle');
                 const texto = document.getElementById('updateText');
@@ -1399,102 +1396,6 @@
         }
     }
 
-    function calcularDiferenciaDiasDesdeHoy(fechaISO) {
-        if (!fechaISO || !/^\d{4}-\d{2}-\d{2}$/.test(String(fechaISO).trim())) return null;
-        const partes = String(fechaISO).trim().split('-').map(n => parseInt(n, 10));
-        const eventoMediodia = new Date(partes[0], partes[1] - 1, partes[2], 12, 0, 0, 0);
-        if (isNaN(eventoMediodia.getTime())) return null;
-
-        const ahora = new Date();
-        const hoyMediodia = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 12, 0, 0, 0);
-        return Math.round((eventoMediodia.getTime() - hoyMediodia.getTime()) / (24 * 60 * 60 * 1000));
-    }
-
-    function obtenerHitoAvisoFecha(diffDias, diasRestantesAlCrear = null) {
-        const esTareaCorta = typeof diasRestantesAlCrear === 'number' && !isNaN(diasRestantesAlCrear) && diasRestantesAlCrear < 7;
-
-        if (diffDias === 7) {
-            return { clave: '7d', etiqueta: 'dentro de 7 días (margen de 1 semana)' };
-        }
-        if (diffDias === 4) {
-            return {
-                clave: '4d',
-                etiqueta: esTareaCorta ? 'dentro de 4 días (aviso adaptado por plazo corto)' : 'dentro de 4 días'
-            };
-        }
-        if (diffDias === 1) {
-            return {
-                clave: '1d',
-                etiqueta: esTareaCorta ? 'mañana / día anterior (aviso adaptado)' : 'mañana (día anterior)'
-            };
-        }
-        if (diffDias === 0) {
-            return {
-                clave: '0d',
-                etiqueta: esTareaCorta ? 'hoy (aviso adaptado por plazo corto)' : 'hoy'
-            };
-        }
-
-        if (esTareaCorta && diasRestantesAlCrear >= 2) {
-            const hitoAdaptado = Math.max(1, Math.floor(diasRestantesAlCrear / 2));
-            if (hitoAdaptado > 1 && diffDias === hitoAdaptado) {
-                return {
-                    clave: `adapt_${hitoAdaptado}d`,
-                    etiqueta: `dentro de ${diffDias} días (margen adaptado de ${diasRestantesAlCrear} días)`
-                };
-            }
-        }
-
-        return null;
-    }
-
-    function verificarAvisosFechasAgenda(abrirSiCorresponde = true) {
-        if (!Array.isArray(eventosCalendario) || eventosCalendario.length === 0) return [];
-        const hoyStr = new Date().toISOString().split('T')[0];
-        let avisosMostrados = [];
-        let notificadosHoy = [];
-        try {
-            const raw = sessionStorage.getItem('smr_avisos_agenda_' + hoyStr);
-            notificadosHoy = raw ? JSON.parse(raw) : [];
-        } catch (e) {
-            notificadosHoy = [];
-        }
-
-        const pendientesAviso = [];
-        eventosCalendario.forEach(ev => {
-            const diff = calcularDiferenciaDiasDesdeHoy(ev.fecha);
-            const margenInicial = typeof ev.diasMargenInicial === 'number' ? ev.diasMargenInicial : diff;
-            const hito = obtenerHitoAvisoFecha(diff, margenInicial);
-            if (!hito) return;
-            const marca = `${ev.id || ev.fecha + '_' + ev.desc}::${hito.clave}`;
-            if (!notificadosHoy.includes(marca)) {
-                pendientesAviso.push({ ev, hito, marca });
-            }
-        });
-
-        if (pendientesAviso.length === 0) return [];
-
-        const lineas = pendientesAviso.map(({ ev, hito }) =>
-            `• <strong>${escaparHTML(ev.fecha)}</strong> (<em>${escaparHTML(hito.etiqueta)}</em>): <strong>${escaparHTML(ev.desc)}</strong>`
-        ).join('<br>');
-
-        agregarMensajeChat('bot', `📅 <strong>Aviso de Agenda por Fecha:</strong><br><br>${lineas}`);
-        avisosMostrados = pendientesAviso.map(p => p.ev);
-
-        pendientesAviso.forEach(p => notificadosHoy.push(p.marca));
-        try {
-            sessionStorage.setItem('smr_avisos_agenda_' + hoyStr, JSON.stringify(notificadosHoy.slice(-200)));
-        } catch (e) {}
-
-        if (abrirSiCorresponde && !modoNoMolestar) {
-            const win = document.getElementById('assistantWindow');
-            if (win && win.style.display !== 'flex') {
-                alternarAsistente();
-            }
-        }
-        return avisosMostrados;
-    }
-
     function agregarEventoCalendario() {
         const fecha = document.getElementById('inputFechaEvento').value;
         const desc = document.getElementById('inputDescEvento').value.trim();
@@ -1502,18 +1403,11 @@
             alert("Por favor, selecciona una fecha y escribe una descripción para el evento.");
             return;
         }
-        const diffAlCrear = calcularDiferenciaDiasDesdeHoy(fecha);
-        eventosCalendario.push({
-            id: Date.now(),
-            fecha,
-            desc,
-            diasMargenInicial: typeof diffAlCrear === 'number' ? diffAlCrear : null
-        });
+        eventosCalendario.push({ id: Date.now(), fecha, desc });
         document.getElementById('inputDescEvento').value = '';
         renderizarEventosCalendario();
         guardarTodoLocal();
         actualizarEstadoBotonGuardado(false);
-        verificarAvisosFechasAgenda(false);
     }
 
     function eliminarEventoCalendario(id) {
@@ -1619,13 +1513,15 @@
             if (gPond) ponderacionesPorcentaje = JSON.parse(gPond);
 
             const vLocal = localStorage.getItem('smr_ultima_version_aplicada');
-            if (vLocal) {
+            if (vLocal && compararVersionesSemver(vLocal, APP_INFO.version) < 0) {
+                localStorage.setItem('smr_ultima_version_aplicada', APP_INFO.version);
+            } else if (vLocal && compararVersionesSemver(vLocal, APP_INFO.version) > 0) {
                 APP_INFO.version = vLocal;
-                const badgeVersion = document.getElementById('footer-version-badge');
-                if (badgeVersion) badgeVersion.textContent = 'v' + vLocal;
-                const elModVer = document.getElementById('modal-version-val');
-                if (elModVer) elModVer.textContent = `v${vLocal} (Build ${APP_INFO.anioDesarrollo})`;
             }
+            const badgeVersion = document.getElementById('footer-version-badge');
+            if (badgeVersion) badgeVersion.textContent = 'v' + APP_INFO.version;
+            const elModVer = document.getElementById('modal-version-val');
+            if (elModVer) elModVer.textContent = `v${APP_INFO.version} (Build ${APP_INFO.anioDesarrollo})`;
         } catch(e) {
             console.error("Error leyendo estado local:", e);
         }
@@ -1728,6 +1624,7 @@
         });
         recalcularGlobal();
     }
+
 
     function tienePorcentajeConfigurado(idModulo) {
         const cfg = ponderacionesPorcentaje[idModulo];
@@ -2225,6 +2122,7 @@
     function manejarFlujoTemarioYConsejos(queryRaw, queryLower, evaluados, listaModulosConNota, mediaGlobal) {
         const textoTrim = queryRaw.trim();
 
+        // Si el asistente acaba de preguntar de qué trata y cuál es el temario, responder con temario + recomendaciones
         if (pendientePreguntarTemario) {
             pendientePreguntarTemario = false;
             const asunto = asuntoPendienteTemario || 'Tema indicado';
@@ -2256,6 +2154,7 @@
                    construirBotonesDescargaResumen(idGuía);
         }
 
+        // Si el usuario pide consejos y hay tema subido, arrancar los consejos directamente sobre ese tema
         if (queryLower.includes('consejo') || queryLower.includes('mejorar') || queryLower.includes('tip') || queryLower.includes('estudiar')) {
             if (temaAdjuntoActual && temaAdjuntoActual.contenido) {
                 const tituloTema = temaAdjuntoActual.titulo || 'Tema subido';
@@ -2285,6 +2184,7 @@
                        construirBotonesDescargaResumen(idConsTema);
             }
 
+            // Si NO hay tema subido, preguntar de qué trata el tema y cuál es el temario + dar recomendaciones base
             const matchAsunto = textoTrim.match(/(?:sobre|de|para)\s+(.+)$/i);
             pendientePreguntarTemario = true;
             asuntoPendienteTemario = matchAsunto ? matchAsunto[1].trim() : 'Tu próximo tema de estudio';
@@ -2298,6 +2198,41 @@
         }
 
         return null;
+    }
+
+    function obtenerConsejoAvanzado(evaluados, listaModulosConNota, mediaGlobal) {
+        const tipsGenerales = [
+            `<strong>Técnica Pomodoro (${minutosEstudio} min):</strong> Trabaja sin distracciones (activa <em>No Molestar</em>) y descansa ${minutosDescansoCorto} min al terminar.`,
+            "<strong>Active Recall (Recuerdo Activo):</strong> Cierra los apuntes e intenta escribir o explicar en voz alta todo lo que recuerdes sobre el tema antes de volver a leer.",
+            "<strong>Repetición Espaciada:</strong> Repasa un tema nuevo a las 24 horas, a los 3 días y a la semana; así evitas la curva del olvido.",
+            "<strong>Técnica Feynman:</strong> Si no puedes explicar un concepto de forma sencilla como para que lo entienda un niño, aún necesitas repasarlo.",
+            "<strong>Regla de los 2 Minutos:</strong> Si te cuesta empezar, comprométete a estudiar solo 2 minutos. Una vez vencida la resistencia inicial, seguir es mucho más fácil.",
+            "<strong>Regla Visual 20-20-20:</strong> Cada 20 minutos frente a la pantalla, mira un objeto a 6 metros (20 pies) durante 20 segundos para evitar fatiga ocular.",
+            "<strong>Prioriza los pesos altos:</strong> Revisa tus registros con <em>Peso x3 (Examen)</em>, ya que son los que más mueven tu promedio ponderado.",
+            "<strong>Simulacro real:</strong> Haz ejercicios cronometrados sin mirar soluciones para entrenar la gestión de nervios y tiempo."
+        ];
+
+        const tipElegido = obtenerOpcionSinRepetir(tipsGenerales);
+
+        if (evaluados === 0) {
+            return `💡 <strong>Consejo de Arranque:</strong> Aún no has registrado calificaciones. Añade tus primeras notas o agenda tus próximos exámenes en el calendario.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
+        }
+
+        let listaOrdenada = [...listaModulosConNota].sort((a, b) => a.promedio - b.promedio);
+        let critico = listaOrdenada[0];
+        let mejor = listaOrdenada[listaOrdenada.length - 1];
+
+        if (critico.promedio < 5) {
+            const faltante = (5 - critico.promedio).toFixed(2);
+            return `🎯 <strong>Prioridad Alta en ${escaparHTML(critico.nombre)} (${escaparHTML(critico.id)}):</strong> Tu promedio actual es <strong>${critico.promedio.toFixed(2)}</strong> (te faltan <strong>${faltante}</strong> puntos para aprobar). Dedícale el próximo bloque de estudio.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
+        }
+
+        if (mediaGlobal < umbralObjetivo) {
+            const diffObj = (umbralObjetivo - mediaGlobal).toFixed(2);
+            return `📊 <strong>Camino al Objetivo (${umbralObjetivo.toFixed(2)}):</strong> Tienes todas las evaluadas aprobadas, pero estás a <strong>${diffObj}</strong> puntos de tu umbral. Refuerza <strong>${escaparHTML(critico.nombre)}</strong> (${critico.promedio.toFixed(2)}) para subir la media global.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
+        }
+
+        return `🏆 <strong>Rendimiento Excelente (${mediaGlobal.toFixed(2)}):</strong> Destacas especialmente en <strong>${escaparHTML(mejor.nombre)}</strong> (${mejor.promedio.toFixed(2)}). Mantén la constancia sin confiarte.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
     }
 
     const BASE_CONOCIMIENTO_CONVERSACIONAL = [
@@ -2433,26 +2368,9 @@
                     if (!eventosCalendario || eventosCalendario.length === 0) {
                         return "📅 No tienes eventos ni tareas agendadas en el calendario ahora mismo. Puedes añadirlos en la sección <em>Calendario y Agenda</em>.";
                     }
-                    const ordenados = [...eventosCalendario].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-                    const alertasProximas = ordenados
-                        .map(e => {
-                            const diffE = calcularDiferenciaDiasDesdeHoy(e.fecha);
-                            const margenE = typeof e.diasMargenInicial === 'number' ? e.diasMargenInicial : diffE;
-                            return { e, hito: obtenerHitoAvisoFecha(diffE, margenE) };
-                        })
-                        .filter(x => x.hito);
-                    const lista = ordenados.slice(0, 4).map(e => {
-                        const diffE = calcularDiferenciaDiasDesdeHoy(e.fecha);
-                        const margenE = typeof e.diasMargenInicial === 'number' ? e.diasMargenInicial : diffE;
-                        const h = obtenerHitoAvisoFecha(diffE, margenE);
-                        const sufijo = h ? ` <em>(${escaparHTML(h.etiqueta)})</em>` : '';
-                        return `• <strong>${escaparHTML(e.fecha)}:</strong> ${escaparHTML(e.desc)}${sufijo}`;
-                    }).join('<br>');
-                    const bloqueAlertas = alertasProximas.length > 0
-                        ? `<br><br>🔔 <strong>Avisos activos (7d / 4d / día anterior / hoy):</strong><br>` +
-                          alertasProximas.map(x => `• <strong>${escaparHTML(x.e.desc)}</strong> → <em>${escaparHTML(x.hito.etiqueta)}</em>`).join('<br>')
-                        : '';
-                    return `📅 <strong>Próximos eventos en tu agenda:</strong><br><br>${lista}${bloqueAlertas}`;
+                    const ordenados = [...eventosCalendario].sort((a, b) => new Date(a.fecha) - new Date(b.fecha)).slice(0, 4);
+                    const lista = ordenados.map(e => `• <strong>${escaparHTML(e.fecha)}:</strong> ${escaparHTML(e.desc)}`).join('<br>');
+                    return `📅 <strong>Próximos eventos en tu agenda:</strong><br><br>${lista}`;
                 }
             ]
         },
@@ -2518,6 +2436,9 @@
         return null;
     }
 
+    // =========================================================================
+    // RESUMIDOR EXTRACTIVO LOCAL SEGURO + ADJUNTAR TEMAS + DESCARGA DE RESUMEN
+    // =========================================================================
     const MAX_CARACTERES_RESUMEN_ENTRADA = 40000;
     const MAX_ORACIONES_RESUMEN = 6;
     const resumenesDescargablesLocales = {};
@@ -2909,6 +2830,9 @@
                `Puedes pulsar el botón <strong>📎</strong> del chat para adjuntar un tema o archivo de texto, o escribir <em>"resume: ..."</em> seguido de tu texto.`;
     }
 
+    // =========================================================================
+    // ORGANIZADOR DE TAREAS Y GENERADOR DE PLANES DE ESTUDIO LOCALES
+    // =========================================================================
     function sumarDiasISO(dias) {
         const d = new Date();
         d.setHours(12, 0, 0, 0);
@@ -2936,6 +2860,7 @@
     }
 
     function manejarOrganizacionTareasYPlan(queryRaw, queryLower) {
+        // 1. Crear tarea rapida y agendarla en el calendario local
         const matchTarea = queryRaw.trim().match(/^(?:anade|añade|agrega|crea|nueva)\s+(?:una\s+)?tarea(?:\s+(?:de|sobre|para))?\s+(.+)$/i);
         if (matchTarea) {
             let cuerpo = matchTarea[1].trim();
@@ -2960,7 +2885,7 @@
                 return `⚠️ Indica qué tarea quieres añadir. Ej: <em>"añade tarea repasar temas en 2 días"</em>.`;
             }
             const fechaISO = sumarDiasISO(diasOffset);
-            eventosCalendario.push({ id: Date.now(), fecha: fechaISO, desc: descTarea, diasMargenInicial: diasOffset });
+            eventosCalendario.push({ id: Date.now(), fecha: fechaISO, desc: descTarea });
             renderizarEventosCalendario();
             guardarTodoLocal();
             actualizarEstadoBotonGuardado(false);
@@ -2970,6 +2895,7 @@
                    `• <strong>Tarea:</strong> ${escaparHTML(descTarea)}`;
         }
 
+        // 2. Organizar / priorizar tareas y asignaturas actuales
         if (/\b(?:organiza(?:r)?|ordena(?:r)?|prioriza(?:r)?|planifica(?:r)?)\s+(?:mis\s+)?tareas\b/i.test(queryLower)) {
             const pendientesAgenda = [...(eventosCalendario || [])].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
             const priorizadas = ordenarModulosPorPrioridad();
@@ -3011,6 +2937,7 @@
                    construirBotonesDescargaResumen(idOrg);
         }
 
+        // 3. Crear plan de estudio
         if (/\b(?:plan\s+de\s+estudio|crear\s+plan|estudiar\s+en\s+\d+\s*d[ií]as?|rutina\s+de\s+estudio)\b/i.test(queryLower)) {
             const matchDiasPlan = queryLower.match(/(\d{1,2})\s*d[ií]as?/);
             const numDias = matchDiasPlan ? Math.max(2, Math.min(21, parseInt(matchDiasPlan[1], 10))) : 5;
@@ -3099,90 +3026,6 @@
         return /\b(chiste|chistes|broma|bromas|reir|reír|cuentame\s+un\s+chiste|cuéntame\s+un\s+chiste)\b/i.test(queryLower);
     }
 
-    function resolverFechaDesdeTextoLocal(texto) {
-        const t = String(texto || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const base = new Date();
-        base.setHours(12, 0, 0, 0);
-
-        const matchISO = t.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
-        if (matchISO) return matchISO[1];
-
-        const matchDMY = t.match(/\b(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{2,4}))?\b/);
-        if (matchDMY) {
-            const dia = Math.min(31, Math.max(1, parseInt(matchDMY[1], 10)));
-            const mes = Math.min(12, Math.max(1, parseInt(matchDMY[2], 10))) - 1;
-            let anio = matchDMY[3] ? parseInt(matchDMY[3], 10) : base.getFullYear();
-            if (anio < 100) anio += 2000;
-            const d = new Date(anio, mes, dia, 12, 0, 0, 0);
-            if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-        }
-
-        const matchEnDias = t.match(/\b(?:en|dentro\s+de)\s+(\d{1,2})\s*dias?\b/);
-        if (matchEnDias) {
-            const d = new Date(base);
-            d.setDate(d.getDate() + Math.max(0, Math.min(365, parseInt(matchEnDias[1], 10))));
-            return d.toISOString().split('T')[0];
-        }
-
-        if (/\bpasado\s+manana\b/.test(t)) {
-            const d = new Date(base);
-            d.setDate(d.getDate() + 2);
-            return d.toISOString().split('T')[0];
-        }
-        if (/\bmanana\b/.test(t)) {
-            const d = new Date(base);
-            d.setDate(d.getDate() + 1);
-            return d.toISOString().split('T')[0];
-        }
-        if (/\bhoy\b/.test(t)) {
-            return base.toISOString().split('T')[0];
-        }
-
-        const diasSemana = {
-            domingo: 0, lunes: 1, martes: 2, miercoles: 3, jueves: 4, viernes: 5, sabado: 6
-        };
-        for (const [nombreDia, idxDia] of Object.entries(diasSemana)) {
-            if (new RegExp(`\\b(?:el\\s+|este\\s+|proximo\\s+)?${nombreDia}\\b`).test(t)) {
-                let diff = (idxDia - base.getDay() + 7) % 7;
-                if (diff === 0) diff = 7;
-                const d = new Date(base);
-                d.setDate(d.getDate() + diff);
-                return d.toISOString().split('T')[0];
-            }
-        }
-
-        return base.toISOString().split('T')[0];
-    }
-
-    function sincronizarExamenMemoriaAEventos(contenidoTexto) {
-        const textoLimpio = String(contenidoTexto || '').trim();
-        if (!textoLimpio) return null;
-        const norm = textoLimpio.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        if (!/\bexamen(?:es)?\b/.test(norm)) return null;
-
-        const fechaEvento = resolverFechaDesdeTextoLocal(textoLimpio);
-        const descEvento = textoLimpio.slice(0, 140);
-
-        const yaExiste = eventosCalendario.some(ev =>
-            String(ev.fecha) === fechaEvento &&
-            String(ev.desc || '').toLowerCase().trim() === descEvento.toLowerCase().trim()
-        );
-
-        if (!yaExiste) {
-            const diffSync = calcularDiferenciaDiasDesdeHoy(fechaEvento);
-            eventosCalendario.push({
-                id: Date.now() + Math.floor(Math.random() * 1000),
-                fecha: fechaEvento,
-                desc: descEvento,
-                diasMargenInicial: typeof diffSync === 'number' ? diffSync : null
-            });
-            renderizarEventosCalendario();
-            guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
-        }
-        return fechaEvento;
-    }
-
     function procesarRespuestaAsistente(queryRaw) {
         const query = queryRaw.toLowerCase().trim();
 
@@ -3229,10 +3072,6 @@
                 registrarNuevoRecuerdo(partes[0], partes.slice(1).join('='));
             } else {
                 registrarNuevoRecuerdo(contenido, contenido);
-            }
-            const fechaExamenAgendada = sincronizarExamenMemoriaAEventos(contenido);
-            if (fechaExamenAgendada) {
-                return `🧠 <strong>¡Guardado en memoria activa!</strong> Recordaré esto durante los próximos <strong>4 meses</strong> y, al detectar que es un <strong>examen</strong>, también lo he añadido a <strong>Eventos / Tareas programadas</strong> para el <strong>${escaparHTML(fechaExamenAgendada)}</strong>. 📅`;
             }
             return `🧠 <strong>¡Guardado en memoria activa!</strong> Recordaré esto con prioridad máxima durante los próximos <strong>4 meses</strong>; después pasará a ser una referencia histórica compacta para consultas parecidas.`;
         }
@@ -3320,12 +3159,14 @@
             return responderChisteLocal();
         }
 
+        // Predicción por asignatura / categoría (ej: "pp nota 7", "pp 7", "pp nota 7 x3", "si saco un 7 en pp", "prediccion pp 7")
         function manejarPrediccionAsignatura(textoOriginal, textoLower) {
             if (modulos.length === 0) return null;
 
             const normSinTildes = textoLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const esIntencionPrediccion = /\b(prediccion|predecir|predice|si\s+saco|sacando|con\s+un|con\s+una|nota|peso|x[123])\b/.test(normSinTildes);
 
+            // Buscar módulo coincidente por ID o nombre
             let moduloMatch = null;
             for (const m of modulos) {
                 const idNorm = m.id.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -3339,6 +3180,7 @@
 
             if (!moduloMatch) return null;
 
+            // Extraer posible peso si lo indica (ej: "peso 3", "x3", "examen")
             let pesoSim = 1;
             const matchPeso = normSinTildes.match(/(?:peso\s*|\bx\s*)([123])\b/);
             if (matchPeso) {
@@ -3347,6 +3189,7 @@
                 pesoSim = 3;
             }
 
+            // Quitar el indicador de peso y el ID del módulo para extraer limpiamente la nota
             let textoParaNota = normSinTildes
                 .replace(/(?:peso\s*|\bx\s*)[123]\b/g, ' ')
                 .replace(new RegExp(`(?:^|[^a-z0-9])${moduloMatch.id.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:$|[^a-z0-9])`, 'g'), ' ');
@@ -3377,6 +3220,7 @@
             const mediaNuevaMod = (sP + notaPred * pesoSim) / (sPe + pesoSim);
             const boletinNuevo = Math.round(mediaNuevaMod);
 
+            // Impacto en la media global del panel
             const sumaSinMod = evaluados > 0 && mediaActualMod !== null ? (suma - mediaActualMod) : suma;
             const evalNuevos = mediaActualMod !== null ? evaluados : (evaluados + 1);
             const mediaGlobalNueva = (sumaSinMod + mediaNuevaMod) / evalNuevos;
@@ -3514,16 +3358,11 @@
         const datosCanonicos = JSON.stringify({
             m: payload.modulos.map(x => [x.id, x.nombre]),
             n: Object.keys(payload.notasCurso).sort().reduce((acc, k) => {
-                acc[k] = (payload.notasCurso[k] || []).map(item => [
-                    Number(item.val),
-                    Number(item.peso),
-                    String(item.tipo || (Number(item.peso) === 3 ? 'examen' : 'tareas'))
-                ]);
+                acc[k] = payload.notasCurso[k].map(item => [Number(item.val), Number(item.peso)]);
                 return acc;
             }, {}),
             u: Number(payload.umbralObjetivo),
-            r: payload.metaModulosRequeridos === null ? null : Number(payload.metaModulosRequeridos),
-            p: payload.ponderacionesPorcentaje || {}
+            r: payload.metaModulosRequeridos === null ? null : Number(payload.metaModulosRequeridos)
         });
         const msgBuffer = new TextEncoder().encode("INTEGRITY_V3::" + datosCanonicos + "::ANALYTICS_PRO");
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -3544,6 +3383,7 @@
         actualizarEstadoBotonGuardado(true);
     }
 
+    // 🔒 IMPORTACIÓN SEGURA Y ACTUALIZACIÓN AUTOMÁTICA DE VERSIÓN
     function importarDatos(event) {
         const archivo = event.target.files[0];
         if (!archivo) return;
@@ -3564,8 +3404,7 @@
                     notasCurso: parsed.notasCurso || {},
                     umbralObjetivo: Number(parsed.umbralObjetivo) || 7.00,
                     metaModulosRequeridos: parsed.metaModulosRequeridos ?? null,
-                    eventosCalendario: parsed.eventosCalendario || [],
-                    ponderacionesPorcentaje: parsed.ponderacionesPorcentaje || {}
+                    eventosCalendario: parsed.eventosCalendario || []
                 };
 
                 const firmaCalculada = await generarFirmaIntegridad(datosParaVerificar);
