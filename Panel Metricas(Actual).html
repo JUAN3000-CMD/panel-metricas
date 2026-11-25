@@ -39,6 +39,7 @@
 
         .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 
+        /* Aviso discreto de eventos / recuerdos próximos */
         .reminder-notice {
             background: var(--warning-light);
             border: 1.5px solid #f59e0b;
@@ -63,6 +64,7 @@
             padding: 0 4px;
         }
 
+        /* Banner de Actualización Remota */
         .update-banner {
             background: #eff6ff;
             border: 1.5px solid #bfdbfe;
@@ -127,6 +129,7 @@
             color: var(--success-text) !important;
         }
 
+        /* DASHBOARD SUPERIOR 2x2 */
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 24px; }
 
         .metric-card {
@@ -423,7 +426,6 @@
                 🔔 Avisos: ON
             </button>
             <button class="btn btn-secondary" onclick="alternarTema()" id="btn-theme" title="Cambiar Modo Claro/Oscuro">🌙 Tema</button>
-            <button class="btn btn-secondary" onclick="solicitarSalidaSegura()" title="Revisar si hay cambios sin guardar antes de cerrar">🚪 Salir</button>
         </div>
     </header>
     
@@ -528,7 +530,7 @@
             <span>• <strong id="footer-year">2026</strong> • Licencia MIT</span>
         </div>
         <div class="footer-meta">
-            <span><span class="status-dot"></span>NLP Local + Auto-.json + Avisos</span>
+            <span><span class="status-dot"></span>NLP Local + Avisos de Fecha</span>
             <button class="btn-about" onclick="abrirModalAcercaDe()">ℹ️ Acerca del sistema</button>
         </div>
     </footer>
@@ -542,12 +544,12 @@
             <button class="close-btn" onclick="cerrarModalAvisoCierre()">×</button>
         </div>
         <p style="font-size: 0.9rem; color: var(--secondary); line-height: 1.5; margin-bottom: 18px;">
-            No has guardado la copia reciente en archivo <strong>.json</strong>. ¿Deseas guardarla ahora antes de cerrar o salir?
+            No se ha guardado una copia reciente en archivo <strong>.json</strong>. ¿Deseas guardarla ahora antes de cerrar?
         </p>
         <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
             <button class="btn btn-secondary" onclick="cerrarModalAvisoCierre()">Seguir editando</button>
-            <button class="btn btn-danger" onclick="salirSinGuardarJSON()">Cerrar sin guardar</button>
-            <button class="btn btn-success" onclick="guardarYContinuar()">💾 Guardar .json</button>
+            <button class="btn btn-danger" onclick="confirmarCerrarSinGuardar()">Cerrar sin guardar</button>
+            <button class="btn btn-success" onclick="guardarJSONYContinuar()">💾 Guardar .json</button>
         </div>
     </div>
 </div>
@@ -560,7 +562,7 @@
             <button class="close-btn" onclick="cerrarModalAcercaDe()">×</button>
         </div>
         <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
-            Suite de seguimiento con motor NLP local, autoguardado opcional de archivos <code>.json</code>, aviso al cerrar sin guardar y registro automático en agenda.
+            Suite de seguimiento con motor NLP local, registro automático de exámenes/fechas en agenda y avisos previos al vencimiento.
         </p>
         <div class="spec-grid">
             <div class="spec-box">
@@ -572,7 +574,7 @@
                 <div class="spec-val" id="modal-version-val">v4.2.3 (Build 2026)</div>
             </div>
         </div>
-        <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+        <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
             <button class="btn btn-accent" onclick="cerrarModalAcercaDe()">Entendido</button>
         </div>
     </div>
@@ -586,9 +588,8 @@
         </div>
         <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6;">
             <ul style="padding-left: 18px;">
-                <li><strong>Versión v4.2.3 consolidada:</strong> Identificadores y control de versiones actualizados a <code>v4.2.3</code>.</li>
-                <li><strong>Aviso antes de cerrar:</strong> Pregunta si deseas guardar si hay cambios sin guardar en <code>.json</code>.</li>
-                <li><strong>Autoguardado <code>.json</code> activable:</strong> Botón <code>💾 Auto-.json: OFF/ON</code> para respaldos periódicos.</li>
+                <li><strong>Versión 4.2.3:</strong> Aviso antes de cerrar si existen cambios sin guardar preguntando si deseas guardar en <code>.json</code>.</li>
+                <li><strong>Autoguardado <code>.json</code> activable:</strong> Botón <code>💾 Auto-.json: OFF/ON</code> para respaldos periódicos opcionales.</li>
                 <li><strong>Exámenes y fechas a agenda:</strong> Lo memorizado con examen o fecha pasa a <em>Eventos / Tareas programadas:</em>.</li>
                 <li><strong>Avisos al cumplirse el día o días antes:</strong> Muestra aviso discreto cuando faltan entre 0 y 3 días.</li>
             </ul>
@@ -681,7 +682,7 @@
         <div class="assistant-title" id="assistantTitle">🧠 Asistente Pro NLP v4.2.3</div>
         <div class="assistant-header-actions">
             <button class="assistant-help-btn" onclick="mostrarAyudaAsistente()" title="Ver Guía y Memoria">?</button>
-            <button class="assistant-close" onclick="cerrarAsistenteConAviso()" title="Cerrar">×</button>
+            <button class="assistant-close" onclick="alternarAsistente()" title="Cerrar">×</button>
         </div>
     </div>
     <div class="assistant-messages" id="assistantMessages"></div>
@@ -718,7 +719,7 @@
     let modoNoMolestar = false;
     let autoguardadoJSONActivo = false;
     let autoSaveJSONTimer = null;
-    let permitirSalidaDirecta = false;
+    let permitirSalidaSinAviso = false;
 
     let minutosEstudio = 25;
     let minutosDescansoCorto = 5;
@@ -1006,50 +1007,23 @@
         if (box) box.style.display = 'none';
     }
 
-    function tieneCambiosSinGuardar() {
+    function hayCambiosSinGuardar() {
         return localStorage.getItem('smr_respaldo_creado') !== 'true';
-    }
-
-    function solicitarSalidaSegura() {
-        if (tieneCambiosSinGuardar()) {
-            document.getElementById('modalAvisoCierre').style.display = 'flex';
-        } else {
-            permitirSalidaDirecta = true;
-            window.close();
-            setTimeout(() => {
-                if (!window.closed) {
-                    alert("✅ Todos los cambios están guardados. Ya puedes cerrar esta pestaña.");
-                }
-            }, 150);
-        }
     }
 
     function cerrarModalAvisoCierre() {
         document.getElementById('modalAvisoCierre').style.display = 'none';
     }
 
-    async function guardarYContinuar() {
+    async function guardarJSONYContinuar() {
         await exportarDatos();
         cerrarModalAvisoCierre();
     }
 
-    function salirSinGuardarJSON() {
-        permitirSalidaDirecta = true;
+    function confirmarCerrarSinGuardar() {
+        permitirSalidaSinAviso = true;
         cerrarModalAvisoCierre();
         window.close();
-        setTimeout(() => {
-            if (!window.closed) {
-                alert("Puedes cerrar la pestaña desde tu navegador cuando desees.");
-            }
-        }, 150);
-    }
-
-    function cerrarAsistenteConAviso() {
-        const win = document.getElementById('assistantWindow');
-        if (win) win.style.display = 'none';
-        if (tieneCambiosSinGuardar()) {
-            document.getElementById('modalAvisoCierre').style.display = 'flex';
-        }
     }
 
     function cargarAutoguardadoJSONInicial() {
@@ -1084,7 +1058,7 @@
         }
         if (autoguardadoJSONActivo) {
             autoSaveJSONTimer = setInterval(() => {
-                if (tieneCambiosSinGuardar()) {
+                if (hayCambiosSinGuardar()) {
                     exportarDatos();
                 }
             }, INTERVALO_AUTOGUARDADO_JSON_MS);
@@ -1112,9 +1086,9 @@
 
     window.addEventListener('beforeunload', (e) => {
         guardarTodoLocal();
-        if (!permitirSalidaDirecta && tieneCambiosSinGuardar()) {
+        if (!permitirSalidaSinAviso && hayCambiosSinGuardar()) {
             e.preventDefault();
-            e.returnValue = 'Tienes cambios sin guardar en .json. ¿Deseas guardar antes de salir?';
+            e.returnValue = 'No se ha guardado la copia en .json. ¿Deseas guardar antes de cerrar?';
             return e.returnValue;
         }
     });
