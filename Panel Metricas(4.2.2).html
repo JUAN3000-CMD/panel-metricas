@@ -404,13 +404,13 @@
         <div class="header-title-wrapper">
             <div class="header-badge-row">
                 <h1>Panel de Control y Métricas Pro</h1>
-                <span class="software-badge" onclick="abrirModalNovedades()" title="Ver novedades">v4.2.2 • 2026 • IA Local 📋</span>
+                <span class="software-badge" onclick="abrirModalNovedades()" title="Ver novedades y mejoras de v4.2.2">v4.2.2 • 2026 • IA Local 📋</span>
             </div>
             <p class="subtitle">Consola inteligente de monitorización de indicadores con procesamiento local y memoria evolutiva</p>
         </div>
         <div class="header-actions">
-            <button id="btn-save-status" class="btn-save-status" onclick="exportarDatos()" title="Pulsa para guardar copia en archivo JSON">
-                ⚠️ Sin guardar
+            <button id="btn-save-status" class="btn-save-status" onclick="crearYVincularJSON()" title="Pulsa para crear el .json y activar el autoguardado automático">
+                ⚠️ No guardado
             </button>
             <button class="btn btn-secondary" onclick="alternarNoMolestar()" id="btn-dnd" title="Silenciar avisos automáticos del asistente">
                 🔔 Avisos: ON
@@ -489,8 +489,8 @@
         <input type="text" id="buscadorTabla" class="search-box" placeholder="🔍 Buscar categoría..." oninput="filtrarTabla()">
         <div class="actions-row">
             <button class="btn btn-secondary" onclick="abrirModal()">⚙️ Gestionar Categorías</button>
-            <button class="btn btn-secondary" onclick="exportarDatos()">💾 Exportar</button>
-            <div class="btn btn-secondary btn-file-input">
+            <button class="btn btn-secondary" onclick="crearYVincularJSON()">💾 Exportar</button>
+            <div class="btn btn-secondary btn-file-input" onclick="abrirYVincularJSON(event)">
                 📂 Importar <input type="file" id="importFile" accept=".json" onchange="importarDatos(event)">
             </div>
             <button class="btn btn-success" onclick="descargarPDF()">📥 Emitir Informe PDF</button>
@@ -520,7 +520,7 @@
             <span>• <strong id="footer-year">2026</strong> • Licencia MIT</span>
         </div>
         <div class="footer-meta">
-            <span><span class="status-dot"></span>NLP Local + Avisos de Fecha</span>
+            <span><span class="status-dot"></span>NLP Local + Autoguardado (.json)</span>
             <button class="btn-about" onclick="abrirModalAcercaDe()">ℹ️ Acerca del sistema</button>
         </div>
     </footer>
@@ -534,7 +534,7 @@
             <button class="close-btn" onclick="cerrarModalAcercaDe()">×</button>
         </div>
         <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
-            Suite de seguimiento con motor NLP local, registro automático de exámenes/fechas en agenda y avisos previos al vencimiento.
+            Suite de seguimiento con motor NLP local, autoguardado directo en archivo .json vinculado, registro automático de exámenes/fechas en agenda y avisos previos al vencimiento.
         </p>
         <div class="spec-grid">
             <div class="spec-box">
@@ -545,6 +545,14 @@
                 <div class="spec-label">Versión Actual</div>
                 <div class="spec-val" id="modal-version-val">v4.2.2 (Build 2026)</div>
             </div>
+            <div class="spec-box">
+                <div class="spec-label">Persistencia</div>
+                <div class="spec-val">Local + Autoguardado .json</div>
+            </div>
+            <div class="spec-box">
+                <div class="spec-label">Cálculo</div>
+                <div class="spec-val">Ponderado por Peso (x1-x3)</div>
+            </div>
         </div>
         <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
             <button class="btn btn-accent" onclick="cerrarModalAcercaDe()">Entendido</button>
@@ -553,16 +561,19 @@
 </div>
 
 <div class="modal-overlay" id="modalNovedades">
-    <div class="modal-card" style="max-width: 500px;">
+    <div class="modal-card" style="max-width: 520px;">
         <div class="modal-header">
-            <h3>📋 Novedades y Correcciones (v4.2.2)</h3>
+            <h3>📋 Novedades y Mejoras (v4.2.2)</h3>
             <button class="close-btn" onclick="cerrarModalNovedades()">×</button>
         </div>
         <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6;">
-            <ul style="padding-left: 18px;">
-                <li><strong>Exámenes y fechas desde memoria a agenda:</strong> Lo memorizado con examen o fecha/día pasa a <em>Eventos / Tareas programadas:</em>.</li>
-                <li><strong>Avisos al cumplirse el día o días antes:</strong> Muestra un aviso discreto si falta entre 0 y 3 días.</li>
-                <li><strong>Calificaciones limpias por peso:</strong> Cálculo directo de notas con peso (<code>x1</code>, <code>x2</code>, <code>x3</code>).</li>
+            <p style="margin-bottom: 10px; color: var(--primary);"><strong>🚀 Mejoras incluidas en la versión v4.2.2:</strong></p>
+            <ul style="padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
+                <li><strong>Autoguardado directo en archivo <code>.json</code>:</strong> Al crear/exportar o importar tu <code>.json</code>, queda vinculado y muestra <strong>✅ Guardado (Autoguardado .json)</strong> en el panel superior, guardando cada cambio al instante. Si aún no existe el archivo vinculado, muestra <strong>⚠️ No guardado</strong>.</li>
+                <li><strong>Exámenes y fechas desde memoria a agenda:</strong> Lo memorizado con examen o fecha/día pasa automáticamente a <em>Eventos / Tareas programadas:</em>.</li>
+                <li><strong>Avisos al cumplirse el día o días antes:</strong> Muestra un aviso superior discreto cuando faltan entre 0 y 3 días para un evento o recuerdo.</li>
+                <li><strong>Calificaciones limpias por peso:</strong> Cálculo directo de notas mediante multiplicador de peso (<code>x1</code>, <code>x2</code>, <code>x3</code>), eliminando configuraciones porcentuales innecesarias.</li>
+                <li><strong>Comprobación SemVer de actualizaciones y atajos UX:</strong> Verificación directa de nuevas versiones sin bloqueos y cierre rápido de modales con <code>Esc</code> o clic exterior.</li>
             </ul>
         </div>
         <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
@@ -688,6 +699,7 @@
     let metaModulosRequeridos = null; 
     let historialUltimasRespuestas = [];
     let modoNoMolestar = false;
+    let archivoJSONHandle = null;
 
     let minutosEstudio = 25;
     let minutosDescansoCorto = 5;
@@ -816,7 +828,6 @@
     function detectarFechaParaAgenda(texto) {
         const norm = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-        // Fecha explícita YYYY-MM-DD o DD/MM(/YYYY)
         const isoMatch = norm.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
         if (isoMatch) return isoMatch[1];
 
@@ -829,7 +840,6 @@
             if (!isNaN(dt.getTime())) return dt.toISOString().split('T')[0];
         }
 
-        // Relativos en X días
         const relDias = norm.match(/\b(?:en|dentro\s+de|para\s+dentro\s+de)\s+(\d{1,2})\s*dias?\b/);
         if (relDias) {
             return sumarDiasFechaISO(Math.max(0, parseInt(relDias[1], 10)));
@@ -839,7 +849,6 @@
         if (/\bpasado\s+manana\b/.test(norm)) return sumarDiasFechaISO(2);
         if (/\bmanana\b/.test(norm)) return sumarDiasFechaISO(1);
 
-        // Días de la semana próximos
         const diasSemana = {
             domingo: 0, lunes: 1, martes: 2, miercoles: 3, jueves: 4, viernes: 5, sabado: 6
         };
@@ -853,7 +862,6 @@
             }
         }
 
-        // Si menciona examen pero no concreta día, agendar por defecto en 3 días para avisar con antelación
         if (/\bexamen(?:es)?\b/.test(norm)) {
             return sumarDiasFechaISO(3);
         }
@@ -899,7 +907,6 @@
 
         guardarMemoriaEvolutiva(memoria);
         guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
         comprobarAvisosProximos();
         return { registro: nuevoRegistro, agregadoAEventos, fechaDetectada };
     }
@@ -949,7 +956,6 @@
             }
         });
 
-        // También revisar recuerdos con fecha que no estén ya reflejados en eventos
         const memoria = cargarMemoriaEvolutiva();
         memoria.forEach(memItem => {
             if (!memItem.fechaEvento) return;
@@ -986,7 +992,7 @@
         cargarTemaInicial();
         cargarNoMolestarInicial();
         cargarEstadoInicial();
-        actualizarEstadoBotonGuardado(localStorage.getItem('smr_respaldo_creado') === 'true');
+        actualizarEstadoBotonGuardado(false);
         inicializarBienvenidaAleatoria();
         actualizarDisplayTemporizador();
         verificarActualizaciones();
@@ -1093,7 +1099,6 @@
             umbralObjetivo = val;
             document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
             guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
             recalcularGlobal();
             cerrarModalObjetivo();
         }
@@ -1110,7 +1115,6 @@
         if (!isNaN(val) && val >= 0) {
             metaModulosRequeridos = val;
             guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
             recalcularGlobal();
             cerrarModalMeta();
         }
@@ -1246,7 +1250,6 @@
         document.getElementById('inputDescEvento').value = '';
         renderizarEventosCalendario();
         guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
         comprobarAvisosProximos();
     }
 
@@ -1254,7 +1257,6 @@
         eventosCalendario = eventosCalendario.filter(ev => ev.id !== id);
         renderizarEventosCalendario();
         guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
         comprobarAvisosProximos();
     }
 
@@ -1288,16 +1290,92 @@
         });
     }
 
+    /* GESTIÓN DE ARCHIVO .JSON Y AUTOGUARDADO CONTINUO */
+    async function crearYVincularJSON() {
+        if ('showSaveFilePicker' in window) {
+            try {
+                archivoJSONHandle = await window.showSaveFilePicker({
+                    suggestedName: 'analytics_dashboard_data.json',
+                    types: [{
+                        description: 'Archivo de datos JSON',
+                        accept: { 'application/json': ['.json'] }
+                    }]
+                });
+                await escribirEnArchivoJSONVinculado();
+                return true;
+            } catch (err) {
+                if (err.name === 'AbortError') return false;
+                console.warn("No se pudo vincular el archivo directamente, usando descarga clásica:", err);
+            }
+        }
+        await exportarDatos();
+        return false;
+    }
+
+    async function abrirYVincularJSON(event) {
+        if ('showOpenFilePicker' in window) {
+            if (event) event.preventDefault();
+            try {
+                const [handle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'Archivo de datos JSON',
+                        accept: { 'application/json': ['.json'] }
+                    }]
+                });
+                const file = await handle.getFile();
+                const texto = await file.text();
+                const ok = await procesarContenidoJSONImportado(texto);
+                if (ok) {
+                    archivoJSONHandle = handle;
+                    actualizarEstadoBotonGuardado(true);
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.warn("Fallback a selector clásico:", err);
+                    document.getElementById('importFile').click();
+                }
+            }
+        }
+    }
+
+    async function escribirEnArchivoJSONVinculado() {
+        if (!archivoJSONHandle) return false;
+        try {
+            const memoriaEvolutiva = cargarMemoriaEvolutiva();
+            const datosBase = { modulos, notasCurso, umbralObjetivo, metaModulosRequeridos, eventosCalendario, memoriaEvolutiva };
+            const firmaSHA256 = await generarFirmaIntegridad(datosBase);
+            const payload = JSON.stringify({ integridadSHA256: firmaSHA256, ...datosBase }, null, 2);
+
+            const writable = await archivoJSONHandle.createWritable();
+            await writable.write(payload);
+            await writable.close();
+            actualizarEstadoBotonGuardado(true);
+            return true;
+        } catch (err) {
+            console.error("Error al autoguardar en .json:", err);
+            archivoJSONHandle = null;
+            actualizarEstadoBotonGuardado(false);
+            return false;
+        }
+    }
+
     function actualizarEstadoBotonGuardado(estaGuardado) {
         const btn = document.getElementById('btn-save-status');
         if (!btn) return;
-        if (estaGuardado) {
+        if (archivoJSONHandle) {
+            btn.classList.add('saved');
+            btn.innerHTML = '✅ Guardado (Autoguardado .json)';
+            btn.title = 'El .json está creado y vinculado: todos tus cambios se guardan automáticamente.';
+            localStorage.setItem('smr_respaldo_creado', 'true');
+        } else if (estaGuardado) {
             btn.classList.add('saved');
             btn.innerHTML = '✅ Guardado';
+            btn.title = 'Copia .json descargada.';
             localStorage.setItem('smr_respaldo_creado', 'true');
         } else {
             btn.classList.remove('saved');
-            btn.innerHTML = '⚠️ Sin guardar';
+            btn.innerHTML = '⚠️ No guardado';
+            btn.title = 'Pulsa para crear/vincular el .json y activar el autoguardado automático.';
             localStorage.setItem('smr_respaldo_creado', 'false');
         }
     }
@@ -1353,11 +1431,21 @@
     }
 
     function guardarTodoLocal() {
-        localStorage.setItem('smr_modulos_list', JSON.stringify(modulos));
-        localStorage.setItem('smr_calificaciones', JSON.stringify(notasCurso));
-        localStorage.setItem('smr_umbral_objetivo', umbralObjetivo.toString());
-        localStorage.setItem('smr_meta_modulos', metaModulosRequeridos !== null ? metaModulosRequeridos.toString() : "null");
-        localStorage.setItem('smr_eventos_calendario', JSON.stringify(eventosCalendario));
+        try {
+            localStorage.setItem('smr_modulos_list', JSON.stringify(modulos));
+            localStorage.setItem('smr_calificaciones', JSON.stringify(notasCurso));
+            localStorage.setItem('smr_umbral_objetivo', umbralObjetivo.toString());
+            localStorage.setItem('smr_meta_modulos', metaModulosRequeridos !== null ? metaModulosRequeridos.toString() : "null");
+            localStorage.setItem('smr_eventos_calendario', JSON.stringify(eventosCalendario));
+        } catch (err) {
+            console.error("Error guardando en localStorage:", err);
+        }
+
+        if (archivoJSONHandle) {
+            escribirEnArchivoJSONVinculado();
+        } else {
+            actualizarEstadoBotonGuardado(false);
+        }
     }
 
     function renderizarTabla() {
@@ -1435,7 +1523,6 @@
             inputVal.focus();
             actualizarFilaUI(id);
             guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
         }
     }
 
@@ -1443,7 +1530,6 @@
         notasCurso[id].splice(index, 1);
         actualizarFilaUI(id);
         guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
     }
 
     function actualizarFilaUI(id) {
@@ -1506,6 +1592,8 @@
             contenedorTendencia.innerHTML = '<div style="font-size:0.75rem; color:var(--secondary); margin:auto;">Sin historial</div>';
             document.getElementById('nota-global').innerText = '0.00';
             document.getElementById('modulos-aprobados').innerText = '0 / 0';
+            document.getElementById('estado-global-txt').innerText = "Esperando datos";
+            document.getElementById('estado-aprobados-txt').innerText = "En seguimiento";
             return;
         }
 
@@ -1555,6 +1643,23 @@
         const global = evaluados > 0 ? (suma / evaluados) : 0;
         document.getElementById('nota-global').innerText = global.toFixed(2);
         document.getElementById('modulos-aprobados').innerText = `${aprobados} / ${metaMeta}`;
+
+        const txtG = document.getElementById('estado-global-txt');
+        const txtA = document.getElementById('estado-aprobados-txt');
+        const txtObj = document.getElementById('estado-objetivo-txt');
+
+        if (evaluados === 0) {
+            txtG.innerText = "Esperando datos"; txtA.innerText = "En seguimiento"; txtObj.innerText = "Activo";
+        } else {
+            txtA.innerText = `${aprobados} de ${metaMeta} requeridas`;
+            if (global >= umbralObjetivo && aprobados >= metaMeta) {
+                txtG.innerText = "¡Objetivo conseguido! 🚀"; txtObj.innerText = "Superado con éxito";
+            } else if (global >= 5) {
+                txtG.innerText = "En rango positivo 👍"; txtObj.innerText = "Pendiente subir umbral";
+            } else {
+                txtG.innerText = "Promedio bajo ⚠️"; txtObj.innerText = "Requiere atención";
+            }
+        }
     }
 
     function filtrarTabla() {
@@ -1598,7 +1703,6 @@
             document.getElementById('nuevoNombre').value = '';
             renderizarListaModulosConfig();
             guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
         }
     }
 
@@ -1608,7 +1712,6 @@
         delete notasCurso[idEliminar];
         renderizarListaModulosConfig();
         guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
     }
 
     function alternarAsistente() {
@@ -1618,7 +1721,7 @@
     }
 
     function mostrarAyudaAsistente() {
-        agregarMensajeChat('bot', `💡 <strong>Comandos:</strong><br>• <strong>"recuerda que..."</strong>: Guarda en memoria y, si incluye examen o fecha/día, lo añade a <em>Eventos / Tareas programadas:</em>.<br>• <strong>"agenda"</strong>: Muestra próximos eventos.<br>• <strong>"memoria"</strong>: Muestra recuerdos guardados.<br>• <strong>"resumen"</strong>: Muestra tu estado actual.`);
+        agregarMensajeChat('bot', `💡 <strong>Comandos:</strong><br>• <strong>"recuerda que..."</strong>: Guarda en memoria y, si incluye examen o fecha/día, lo añade a <em>Eventos / Tareas programadas:</em>.<br>• <strong>"agenda"</strong>: Muestra próximos eventos.<br>• <strong>"memoria"</strong>: Muestra recuerdos guardados.<br>• <strong>"resumen"</strong>: Muestra tu estado actual.<br>• <strong>"consejo"</strong>: Diagnóstico táctico según tus notas.`);
     }
 
     function enviarSugerencia(texto) {
@@ -1673,6 +1776,10 @@
             return "📅 <strong>Eventos / Tareas programadas:</strong><br>" + ord.map(e => `• <strong>[${e.fecha}]</strong> ${escaparHTML(e.desc)}`).join('<br>');
         }
 
+        if (query.includes('consejo') || query.includes('estudiar') || query.includes('mejorar')) {
+            return `🎯 <strong>Consejo de estudio:</strong> Divide tus sesiones en bloques de <strong>${minutosEstudio} min</strong> de enfoque seguidos de <strong>${minutosDescansoCorto} min</strong> de descanso corto. Prioriza las categorías por debajo de <strong>${umbralObjetivo.toFixed(2)}</strong> y revisa tus próximos eventos en agenda.`;
+        }
+
         if (query.includes('resumen') || query.includes('como voy') || query.includes('cómo voy')) {
             return `📊 <strong>Media Global:</strong> ${document.getElementById('nota-global').innerText} · <strong>Meta:</strong> ${document.getElementById('modulos-aprobados').innerText} · <strong>Objetivo:</strong> ${umbralObjetivo.toFixed(2)}`;
         }
@@ -1682,7 +1789,7 @@
             return `🧠 <strong>Recordatorio:</strong> ${escaparHTML(hallazgo.dato.v)}`;
         }
 
-        return "💬 Puedo memorizar exámenes o fechas (ej: <em>'recuerda que el examen es el viernes'</em>), mostrar tu <strong>agenda</strong>, tu <strong>memoria</strong> o tu <strong>resumen</strong>.";
+        return "💬 Puedo memorizar exámenes o fechas (ej: <em>'recuerda que el examen es el viernes'</em>), mostrar tu <strong>agenda</strong>, tu <strong>memoria</strong>, darte un <strong>consejo</strong> o mostrarte tu <strong>resumen</strong>.";
     }
 
     async function generarFirmaIntegridad(payload) {
@@ -1704,12 +1811,49 @@
         const memoriaEvolutiva = cargarMemoriaEvolutiva();
         const datosBase = { modulos, notasCurso, umbralObjetivo, metaModulosRequeridos, eventosCalendario, memoriaEvolutiva };
         const firmaSHA256 = await generarFirmaIntegridad(datosBase);
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ integridadSHA256: firmaSHA256, ...datosBase }));
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ integridadSHA256: firmaSHA256, ...datosBase }, null, 2));
         const dlAnchorElem = document.createElement('a');
         dlAnchorElem.setAttribute("href", dataStr);
         dlAnchorElem.setAttribute("download", "analytics_dashboard_data.json");
         dlAnchorElem.click();
         actualizarEstadoBotonGuardado(true);
+    }
+
+    async function procesarContenidoJSONImportado(textoJSON) {
+        try {
+            const parsed = JSON.parse(textoJSON);
+            if (!parsed.integridadSHA256) {
+                alert("⛔ El archivo JSON no está firmado.");
+                return false;
+            }
+            const datosParaVerificar = {
+                modulos: parsed.modulos || [],
+                notasCurso: parsed.notasCurso || {},
+                umbralObjetivo: Number(parsed.umbralObjetivo) || 7.00,
+                metaModulosRequeridos: parsed.metaModulosRequeridos ?? null,
+                eventosCalendario: parsed.eventosCalendario || []
+            };
+            if (await generarFirmaIntegridad(datosParaVerificar) !== parsed.integridadSHA256) {
+                alert("⛔ La firma del archivo no coincide.");
+                return false;
+            }
+            modulos = sanearModulos(parsed.modulos || []);
+            notasCurso = sanearNotas(parsed.notasCurso || {}, modulos);
+            umbralObjetivo = Number(parsed.umbralObjetivo) || 7.00;
+            metaModulosRequeridos = parsed.metaModulosRequeridos ?? null;
+            eventosCalendario = parsed.eventosCalendario || [];
+            if (Array.isArray(parsed.memoriaEvolutiva)) guardarMemoriaEvolutiva(parsed.memoriaEvolutiva);
+
+            guardarTodoLocal();
+            document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
+            renderizarTabla();
+            renderizarEventosCalendario();
+            comprobarAvisosProximos();
+            return true;
+        } catch (err) {
+            alert("⛔ Error al importar el JSON.");
+            return false;
+        }
     }
 
     function importarDatos(event) {
@@ -1718,42 +1862,9 @@
         const fileReader = new FileReader();
         fileReader.readAsText(archivo, "UTF-8");
         fileReader.onload = async e => {
-            try {
-                const parsed = JSON.parse(e.target.result);
-                if (!parsed.integridadSHA256) {
-                    alert("⛔ El archivo JSON no está firmado.");
-                    event.target.value = '';
-                    return;
-                }
-                const datosParaVerificar = {
-                    modulos: parsed.modulos || [],
-                    notasCurso: parsed.notasCurso || {},
-                    umbralObjetivo: Number(parsed.umbralObjetivo) || 7.00,
-                    metaModulosRequeridos: parsed.metaModulosRequeridos ?? null,
-                    eventosCalendario: parsed.eventosCalendario || []
-                };
-                if (await generarFirmaIntegridad(datosParaVerificar) !== parsed.integridadSHA256) {
-                    alert("⛔ La firma del archivo no coincide.");
-                    event.target.value = '';
-                    return;
-                }
-                modulos = sanearModulos(parsed.modulos || []);
-                notasCurso = sanearNotas(parsed.notasCurso || {}, modulos);
-                umbralObjetivo = Number(parsed.umbralObjetivo) || 7.00;
-                metaModulosRequeridos = parsed.metaModulosRequeridos ?? null;
-                eventosCalendario = parsed.eventosCalendario || [];
-                if (Array.isArray(parsed.memoriaEvolutiva)) guardarMemoriaEvolutiva(parsed.memoriaEvolutiva);
-
-                event.target.value = '';
-                guardarTodoLocal();
-                actualizarEstadoBotonGuardado(true);
-                renderizarTabla();
-                renderizarEventosCalendario();
-                comprobarAvisosProximos();
-            } catch (err) {
-                alert("⛔ Error al importar el JSON.");
-                event.target.value = '';
-            }
+            const ok = await procesarContenidoJSONImportado(e.target.result);
+            event.target.value = '';
+            if (ok) actualizarEstadoBotonGuardado(true);
         };
     }
 
