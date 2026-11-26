@@ -400,10 +400,6 @@
             margin: 0 12px 6px 12px; max-width: calc(100% - 24px);
         }
 
-
-        /* =========================================
-           MEDIA QUERIES - ADAPTACIÓN MÓVIL Y TABLET
-           ========================================= */
         @media (max-width: 900px) {
             .charts-grid { grid-template-columns: 1fr; }
         }
@@ -478,8 +474,8 @@
             <p class="subtitle">Consola inteligente de monitorización de indicadores con procesamiento local y memoria evolutiva</p>
         </div>
         <div class="header-actions">
-            <button id="btn-save-status" class="btn-save-status" onclick="exportarDatos()" title="Pulsa para guardar copia en archivo JSON">
-                ⚠️ Sin guardar
+            <button id="btn-save-status" class="btn-save-status" onclick="crearYVincularJSON()" title="Pulsa para crear el .json y activar el autoguardado automático">
+                ⚠️ Crear .json
             </button>
             <button class="btn btn-secondary" onclick="alternarNoMolestar()" id="btn-dnd" title="Silenciar avisos automáticos del asistente">
                 🔔 Avisos: ON
@@ -559,7 +555,7 @@
         <div class="actions-row">
             <button class="btn btn-secondary" onclick="abrirModal()">⚙️ Gestionar Categorías</button>
             <button class="btn btn-secondary" onclick="abrirModalPonderaciones()">⚖️ Ponderación %</button>
-            <button class="btn btn-secondary" onclick="exportarDatos()">💾 Exportar</button>
+            <button class="btn btn-secondary" onclick="crearYVincularJSON()">💾 Exportar</button>
             <div class="btn btn-secondary btn-file-input">
                 📂 Importar <input type="file" id="importFile" accept=".json" onchange="importarDatos(event)">
             </div>
@@ -641,7 +637,7 @@
         <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6; max-height: 300px; overflow-y: auto; padding-right: 4px;">
             <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.2.3 (Actual):</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
-                <li><strong>Autoguardado Automático Continuo:</strong> Todos los cambios en notas, categorías, ponderaciones y agenda se guardan de forma transparente y automática en el almacenamiento local en cada acción y al salir.</li>
+                <li><strong>Autoguardado Automático Continuo y en .JSON:</strong> Todos los cambios en notas, categorías, ponderaciones y agenda se guardan automáticamente en el almacenamiento local y, al crear/vincular el archivo <code>.json</code>, se sincronizan en él de forma continua.</li>
                 <li><strong>Consistencia Completa:</strong> Conserva la ponderación porcentual (Exámenes, Tareas, Proyectos), el asistente NLP completo con memoria evolutiva y las predicciones por categoría.</li>
             </ul>
             <p style="margin-bottom: 12px;"><strong>✨ Versión 4.2.2:</strong></p>
@@ -891,6 +887,7 @@
     let ultimosChistesUsados = []; 
     let historialUltimasRespuestas = [];
     let modoNoMolestar = false;
+    let archivoJSONHandle = null;
 
     let ponderacionesPorcentaje = {};
     let minutosEstudio = 25;
@@ -1041,6 +1038,7 @@
         }
 
         guardarMemoriaEvolutiva(memoria);
+        guardarTodoLocal();
         return nuevoRegistro;
     }
 
@@ -1067,7 +1065,7 @@
             return { tipo: 'activo', similitud: mejorActivo.score, dato: mejorActivo.item };
         }
         if (mejorReferencia.score >= 0.35) {
-            return { tipo: 'referencia', similitud: mejorReferencia.score, dato: mejorReferencia.item };
+            return { tipo: 'referencia', similitud: mejorReferencia.score, item: mejorReferencia.item };
         }
         return null;
     }
@@ -1092,12 +1090,10 @@
         renderizarEventosCalendario();
     });
 
-    // 🔒 AUTOGUARDADO DE SEGURIDAD AUTOMÁTICO AL CERRAR O SALIR DE LA PESTAÑA
     window.addEventListener('beforeunload', () => {
         guardarTodoLocal();
     });
 
-    // ⌨️ CIERRE RÁPIDO DE MODALES Y ASISTENTE CON TECLA ESCAPE O CLIC FUERA
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             document.querySelectorAll('.modal-overlay').forEach(modal => {
@@ -1219,7 +1215,6 @@
             umbralObjetivo = val;
             document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
             guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
             recalcularGlobal();
             cerrarModalObjetivo();
         } else {
@@ -1242,7 +1237,6 @@
         if (!isNaN(val) && val >= 0) {
             metaModulosRequeridos = val;
             guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
             recalcularGlobal();
             cerrarModalMeta();
         } else {
@@ -1414,14 +1408,12 @@
         document.getElementById('inputDescEvento').value = '';
         renderizarEventosCalendario();
         guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
     }
 
     function eliminarEventoCalendario(id) {
         eventosCalendario = eventosCalendario.filter(ev => ev.id !== id);
         renderizarEventosCalendario();
         guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
     }
 
     function renderizarEventosCalendario() {
@@ -1449,15 +1441,20 @@
     function actualizarEstadoBotonGuardado(estaGuardado) {
         const btn = document.getElementById('btn-save-status');
         if (!btn) return;
-        if (estaGuardado) {
+        if (archivoJSONHandle) {
+            btn.classList.add('saved');
+            btn.innerHTML = '✅ Autoguardando .json';
+            btn.title = 'Cada cambio se guarda automáticamente en tu archivo .json';
+            localStorage.setItem('smr_respaldo_creado', 'true');
+        } else if (estaGuardado) {
             btn.classList.add('saved');
             btn.innerHTML = '✅ Guardado';
-            btn.title = 'Todos tus datos están guardados.';
+            btn.title = 'Copia guardada.';
             localStorage.setItem('smr_respaldo_creado', 'true');
         } else {
             btn.classList.remove('saved');
-            btn.innerHTML = '⚠️ Sin guardar';
-            btn.title = 'Hay cambios sin guardar en archivo JSON.';
+            btn.innerHTML = '⚠️ Crear .json';
+            btn.title = 'Pulsa para crear el .json y activar el autoguardado automático';
             localStorage.setItem('smr_respaldo_creado', 'false');
         }
     }
@@ -1539,13 +1536,73 @@
         renderizarEventosCalendario();
     }
 
+    async function crearYVincularJSON() {
+        if ('showSaveFilePicker' in window) {
+            try {
+                archivoJSONHandle = await window.showSaveFilePicker({
+                    suggestedName: 'analytics_dashboard_data.json',
+                    types: [{
+                        description: 'Archivo de datos JSON',
+                        accept: { 'application/json': ['.json'] }
+                    }]
+                });
+                await escribirEnArchivoJSONVinculado();
+                return true;
+            } catch (err) {
+                if (err.name === 'AbortError') return false;
+                console.warn("No se pudo vincular el archivo directamente, usando descarga clásica:", err);
+            }
+        }
+        await exportarDatos();
+        return false;
+    }
+
+    async function escribirEnArchivoJSONVinculado() {
+        if (!archivoJSONHandle) return false;
+        try {
+            const memoriaEvolutiva = cargarMemoriaEvolutiva();
+            const datosBase = {
+                modulos,
+                notasCurso,
+                umbralObjetivo,
+                metaModulosRequeridos,
+                eventosCalendario,
+                ponderacionesPorcentaje,
+                memoriaEvolutiva
+            };
+            const firmaSHA256 = await generarFirmaIntegridad(datosBase);
+            const datosAExportar = { integridadSHA256: firmaSHA256, ...datosBase };
+
+            const writable = await archivoJSONHandle.createWritable();
+            await writable.write(JSON.stringify(datosAExportar, null, 2));
+            await writable.close();
+            actualizarEstadoBotonGuardado(true);
+            return true;
+        } catch (err) {
+            console.error("Error al autoguardar en el archivo .json:", err);
+            archivoJSONHandle = null;
+            actualizarEstadoBotonGuardado(false);
+            return false;
+        }
+    }
+
     function guardarTodoLocal() {
-        localStorage.setItem('smr_modulos_list', JSON.stringify(modulos));
-        localStorage.setItem('smr_calificaciones', JSON.stringify(notasCurso));
-        localStorage.setItem('smr_umbral_objetivo', umbralObjetivo.toString());
-        localStorage.setItem('smr_meta_modulos', metaModulosRequeridos !== null ? metaModulosRequeridos.toString() : "null");
-        localStorage.setItem('smr_eventos_calendario', JSON.stringify(eventosCalendario));
-        localStorage.setItem('smr_ponderaciones_pct', JSON.stringify(ponderacionesPorcentaje));
+        try {
+            localStorage.setItem('smr_modulos_list', JSON.stringify(modulos));
+            localStorage.setItem('smr_calificaciones', JSON.stringify(notasCurso));
+            localStorage.setItem('smr_umbral_objetivo', umbralObjetivo.toString());
+            localStorage.setItem('smr_meta_modulos', metaModulosRequeridos !== null ? metaModulosRequeridos.toString() : "null");
+            localStorage.setItem('smr_eventos_calendario', JSON.stringify(eventosCalendario));
+            localStorage.setItem('smr_ponderaciones_pct', JSON.stringify(ponderacionesPorcentaje));
+        } catch (err) {
+            console.error("Error al guardar en localStorage:", err);
+        }
+
+        if (archivoJSONHandle) {
+            escribirEnArchivoJSONVinculado();
+        } else {
+            actualizarEstadoBotonGuardado(false);
+        }
     }
 
     function renderizarTabla() {
@@ -1631,7 +1688,6 @@
         });
         recalcularGlobal();
     }
-
 
     function tienePorcentajeConfigurado(idModulo) {
         const cfg = ponderacionesPorcentaje[idModulo];
@@ -1753,7 +1809,6 @@
         const pr = Math.max(0, Math.min(100, parseFloat(document.getElementById('inputPondProyectos').value) || 0));
         ponderacionesPorcentaje[id] = { examen: ex, tareas: ta, proyecto: pr };
         guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
         actualizarFilaUI(id);
         cerrarModalPonderaciones();
     }
@@ -1762,7 +1817,6 @@
         const id = document.getElementById('selectPondCategoria').value;
         delete ponderacionesPorcentaje[id];
         guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
         actualizarFilaUI(id);
         cargarValoresPondCategoria();
     }
@@ -1781,7 +1835,6 @@
             inputVal.focus();
             actualizarFilaUI(id);
             guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
         }
     }
 
@@ -1789,7 +1842,6 @@
         notasCurso[id].splice(index, 1);
         actualizarFilaUI(id);
         guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
     }
 
     function actualizarFilaUI(id) {
@@ -1994,7 +2046,6 @@
             document.getElementById('nuevoNombre').value = '';
             renderizarListaModulosConfig();
             guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
         }
     }
 
@@ -2005,7 +2056,6 @@
         delete ponderacionesPorcentaje[idEliminar];
         renderizarListaModulosConfig();
         guardarTodoLocal();
-        actualizarEstadoBotonGuardado(false);
     }
 
     function alternarAsistente() {
@@ -2203,41 +2253,6 @@
         }
 
         return null;
-    }
-
-    function obtenerConsejoAvanzado(evaluados, listaModulosConNota, mediaGlobal) {
-        const tipsGenerales = [
-            `<strong>Técnica Pomodoro (${minutosEstudio} min):</strong> Trabaja sin distracciones (activa <em>No Molestar</em>) y descansa ${minutosDescansoCorto} min al terminar.`,
-            "<strong>Active Recall (Recuerdo Activo):</strong> Cierra los apuntes e intenta escribir o explicar en voz alta todo lo que recuerdes sobre el tema antes de volver a leer.",
-            "<strong>Repetición Espaciada:</strong> Repasa un tema nuevo a las 24 horas, a los 3 días y a la semana; así evitas la curva del olvido.",
-            "<strong>Técnica Feynman:</strong> Si no puedes explicar un concepto de forma sencilla como para que lo entienda un niño, aún necesitas repasarlo.",
-            "<strong>Regla de los 2 Minutos:</strong> Si te cuesta empezar, comprométete a estudiar solo 2 minutos. Una vez vencida la resistencia inicial, seguir es mucho más fácil.",
-            "<strong>Regla Visual 20-20-20:</strong> Cada 20 minutos frente a la pantalla, mira un objeto a 6 metros (20 pies) durante 20 segundos para evitar fatiga ocular.",
-            "<strong>Prioriza los pesos altos:</strong> Revisa tus registros con <em>Peso x3 (Examen)</em>, ya que son los que más mueven tu promedio ponderado.",
-            "<strong>Simulacro real:</strong> Haz ejercicios cronometrados sin mirar soluciones para entrenar la gestión de nervios y tiempo."
-        ];
-
-        const tipElegido = obtenerOpcionSinRepetir(tipsGenerales);
-
-        if (evaluados === 0) {
-            return `💡 <strong>Consejo de Arranque:</strong> Aún no has registrado calificaciones. Añade tus primeras notas o agenda tus próximos exámenes en el calendario.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
-        }
-
-        let listaOrdenada = [...listaModulosConNota].sort((a, b) => a.promedio - b.promedio);
-        let critico = listaOrdenada[0];
-        let mejor = listaOrdenada[listaOrdenada.length - 1];
-
-        if (critico.promedio < 5) {
-            const faltante = (5 - critico.promedio).toFixed(2);
-            return `🎯 <strong>Prioridad Alta en ${escaparHTML(critico.nombre)} (${escaparHTML(critico.id)}):</strong> Tu promedio actual es <strong>${critico.promedio.toFixed(2)}</strong> (te faltan <strong>${faltante}</strong> puntos para aprobar). Dedícale el próximo bloque de estudio.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
-        }
-
-        if (mediaGlobal < umbralObjetivo) {
-            const diffObj = (umbralObjetivo - mediaGlobal).toFixed(2);
-            return `📊 <strong>Camino al Objetivo (${umbralObjetivo.toFixed(2)}):</strong> Tienes todas las evaluadas aprobadas, pero estás a <strong>${diffObj}</strong> puntos de tu umbral. Refuerza <strong>${escaparHTML(critico.nombre)}</strong> (${critico.promedio.toFixed(2)}) para subir la media global.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
-        }
-
-        return `🏆 <strong>Rendimiento Excelente (${mediaGlobal.toFixed(2)}):</strong> Destacas especialmente en <strong>${escaparHTML(mejor.nombre)}</strong> (${mejor.promedio.toFixed(2)}). Mantén la constancia sin confiarte.<br><br>🧠 <em>Técnica recomendada:</em> ${tipElegido}`;
     }
 
     const BASE_CONOCIMIENTO_CONVERSACIONAL = [
@@ -2440,9 +2455,6 @@
         return null;
     }
 
-    // =========================================================================
-    // RESUMIDOR EXTRACTIVO LOCAL SEGURO + ADJUNTAR TEMAS + DESCARGA DE RESUMEN
-    // =========================================================================
     const MAX_CARACTERES_RESUMEN_ENTRADA = 40000;
     const MAX_ORACIONES_RESUMEN = 6;
     const resumenesDescargablesLocales = {};
@@ -2832,9 +2844,6 @@
                `Puedes pulsar el botón <strong>📎</strong> del chat para adjuntar un tema o archivo de texto, o escribir <em>"resume: ..."</em> seguido de tu texto.`;
     }
 
-    // =========================================================================
-    // ORGANIZADOR DE TAREAS Y GENERADOR DE PLANES DE ESTUDIO LOCALES
-    // =========================================================================
     function sumarDiasISO(dias) {
         const d = new Date();
         d.setHours(12, 0, 0, 0);
@@ -2882,7 +2891,6 @@
             eventosCalendario.push({ id: Date.now(), fecha: fechaISO, desc: descTarea });
             renderizarEventosCalendario();
             guardarTodoLocal();
-            actualizarEstadoBotonGuardado(false);
 
             return `✅ <strong>Tarea añadida a tu agenda:</strong><br><br>` +
                    `• <strong>Fecha:</strong> ${escaparHTML(fechaISO)}<br>` +
@@ -3027,6 +3035,7 @@
 
         if (query === 'olvidar memoria' || query === 'borrar memoria') {
             localStorage.removeItem('smr_memoria_evolutiva');
+            guardarTodoLocal();
             return `🧹 <strong>Memoria evolutiva limpiada:</strong> Se han eliminado todos los recuerdos almacenados.`;
         }
 
@@ -3355,7 +3364,7 @@
         const datosBase = { modulos, notasCurso, umbralObjetivo, metaModulosRequeridos, eventosCalendario, ponderacionesPorcentaje, memoriaEvolutiva };
         const firmaSHA256 = await generarFirmaIntegridad(datosBase);
         const datosAExportar = { integridadSHA256: firmaSHA256, ...datosBase };
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datosAExportar));
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datosAExportar, null, 2));
         const dlAnchorElem = document.createElement('a');
         dlAnchorElem.setAttribute("href", dataStr);
         dlAnchorElem.setAttribute("download", "analytics_dashboard_data.json");
@@ -3363,7 +3372,6 @@
         actualizarEstadoBotonGuardado(true);
     }
 
-    // 🔒 IMPORTACIÓN SEGURA Y ACTUALIZACIÓN AUTOMÁTICA DE VERSIÓN
     function importarDatos(event) {
         const archivo = event.target.files[0];
         if (!archivo) return;
