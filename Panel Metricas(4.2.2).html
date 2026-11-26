@@ -163,9 +163,35 @@
 
         .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
 
-        .chart-card, .table-container, .control-panel, .calendar-section {
+        .chart-card, .table-container, .control-panel, .calendar-section, .eval-weight-panel {
             background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 18px;
             padding: 20px 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm);
+        }
+
+        .eval-weight-desc {
+            font-size: 0.85rem; color: var(--secondary); line-height: 1.5; margin-bottom: 14px;
+        }
+        .eval-weight-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 12px; margin-bottom: 12px;
+        }
+        .eval-field {
+            display: flex; flex-direction: column; gap: 5px; background: var(--bg-body);
+            border: 1.5px solid var(--border-color); border-radius: 10px; padding: 10px 12px;
+        }
+        .eval-field label {
+            font-size: 0.78rem; font-weight: 700; color: var(--primary);
+        }
+        .eval-field input, .eval-field select {
+            padding: 7px 10px; border: 1.5px solid var(--border-color); border-radius: 8px;
+            background: var(--bg-card); color: var(--primary); font-family: var(--font-stack);
+            font-size: 0.85rem; font-weight: 600; outline: none; width: 100%;
+        }
+        .eval-field input:focus, .eval-field select:focus { border-color: var(--accent); }
+        .eval-weight-footer {
+            display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .eval-info-note {
+            font-size: 0.8rem; color: var(--secondary); font-weight: 600;
         }
         
         .chart-header {
@@ -234,7 +260,7 @@
         .subject-code { font-weight: 800; color: var(--accent); background: var(--accent-light); padding: 2px 8px; border-radius: 6px; font-size: 0.9rem; display: inline-block; margin-bottom: 4px; }
         .subject-desc { font-size: 0.85rem; color: var(--secondary); font-weight: 600; display: block; }
 
-        .add-note-box { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+        .add-note-box { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
         .input-note {
             width: 76px; padding: 6px; border: 1.5px solid var(--border-color); border-radius: 8px;
             text-align: center; font-weight: 600; font-family: var(--font-stack); background: var(--bg-body); color: var(--primary); outline: none;
@@ -467,6 +493,41 @@
         </div>
     </div>
 
+    <!-- PONDERACIÓN POR TIPO DE EVALUACIÓN (%) -->
+    <div class="eval-weight-panel" id="panelPonderacionTipo">
+        <div class="chart-header" style="margin-bottom: 8px;"><span>⚖️ Ponderación por Tipo de Evaluación (%)</span></div>
+        <p class="eval-weight-desc">
+            Configura cuánto pesa cada tipo en una categoría (por ejemplo: Exámenes 80%, Tareas 20%, Proyectos 0%). Si dejas todos en 0 o no lo configuras, se usará el cálculo estándar habitual.
+        </p>
+        <div class="eval-weight-grid">
+            <div class="eval-field">
+                <label for="selectCategoriaPonderacion">Categoría:</label>
+                <select id="selectCategoriaPonderacion" onchange="cargarCamposPonderacionCategoria()">
+                    <option value="">— Selecciona categoría —</option>
+                </select>
+            </div>
+            <div class="eval-field">
+                <label for="inputPctExamenes">📝 Exámenes (%):</label>
+                <input type="number" id="inputPctExamenes" min="0" max="100" step="1" value="0" oninput="actualizarEstadoPonderacionUI()">
+            </div>
+            <div class="eval-field">
+                <label for="inputPctTareas">📌 Tareas (%):</label>
+                <input type="number" id="inputPctTareas" min="0" max="100" step="1" value="0" oninput="actualizarEstadoPonderacionUI()">
+            </div>
+            <div class="eval-field">
+                <label for="inputPctProyectos">🛠️ Proyectos (%):</label>
+                <input type="number" id="inputPctProyectos" min="0" max="100" step="1" value="0" oninput="actualizarEstadoPonderacionUI()">
+            </div>
+        </div>
+        <div class="eval-weight-footer">
+            <div class="eval-info-note" id="estadoPonderacionTipo">ℹ️ Sin porcentajes configurados (0%): se aplicará el cálculo estándar habitual.</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button type="button" class="btn btn-secondary" onclick="resetearPonderacionCategoria()">Restablecer (0%)</button>
+                <button type="button" class="btn btn-accent" onclick="guardarPonderacionCategoria()">Guardar ponderación</button>
+            </div>
+        </div>
+    </div>
+
     <!-- CALENDARIO Y AGENDA -->
     <div class="calendar-section">
         <div class="chart-header" style="margin-bottom: 12px;"><span>📅 Eventos / Tareas programadas:</span></div>
@@ -503,7 +564,7 @@
                 <thead>
                     <tr>
                         <th style="width: 28%;">Categoría</th>
-                        <th style="width: 45%;">Registros Parciales (Nota y Peso)</th>
+                        <th style="width: 45%;">Registros Parciales (Tipo, Nota y Peso)</th>
                         <th style="text-align: center;">Promedio Ponderado</th>
                         <th style="text-align: center;">Estatus</th>
                     </tr>
@@ -534,7 +595,7 @@
             <button class="close-btn" onclick="cerrarModalAcercaDe()">×</button>
         </div>
         <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
-            Suite de seguimiento con motor NLP local, autoguardado directo en archivo .json vinculado, registro automático de exámenes/fechas en agenda y avisos previos al vencimiento.
+            Suite de seguimiento con motor NLP local, autoguardado directo en archivo .json vinculado, ponderación por tipo de evaluación, registro automático de exámenes/fechas en agenda y avisos previos al vencimiento.
         </p>
         <div class="spec-grid">
             <div class="spec-box">
@@ -550,8 +611,8 @@
                 <div class="spec-val">Local + Autoguardado .json</div>
             </div>
             <div class="spec-box">
-                <div class="spec-label">Cálculo</div>
-                <div class="spec-val">Ponderado por Peso (x1-x3)</div>
+                <div class="spec-label">Evaluación</div>
+                <div class="spec-val">Por Tipo (%) o Peso (x1-x3)</div>
             </div>
         </div>
         <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
@@ -569,10 +630,10 @@
         <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6;">
             <p style="margin-bottom: 10px; color: var(--primary);"><strong>🚀 Mejoras incluidas en la versión v4.2.2:</strong></p>
             <ul style="padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
+                <li><strong>Ponderación por Tipo de Evaluación (%):</strong> Configura porcentajes para <em>Exámenes</em>, <em>Tareas</em> y <em>Proyectos</em> por categoría; si quedan todos en <code>0%</code> o sin configurar, se aplica el cálculo estándar habitual.</li>
                 <li><strong>Autoguardado directo en archivo <code>.json</code>:</strong> Al crear/exportar o importar tu <code>.json</code>, queda vinculado y muestra <strong>✅ Guardado (Autoguardado .json)</strong> en el panel superior, guardando cada cambio al instante. Si aún no existe el archivo vinculado, muestra <strong>⚠️ No guardado</strong>.</li>
                 <li><strong>Exámenes y fechas desde memoria a agenda:</strong> Lo memorizado con examen o fecha/día pasa automáticamente a <em>Eventos / Tareas programadas:</em>.</li>
                 <li><strong>Avisos al cumplirse el día o días antes:</strong> Muestra un aviso superior discreto cuando faltan entre 0 y 3 días para un evento o recuerdo.</li>
-                <li><strong>Calificaciones limpias por peso:</strong> Cálculo directo de notas mediante multiplicador de peso (<code>x1</code>, <code>x2</code>, <code>x3</code>), eliminando configuraciones porcentuales innecesarias.</li>
                 <li><strong>Comprobación SemVer de actualizaciones y atajos UX:</strong> Verificación directa de nuevas versiones sin bloqueos y cierre rápido de modales con <code>Esc</code> o clic exterior.</li>
             </ul>
         </div>
@@ -694,6 +755,7 @@
 
     let modulos = [];
     let notasCurso = {}; 
+    let ponderacionesPorCategoria = {};
     let eventosCalendario = [];
     let umbralObjetivo = 7.00; 
     let metaModulosRequeridos = null; 
@@ -727,6 +789,20 @@
         })).filter(m => m.id.length > 0 && m.nombre.length > 0);
     }
 
+    function sanearTipoEvaluacion(tipo) {
+        const limpio = String(tipo || 'examen').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (limpio.startsWith('tarea')) return 'tarea';
+        if (limpio.startsWith('proy')) return 'proyecto';
+        return 'examen';
+    }
+
+    function etiquetaTipoEvaluacion(tipo) {
+        const t = sanearTipoEvaluacion(tipo);
+        if (t === 'tarea') return '📌 Tarea';
+        if (t === 'proyecto') return '🛠️ Proyecto';
+        return '📝 Examen';
+    }
+
     function sanearNotas(objetoNotasBruto, listaModulosValidos) {
         let notasLimpias = {};
         if (!objetoNotasBruto || typeof objetoNotasBruto !== 'object' || Array.isArray(objetoNotasBruto)) {
@@ -741,9 +817,11 @@
                 mapaTemp[idLimpio] = objetoNotasBruto[k].slice(0, 200).map(item => {
                     const valRaw = typeof item === 'number' ? item : Number(item?.val ?? 0);
                     const pesoRaw = typeof item === 'number' ? 1 : Number(item?.peso ?? 1);
+                    const tipoRaw = typeof item === 'object' && item?.tipo ? sanearTipoEvaluacion(item.tipo) : 'examen';
                     return {
                         val: (!isNaN(valRaw) && isFinite(valRaw)) ? Math.max(0, Math.min(10, valRaw)) : 0,
-                        peso: (!isNaN(pesoRaw) && isFinite(pesoRaw)) ? Math.max(1, Math.min(5, Math.round(pesoRaw))) : 1
+                        peso: (!isNaN(pesoRaw) && isFinite(pesoRaw)) ? Math.max(1, Math.min(5, Math.round(pesoRaw))) : 1,
+                        tipo: tipoRaw
                     };
                 });
             }
@@ -752,6 +830,184 @@
             notasLimpias[m.id] = mapaTemp[m.id] || [];
         });
         return notasLimpias;
+    }
+
+    function sanearPonderaciones(objetoBruto, listaModulosValidos) {
+        const limpio = {};
+        const baseDefault = { examenes: 0, tareas: 0, proyectos: 0 };
+        listaModulosValidos.forEach(m => {
+            const raw = objetoBruto && typeof objetoBruto === 'object' ? objetoBruto[m.id] : null;
+            const ex = Number(raw?.examenes ?? 0);
+            const ta = Number(raw?.tareas ?? 0);
+            const pr = Number(raw?.proyectos ?? 0);
+            limpio[m.id] = {
+                examenes: (!isNaN(ex) && isFinite(ex)) ? Math.max(0, Math.min(100, ex)) : baseDefault.examenes,
+                tareas: (!isNaN(ta) && isFinite(ta)) ? Math.max(0, Math.min(100, ta)) : baseDefault.tareas,
+                proyectos: (!isNaN(pr) && isFinite(pr)) ? Math.max(0, Math.min(100, pr)) : baseDefault.proyectos
+            };
+        });
+        return limpio;
+    }
+
+    function obtenerPonderacionCategoria(id) {
+        const p = ponderacionesPorCategoria[id];
+        if (!p) return { examenes: 0, tareas: 0, proyectos: 0 };
+        return {
+            examenes: Number(p.examenes) || 0,
+            tareas: Number(p.tareas) || 0,
+            proyectos: Number(p.proyectos) || 0
+        };
+    }
+
+    function calcularPromedioCategoria(id) {
+        const arr = notasCurso[id] || [];
+        if (arr.length === 0) return { promedio: 0, modo: 'sin_datos' };
+
+        const pond = obtenerPonderacionCategoria(id);
+        const sumaPorcentajes = pond.examenes + pond.tareas + pond.proyectos;
+
+        if (sumaPorcentajes <= 0) {
+            let sP = 0, sPe = 0;
+            arr.forEach(n => {
+                const vN = typeof n.val === 'number' ? n.val : parseFloat(n);
+                const pN = typeof n.peso === 'number' ? n.peso : 1;
+                sP += vN * pN;
+                sPe += pN;
+            });
+            return { promedio: sPe > 0 ? (sP / sPe) : 0, modo: 'estandar' };
+        }
+
+        const grupos = {
+            examen: { sP: 0, sPe: 0, pct: pond.examenes },
+            tarea: { sP: 0, sPe: 0, pct: pond.tareas },
+            proyecto: { sP: 0, sPe: 0, pct: pond.proyectos }
+        };
+
+        arr.forEach(n => {
+            const vN = typeof n.val === 'number' ? n.val : parseFloat(n);
+            const pN = typeof n.peso === 'number' ? n.peso : 1;
+            const tipo = sanearTipoEvaluacion(n.tipo);
+            grupos[tipo].sP += vN * pN;
+            grupos[tipo].sPe += pN;
+        });
+
+        let pesoPorcentajeActivo = 0;
+        let sumaPonderadaTipos = 0;
+
+        Object.values(grupos).forEach(g => {
+            if (g.pct > 0 && g.sPe > 0) {
+                const mediaTipo = g.sP / g.sPe;
+                sumaPonderadaTipos += mediaTipo * g.pct;
+                pesoPorcentajeActivo += g.pct;
+            }
+        });
+
+        if (pesoPorcentajeActivo > 0) {
+            return { promedio: sumaPonderadaTipos / pesoPorcentajeActivo, modo: 'por_tipo' };
+        }
+
+        let sP = 0, sPe = 0;
+        arr.forEach(n => {
+            const vN = typeof n.val === 'number' ? n.val : parseFloat(n);
+            const pN = typeof n.peso === 'number' ? n.peso : 1;
+            sP += vN * pN;
+            sPe += pN;
+        });
+        return { promedio: sPe > 0 ? (sP / sPe) : 0, modo: 'estandar' };
+    }
+
+    function sincronizarSelectorPonderacion(seleccionPrevia = null) {
+        const sel = document.getElementById('selectCategoriaPonderacion');
+        if (!sel) return;
+        const actual = seleccionPrevia || sel.value;
+        sel.innerHTML = '<option value="">— Selecciona categoría —</option>';
+        modulos.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = `${m.id} - ${m.nombre}`;
+            sel.appendChild(opt);
+        });
+        if (actual && modulos.some(m => m.id === actual)) {
+            sel.value = actual;
+        } else if (modulos.length > 0) {
+            sel.value = modulos[0].id;
+        }
+        cargarCamposPonderacionCategoria();
+    }
+
+    function cargarCamposPonderacionCategoria() {
+        const sel = document.getElementById('selectCategoriaPonderacion');
+        const inpEx = document.getElementById('inputPctExamenes');
+        const inpTa = document.getElementById('inputPctTareas');
+        const inpPr = document.getElementById('inputPctProyectos');
+        if (!sel || !inpEx || !inpTa || !inpPr) return;
+
+        if (!sel.value) {
+            inpEx.value = 0;
+            inpTa.value = 0;
+            inpPr.value = 0;
+            actualizarEstadoPonderacionUI();
+            return;
+        }
+
+        const p = obtenerPonderacionCategoria(sel.value);
+        inpEx.value = p.examenes;
+        inpTa.value = p.tareas;
+        inpPr.value = p.proyectos;
+        actualizarEstadoPonderacionUI();
+    }
+
+    function actualizarEstadoPonderacionUI() {
+        const sel = document.getElementById('selectCategoriaPonderacion');
+        const estadoEl = document.getElementById('estadoPonderacionTipo');
+        if (!estadoEl) return;
+
+        const ex = Math.max(0, Math.min(100, parseFloat(document.getElementById('inputPctExamenes')?.value) || 0));
+        const ta = Math.max(0, Math.min(100, parseFloat(document.getElementById('inputPctTareas')?.value) || 0));
+        const pr = Math.max(0, Math.min(100, parseFloat(document.getElementById('inputPctProyectos')?.value) || 0));
+        const total = ex + ta + pr;
+
+        if (!sel?.value) {
+            estadoEl.innerHTML = "ℹ️ Sin porcentajes configurados (0%): se aplicará el cálculo estándar habitual.";
+            return;
+        }
+
+        if (total <= 0) {
+            estadoEl.innerHTML = `ℹ️ Sin porcentajes configurados (0%) en <strong>${escaparHTML(sel.value)}</strong>: se aplicará el cálculo estándar habitual.`;
+        } else {
+            const avisoSuma = total !== 100 ? ` · <em>Suma actual: ${total}% (normalizada automáticamente)</em>` : ` · <em>Total: 100%</em>`;
+            estadoEl.innerHTML = `⚖️ <strong>${escaparHTML(sel.value)}:</strong> Exámenes ${ex}% · Tareas ${ta}% · Proyectos ${pr}%${avisoSuma}`;
+        }
+    }
+
+    function guardarPonderacionCategoria() {
+        const sel = document.getElementById('selectCategoriaPonderacion');
+        if (!sel || !sel.value) {
+            alert("Selecciona o crea primero una categoría.");
+            return;
+        }
+        const idCat = sel.value;
+        const ex = Math.max(0, Math.min(100, parseFloat(document.getElementById('inputPctExamenes').value) || 0));
+        const ta = Math.max(0, Math.min(100, parseFloat(document.getElementById('inputPctTareas').value) || 0));
+        const pr = Math.max(0, Math.min(100, parseFloat(document.getElementById('inputPctProyectos').value) || 0));
+
+        ponderacionesPorCategoria[idCat] = { examenes: ex, tareas: ta, proyectos: pr };
+        actualizarFilaUI(idCat);
+        guardarTodoLocal();
+        actualizarEstadoPonderacionUI();
+    }
+
+    function resetearPonderacionCategoria() {
+        const sel = document.getElementById('selectCategoriaPonderacion');
+        if (!sel || !sel.value) return;
+        const idCat = sel.value;
+        ponderacionesPorCategoria[idCat] = { examenes: 0, tareas: 0, proyectos: 0 };
+        document.getElementById('inputPctExamenes').value = 0;
+        document.getElementById('inputPctTareas').value = 0;
+        document.getElementById('inputPctProyectos').value = 0;
+        actualizarFilaUI(idCat);
+        guardarTodoLocal();
+        actualizarEstadoPonderacionUI();
     }
 
     const STOPWORDS_ES = new Set(['el','la','los','las','un','una','unos','unas','de','del','al','a','en','con','por','para','que','qué','como','cómo','es','son','fue','era','me','te','se','nos','mi','mis','tu','tus','su','sus','y','o','pero','si','no','lo','le','les','sobre','este','esta','esto','estos','estas','ese','esa','eso','ya','muy','mas','más']);
@@ -1342,7 +1598,7 @@
         if (!archivoJSONHandle) return false;
         try {
             const memoriaEvolutiva = cargarMemoriaEvolutiva();
-            const datosBase = { modulos, notasCurso, umbralObjetivo, metaModulosRequeridos, eventosCalendario, memoriaEvolutiva };
+            const datosBase = { modulos, notasCurso, ponderacionesPorCategoria, umbralObjetivo, metaModulosRequeridos, eventosCalendario, memoriaEvolutiva };
             const firmaSHA256 = await generarFirmaIntegridad(datosBase);
             const payload = JSON.stringify({ integridadSHA256: firmaSHA256, ...datosBase }, null, 2);
 
@@ -1417,6 +1673,8 @@
             if (gMe && gMe !== "null") metaModulosRequeridos = parseInt(gMe) || null;
             const gN = localStorage.getItem('smr_calificaciones'); 
             if (gN) notasCurso = sanearNotas(JSON.parse(gN), modulos);
+            const gP = localStorage.getItem('smr_ponderaciones_tipo');
+            ponderacionesPorCategoria = sanearPonderaciones(gP ? JSON.parse(gP) : {}, modulos);
             const gEv = localStorage.getItem('smr_eventos_calendario');
             if (gEv) eventosCalendario = JSON.parse(gEv);
             localStorage.setItem('smr_ultima_version_aplicada', APP_INFO.version);
@@ -1424,8 +1682,12 @@
             console.error("Error leyendo estado local:", e);
         }
 
-        modulos.forEach(m => { if (!notasCurso[m.id]) notasCurso[m.id] = []; });
+        modulos.forEach(m => {
+            if (!notasCurso[m.id]) notasCurso[m.id] = [];
+            if (!ponderacionesPorCategoria[m.id]) ponderacionesPorCategoria[m.id] = { examenes: 0, tareas: 0, proyectos: 0 };
+        });
         document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
+        sincronizarSelectorPonderacion();
         renderizarTabla();
         renderizarEventosCalendario();
     }
@@ -1434,6 +1696,7 @@
         try {
             localStorage.setItem('smr_modulos_list', JSON.stringify(modulos));
             localStorage.setItem('smr_calificaciones', JSON.stringify(notasCurso));
+            localStorage.setItem('smr_ponderaciones_tipo', JSON.stringify(ponderacionesPorCategoria));
             localStorage.setItem('smr_umbral_objetivo', umbralObjetivo.toString());
             localStorage.setItem('smr_meta_modulos', metaModulosRequeridos !== null ? metaModulosRequeridos.toString() : "null");
             localStorage.setItem('smr_eventos_calendario', JSON.stringify(eventosCalendario));
@@ -1471,6 +1734,11 @@
             const tdNotas = document.createElement('td');
             const divAdd = document.createElement('div');
             divAdd.className = 'add-note-box';
+
+            const selTipo = document.createElement('select');
+            selTipo.className = 'select-weight';
+            selTipo.id = `input-tipo-${m.id}`;
+            selTipo.innerHTML = `<option value="examen">📝 Examen</option><option value="tarea">📌 Tarea</option><option value="proyecto">🛠️ Proyecto</option>`;
             
             const inp = document.createElement('input');
             inp.type = 'number';
@@ -1489,7 +1757,7 @@
             btnPlus.textContent = '+';
             btnPlus.onclick = () => agregarNotaAcumulada(m.id);
 
-            divAdd.append(inp, sel, btnPlus);
+            divAdd.append(selTipo, inp, sel, btnPlus);
 
             const divTags = document.createElement('div');
             divTags.className = 'tags-holder';
@@ -1512,13 +1780,15 @@
     }
 
     function agregarNotaAcumulada(id) {
+        const selectTipo = document.getElementById(`input-tipo-${id}`);
         const inputVal = document.getElementById(`input-val-${id}`);
         const selectPeso = document.getElementById(`input-peso-${id}`);
+        const tipo = sanearTipoEvaluacion(selectTipo?.value || 'examen');
         const valor = parseFloat(inputVal.value);
         const peso = parseInt(selectPeso.value, 10);
 
         if (!isNaN(valor) && valor >= 0 && valor <= 10) {
-            notasCurso[id].push({ val: valor, peso: peso });
+            notasCurso[id].push({ val: valor, peso: peso, tipo: tipo });
             inputVal.value = '';
             inputVal.focus();
             actualizarFilaUI(id);
@@ -1538,17 +1808,15 @@
         holder.innerHTML = '';
         
         const arr = notasCurso[id] || [];
-        let sumaPonderada = 0, sumaPesos = 0;
 
         arr.forEach((item, idx) => {
             const valNum = typeof item.val === 'number' ? item.val : parseFloat(item);
             const pesoNum = typeof item.peso === 'number' ? item.peso : 1;
-            sumaPonderada += valNum * pesoNum;
-            sumaPesos += pesoNum;
+            const tipoEtiqueta = etiquetaTipoEvaluacion(item.tipo);
 
             const wrapper = document.createElement('div');
             wrapper.className = 'tag';
-            wrapper.textContent = `${valNum.toFixed(2)} (x${pesoNum}) `;
+            wrapper.textContent = `${tipoEtiqueta}: ${valNum.toFixed(2)} (x${pesoNum}) `;
             const b = document.createElement('button');
             b.textContent = '×';
             b.onclick = () => borrarNotaIndex(id, idx);
@@ -1561,8 +1829,9 @@
         const bMedia = row.querySelector('.media-final');
         const bBoletin = row.querySelector('.boletin-final');
 
-        if (arr.length > 0 && sumaPesos > 0) {
-            const promedio = sumaPonderada / sumaPesos;
+        const calc = calcularPromedioCategoria(id);
+        if (arr.length > 0) {
+            const promedio = calc.promedio;
             const entero = Math.round(promedio);
             bMedia.innerText = promedio.toFixed(2);
             bBoletin.innerText = entero;
@@ -1599,17 +1868,15 @@
 
         modulos.forEach(m => {
             const arr = notasCurso[m.id] || [];
+            arr.forEach(n => {
+                const vN = typeof n.val === 'number' ? n.val : parseFloat(n);
+                todasLasNotasCronologicas.push(vN);
+            });
+
+            const calc = calcularPromedioCategoria(m.id);
             let promedio = 0;
             if (arr.length > 0) {
-                let sP = 0, sPe = 0;
-                arr.forEach(n => {
-                    const vN = typeof n.val === 'number' ? n.val : parseFloat(n);
-                    const pN = typeof n.peso === 'number' ? n.peso : 1;
-                    todasLasNotasCronologicas.push(vN);
-                    sP += vN * pN;
-                    sPe += pN;
-                });
-                promedio = sPe > 0 ? (sP / sPe) : 0;
+                promedio = calc.promedio;
                 suma += promedio;
                 evaluados++;
                 if (Math.round(promedio) >= 5) aprobados++;
@@ -1676,6 +1943,7 @@
 
     function cerrarModal() {
         document.getElementById('modalConfig').style.display = 'none';
+        sincronizarSelectorPonderacion();
         renderizarTabla();
     }
 
@@ -1699,9 +1967,13 @@
         const nombre = document.getElementById('nuevoNombre').value.trim().replace(/[<>]/g, '').slice(0, 80);
         if (id && nombre) {
             modulos.push({ id, nombre });
+            if (!ponderacionesPorCategoria[id]) {
+                ponderacionesPorCategoria[id] = { examenes: 0, tareas: 0, proyectos: 0 };
+            }
             document.getElementById('nuevoId').value = '';
             document.getElementById('nuevoNombre').value = '';
             renderizarListaModulosConfig();
+            sincronizarSelectorPonderacion(id);
             guardarTodoLocal();
         }
     }
@@ -1710,7 +1982,9 @@
         const idEliminar = modulos[idx].id;
         modulos.splice(idx, 1);
         delete notasCurso[idEliminar];
+        delete ponderacionesPorCategoria[idEliminar];
         renderizarListaModulosConfig();
+        sincronizarSelectorPonderacion();
         guardarTodoLocal();
     }
 
@@ -1796,7 +2070,7 @@
         const datosCanonicos = JSON.stringify({
             m: payload.modulos.map(x => [x.id, x.nombre]),
             n: Object.keys(payload.notasCurso).sort().reduce((acc, k) => {
-                acc[k] = payload.notasCurso[k].map(item => [Number(item.val), Number(item.peso)]);
+                acc[k] = payload.notasCurso[k].map(item => [Number(item.val), Number(item.peso), sanearTipoEvaluacion(item.tipo)]);
                 return acc;
             }, {}),
             u: Number(payload.umbralObjetivo),
@@ -1809,7 +2083,7 @@
 
     async function exportarDatos() {
         const memoriaEvolutiva = cargarMemoriaEvolutiva();
-        const datosBase = { modulos, notasCurso, umbralObjetivo, metaModulosRequeridos, eventosCalendario, memoriaEvolutiva };
+        const datosBase = { modulos, notasCurso, ponderacionesPorCategoria, umbralObjetivo, metaModulosRequeridos, eventosCalendario, memoriaEvolutiva };
         const firmaSHA256 = await generarFirmaIntegridad(datosBase);
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ integridadSHA256: firmaSHA256, ...datosBase }, null, 2));
         const dlAnchorElem = document.createElement('a');
@@ -1839,6 +2113,7 @@
             }
             modulos = sanearModulos(parsed.modulos || []);
             notasCurso = sanearNotas(parsed.notasCurso || {}, modulos);
+            ponderacionesPorCategoria = sanearPonderaciones(parsed.ponderacionesPorCategoria || {}, modulos);
             umbralObjetivo = Number(parsed.umbralObjetivo) || 7.00;
             metaModulosRequeridos = parsed.metaModulosRequeridos ?? null;
             eventosCalendario = parsed.eventosCalendario || [];
@@ -1846,6 +2121,7 @@
 
             guardarTodoLocal();
             document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
+            sincronizarSelectorPonderacion();
             renderizarTabla();
             renderizarEventosCalendario();
             comprobarAvisosProximos();
