@@ -410,7 +410,7 @@
                 <div id="updateText" style="font-size: 13px; color: #1e40af;">Hay una actualización lista para descargar.</div>
             </div>
         </div>
-        <a id="updateLink" href="#" target="_blank" class="update-btn">Actualizar Panel</a>
+        <a id="updateLink" href="#" target="_blank" rel="noopener noreferrer" class="update-btn">Actualizar Panel</a>
     </div>
 
     <header>
@@ -585,7 +585,7 @@
             <button class="close-btn" onclick="cerrarModalAcercaDe()">×</button>
         </div>
         <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
-            Suite de seguimiento con motor NLP local, autoguardado directo en archivo .json vinculado, ponderación por tipo de evaluación, registro automático de exámenes/fechas en agenda y avisos previos al vencimiento.
+            Suite de seguimiento con motor NLP local, autoguardado directo en archivo .json vinculado, firma SHA-256 integral, saneamiento de datos, ponderación por tipo de evaluación, registro automático de exámenes/fechas en agenda y avisos previos al vencimiento.
         </p>
         <div class="spec-grid">
             <div class="spec-box">
@@ -601,8 +601,8 @@
                 <div class="spec-val">Local + Autoguardado .json</div>
             </div>
             <div class="spec-box">
-                <div class="spec-label">Evaluación</div>
-                <div class="spec-val">Por Tipo (%) o Peso (x1-x3)</div>
+                <div class="spec-label">Integridad</div>
+                <div class="spec-val">SHA-256 + Saneamiento</div>
             </div>
         </div>
         <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
@@ -621,10 +621,10 @@
             <p style="margin-bottom: 10px; color: var(--primary);"><strong>🚀 Mejoras incluidas en la versión v4.2.3:</strong></p>
             <ul style="padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
                 <li><strong>Menú ⚖️ Ponderación por Tipo de Evaluación (%):</strong> Accede desde el botón <em>⚖️ Ponderación</em> para asignar porcentajes a <em>Exámenes</em>, <em>Tareas</em> y <em>Proyectos</em> por categoría; si quedan en <code>0%</code> o sin configurar, se aplica el cálculo estándar habitual.</li>
+                <li><strong>Firma <code>SHA-256</code> completa y saneamiento reforzado:</strong> Protege también ponderaciones, agenda y memoria evolutiva en el <code>.json</code>, valida fechas/textos al importar y bloquea enlaces remotos no <code>https://</code>.</li>
                 <li><strong>Autoguardado directo en archivo <code>.json</code>:</strong> Al crear/exportar o importar tu <code>.json</code>, queda vinculado y muestra <strong>✅ Guardado (Autoguardado .json)</strong> en el panel superior, guardando cada cambio al instante. Si aún no existe el archivo vinculado, muestra <strong>⚠️ No guardado</strong>.</li>
                 <li><strong>Exámenes y fechas desde memoria a agenda:</strong> Lo memorizado con examen o fecha/día pasa automáticamente a <em>Eventos / Tareas programadas:</em>.</li>
                 <li><strong>Avisos al cumplirse el día o días antes:</strong> Muestra un aviso superior discreto cuando faltan entre 0 y 3 días para un evento o recuerdo.</li>
-                <li><strong>Comprobación SemVer de actualizaciones y atajos UX:</strong> Verificación directa de nuevas versiones sin bloqueos y cierre rápido de modales con <code>Esc</code> o clic exterior.</li>
             </ul>
         </div>
         <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
@@ -742,6 +742,7 @@
 
     const CUATRO_MESES_MS = 120 * 24 * 60 * 60 * 1000;
     const MAX_RECUERDOS_MEMORIA = 120;
+    const CLAVES_PROHIBIDAS = new Set(['__proto__', 'constructor', 'prototype']);
 
     let modulos = [];
     let notasCurso = {}; 
@@ -763,6 +764,10 @@
     let temporizadorActivo = false;
     let tipoPomodoroActual = 'work';
 
+    function esClaveSegura(clave) {
+        return typeof clave === 'string' && clave.length > 0 && !CLAVES_PROHIBIDAS.has(clave);
+    }
+
     function escaparHTML(str) {
         const div = document.createElement('div');
         div.textContent = String(str);
@@ -771,12 +776,25 @@
             .replace(/'/g, '&#039;');
     }
 
+    function esURLSeguraHTTPS(urlStr) {
+        try {
+            const parsed = new URL(String(urlStr || '').trim());
+            return parsed.protocol === 'https:';
+        } catch (e) {
+            return false;
+        }
+    }
+
     function sanearModulos(listaBruta) {
         if (!Array.isArray(listaBruta)) return [];
-        return listaBruta.slice(0, 100).map(m => ({
-            id: String(m?.id || "").trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 15),
-            nombre: String(m?.nombre || "").trim().replace(/[<>]/g, '').slice(0, 80)
-        })).filter(m => m.id.length > 0 && m.nombre.length > 0);
+        return listaBruta.slice(0, 100).map(m => {
+            const idLimpio = String(m?.id || "").trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 15);
+            if (!esClaveSegura(idLimpio)) return null;
+            return {
+                id: idLimpio,
+                nombre: String(m?.nombre || "").trim().replace(/[<>]/g, '').slice(0, 80)
+            };
+        }).filter(m => m && m.id.length > 0 && m.nombre.length > 0);
     }
 
     function sanearTipoEvaluacion(tipo) {
@@ -802,7 +820,9 @@
         const clavesPermitidas = Object.keys(objetoNotasBruto).slice(0, 100);
         const mapaTemp = {};
         clavesPermitidas.forEach(k => {
+            if (!esClaveSegura(k)) return;
             const idLimpio = String(k).trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 15);
+            if (!esClaveSegura(idLimpio)) return;
             if (Array.isArray(objetoNotasBruto[k])) {
                 mapaTemp[idLimpio] = objetoNotasBruto[k].slice(0, 200).map(item => {
                     const valRaw = typeof item === 'number' ? item : Number(item?.val ?? 0);
@@ -825,7 +845,8 @@
     function sanearPonderaciones(objetoBruto, listaModulosValidos) {
         const limpio = {};
         listaModulosValidos.forEach(m => {
-            const raw = objetoBruto && typeof objetoBruto === 'object' ? objetoBruto[m.id] : null;
+            if (!esClaveSegura(m.id)) return;
+            const raw = (objetoBruto && typeof objetoBruto === 'object' && esClaveSegura(m.id)) ? objetoBruto[m.id] : null;
             const ex = Number(raw?.examenes ?? 0);
             const ta = Number(raw?.tareas ?? 0);
             const pr = Number(raw?.proyectos ?? 0);
@@ -838,7 +859,50 @@
         return limpio;
     }
 
+    function sanearEventos(listaEventosBruta) {
+        if (!Array.isArray(listaEventosBruta)) return [];
+        const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
+        return listaEventosBruta.slice(0, 200).map((ev, idx) => {
+            if (!ev || typeof ev !== 'object') return null;
+            const fechaLimpia = String(ev.fecha || '').trim();
+            const descLimpia = String(ev.desc || '').trim().replace(/[<>]/g, '').slice(0, 200);
+            if (!regexFecha.test(fechaLimpia) || !descLimpia) return null;
+            const dCheck = new Date(`${fechaLimpia}T12:00:00`);
+            if (isNaN(dCheck.getTime())) return null;
+            const idNum = Number(ev.id);
+            const idValido = (Number.isFinite(idNum) && idNum > 0) ? idNum : (Date.now() + idx);
+            return { id: idValido, fecha: fechaLimpia, desc: descLimpia };
+        }).filter(Boolean);
+    }
+
+    function sanearMemoria(listaMemoriaBruta) {
+        if (!Array.isArray(listaMemoriaBruta)) return [];
+        const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
+        return listaMemoriaBruta.slice(-MAX_RECUERDOS_MEMORIA).map(item => {
+            if (!item || typeof item !== 'object') return null;
+            const kLimpia = String(item.k || '').trim().replace(/[<>]/g, '').slice(0, 90);
+            const vLimpia = String(item.v || '').trim().replace(/[<>]/g, '').slice(0, 260);
+            if (!vLimpia) return null;
+            const tokensLimpiados = Array.isArray(item.tk)
+                ? item.tk.filter(t => typeof t === 'string').map(t => t.replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 30)).filter(Boolean).slice(0, 18)
+                : extraerTokensLimpios(kLimpia + ' ' + vLimpia).slice(0, 18);
+            const tsNum = Number(item.ts);
+            const tsValido = (Number.isFinite(tsNum) && tsNum > 0) ? tsNum : Date.now();
+            const fechaValida = (typeof item.fechaEvento === 'string' && regexFecha.test(item.fechaEvento)) ? item.fechaEvento : null;
+            const estadoValido = item.estado === 'referencia' ? 'referencia' : 'activo';
+            return {
+                k: kLimpia || vLimpia.slice(0, 90),
+                v: vLimpia,
+                tk: tokensLimpiados,
+                ts: tsValido,
+                fechaEvento: fechaValida,
+                estado: estadoValido
+            };
+        }).filter(Boolean);
+    }
+
     function obtenerPonderacionCategoria(id) {
+        if (!esClaveSegura(id)) return { examenes: 0, tareas: 0, proyectos: 0 };
         const p = ponderacionesPorCategoria[id];
         if (!p) return { examenes: 0, tareas: 0, proyectos: 0 };
         return {
@@ -974,7 +1038,7 @@
 
     function guardarPonderacionCategoria() {
         const sel = document.getElementById('selectCategoriaPonderacion');
-        if (!sel || !sel.value) {
+        if (!sel || !sel.value || !esClaveSegura(sel.value)) {
             alert("Selecciona o crea primero una categoría.");
             return;
         }
@@ -991,7 +1055,7 @@
 
     function resetearPonderacionCategoria() {
         const sel = document.getElementById('selectCategoriaPonderacion');
-        if (!sel || !sel.value) return;
+        if (!sel || !sel.value || !esClaveSegura(sel.value)) return;
         const idCat = sel.value;
         ponderacionesPorCategoria[idCat] = { examenes: 0, tareas: 0, proyectos: 0 };
         document.getElementById('inputPctExamenes').value = 0;
@@ -1037,14 +1101,14 @@
     function cargarMemoriaEvolutiva() {
         try {
             const raw = localStorage.getItem('smr_memoria_evolutiva');
-            return raw ? JSON.parse(raw) : [];
+            return raw ? sanearMemoria(JSON.parse(raw)) : [];
         } catch (e) {
             return [];
         }
     }
 
     function guardarMemoriaEvolutiva(lista) {
-        const recortada = lista.slice(-MAX_RECUERDOS_MEMORIA);
+        const recortada = sanearMemoria(lista).slice(-MAX_RECUERDOS_MEMORIA);
         localStorage.setItem('smr_memoria_evolutiva', JSON.stringify(recortada));
     }
 
@@ -1120,8 +1184,8 @@
     function registrarNuevoRecuerdo(claveOriginal, valorOriginal) {
         let memoria = cargarMemoriaEvolutiva();
         const tokens = extraerTokensLimpios(claveOriginal + ' ' + valorOriginal);
-        const claveLimpia = claveOriginal.trim().slice(0, 90);
-        const valorLimpio = valorOriginal.trim().slice(0, 260);
+        const claveLimpia = claveOriginal.trim().replace(/[<>]/g, '').slice(0, 90);
+        const valorLimpio = valorOriginal.trim().replace(/[<>]/g, '').slice(0, 260);
 
         const fechaDetectada = detectarFechaParaAgenda(valorLimpio);
         const esExamen = /\bexamen(?:es)?\b/i.test(valorLimpio.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
@@ -1132,6 +1196,7 @@
             const yaExiste = eventosCalendario.some(ev => ev.fecha === fechaDetectada && ev.desc.toLowerCase() === descEvento.toLowerCase());
             if (!yaExiste) {
                 eventosCalendario.push({ id: Date.now() + Math.floor(Math.random() * 1000), fecha: fechaDetectada, desc: descEvento });
+                eventosCalendario = sanearEventos(eventosCalendario);
                 renderizarEventosCalendario();
                 agregadoAEventos = true;
             }
@@ -1198,9 +1263,9 @@
             if (isNaN(fechaEv.getTime())) return;
             const diffDias = Math.round((fechaEv - hoy) / (24 * 60 * 60 * 1000));
             if (diffDias === 0) {
-                avisos.push(`Hoy toca: <strong>${escaparHTML(ev.desc)}</strong> (${ev.fecha})`);
+                avisos.push(`Hoy toca: <strong>${escaparHTML(ev.desc)}</strong> (${escaparHTML(ev.fecha)})`);
             } else if (diffDias > 0 && diffDias <= 3) {
-                avisos.push(`En ${diffDias} día(s): <strong>${escaparHTML(ev.desc)}</strong> (${ev.fecha})`);
+                avisos.push(`En ${diffDias} día(s): <strong>${escaparHTML(ev.desc)}</strong> (${escaparHTML(ev.fecha)})`);
             }
         });
 
@@ -1213,7 +1278,7 @@
             const yaIncluido = eventosCalendario.some(ev => ev.fecha === memItem.fechaEvento && ev.desc.includes(memItem.v));
             if (!yaIncluido && diffDias >= 0 && diffDias <= 3) {
                 const cuando = diffDias === 0 ? 'Hoy' : `En ${diffDias} día(s)`;
-                avisos.push(`${cuando} (recuerdo): <strong>${escaparHTML(memItem.v)}</strong> (${memItem.fechaEvento})`);
+                avisos.push(`${cuando} (recuerdo): <strong>${escaparHTML(memItem.v)}</strong> (${escaparHTML(memItem.fechaEvento)})`);
             }
         });
 
@@ -1292,7 +1357,7 @@
     }
 
     async function verificarActualizaciones() {
-        if (!APP_INFO.urlManifestRemoto) return;
+        if (!APP_INFO.urlManifestRemoto || !esURLSeguraHTTPS(APP_INFO.urlManifestRemoto)) return;
         try {
             const urlLimpia = `${APP_INFO.urlManifestRemoto}?nocache=${Date.now()}`;
             const respuesta = await fetch(urlLimpia, { cache: "no-store" });
@@ -1312,9 +1377,13 @@
                 const texto = document.getElementById('updateText');
                 const enlace = document.getElementById('updateLink');
 
-                titulo.textContent = `¡Nueva versión ${datosRemotos.version} disponible!`;
-                texto.textContent = datosRemotos.notas || 'Hay una actualización lista para descargar.';
-                if (datosRemotos.downloadUrl) enlace.href = datosRemotos.downloadUrl;
+                titulo.textContent = `¡Nueva versión ${String(datosRemotos.version).slice(0, 20)} disponible!`;
+                texto.textContent = String(datosRemotos.notas || 'Hay una actualización lista para descargar.').slice(0, 180);
+                if (datosRemotos.downloadUrl && esURLSeguraHTTPS(datosRemotos.downloadUrl)) {
+                    enlace.href = datosRemotos.downloadUrl;
+                } else {
+                    enlace.removeAttribute('href');
+                }
                 banner.style.display = 'flex';
             }
         } catch (error) {
@@ -1495,6 +1564,7 @@
             return;
         }
         eventosCalendario.push({ id: Date.now(), fecha, desc });
+        eventosCalendario = sanearEventos(eventosCalendario);
         document.getElementById('inputDescEvento').value = '';
         renderizarEventosCalendario();
         guardarTodoLocal();
@@ -1529,10 +1599,10 @@
             const tagAviso = diffDias === 0 ? ' · ¡Hoy!' : (diffDias > 0 && diffDias <= 3 ? ` · En ${diffDias}d` : '');
             item.innerHTML = `
                 <div style="word-break: break-word;">
-                    <strong style="color: var(--accent); font-size: 0.8rem; margin-right: 6px;">[${ev.fecha}]</strong>
+                    <strong style="color: var(--accent); font-size: 0.8rem; margin-right: 6px;">[${escaparHTML(ev.fecha)}]</strong>
                     <span>${escaparHTML(ev.desc)}</span><strong style="font-size:0.75rem;">${tagAviso}</strong>
                 </div>
-                <button class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem; flex-shrink: 0;" onclick="eliminarEventoCalendario(${ev.id})">×</button>
+                <button class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem; flex-shrink: 0;" onclick="eliminarEventoCalendario(${Number(ev.id)})">×</button>
             `;
             contenedor.appendChild(item);
         });
@@ -1660,15 +1730,15 @@
             const gM = localStorage.getItem('smr_modulos_list');
             if (gM !== null) modulos = sanearModulos(JSON.parse(gM));
             const gO = localStorage.getItem('smr_umbral_objetivo');
-            if (gO) umbralObjetivo = parseFloat(gO) || 7.00;
+            if (gO) umbralObjetivo = Math.max(0, Math.min(10, parseFloat(gO) || 7.00));
             const gMe = localStorage.getItem('smr_meta_modulos');
-            if (gMe && gMe !== "null") metaModulosRequeridos = parseInt(gMe) || null;
+            if (gMe && gMe !== "null") metaModulosRequeridos = Math.max(0, parseInt(gMe, 10) || 0);
             const gN = localStorage.getItem('smr_calificaciones'); 
             if (gN) notasCurso = sanearNotas(JSON.parse(gN), modulos);
             const gP = localStorage.getItem('smr_ponderaciones_tipo');
             ponderacionesPorCategoria = sanearPonderaciones(gP ? JSON.parse(gP) : {}, modulos);
             const gEv = localStorage.getItem('smr_eventos_calendario');
-            if (gEv) eventosCalendario = JSON.parse(gEv);
+            if (gEv) eventosCalendario = sanearEventos(JSON.parse(gEv));
             localStorage.setItem('smr_ultima_version_aplicada', APP_INFO.version);
         } catch(e) {
             console.error("Error leyendo estado local:", e);
@@ -1963,6 +2033,10 @@
     function crearModulo() {
         const id = document.getElementById('nuevoId').value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 15);
         const nombre = document.getElementById('nuevoNombre').value.trim().replace(/[<>]/g, '').slice(0, 80);
+        if (!esClaveSegura(id)) {
+            alert("Código de categoría no válido.");
+            return;
+        }
         if (id && nombre) {
             modulos.push({ id, nombre });
             if (!ponderacionesPorCategoria[id]) {
@@ -2039,13 +2113,13 @@
         if (query === 'memoria' || query.includes('que recuerdas') || query.includes('qué recuerdas')) {
             const mem = cargarMemoriaEvolutiva();
             if (!mem.length) return "🧠 No hay recuerdos guardados aún.";
-            return "🧠 <strong>Recuerdos guardados:</strong><br>" + mem.slice(-6).map(m => `• ${escaparHTML(m.v)}${m.fechaEvento ? ` <em>[${m.fechaEvento}]</em>` : ''}`).join('<br>');
+            return "🧠 <strong>Recuerdos guardados:</strong><br>" + mem.slice(-6).map(m => `• ${escaparHTML(m.v)}${m.fechaEvento ? ` <em>[${escaparHTML(m.fechaEvento)}]</em>` : ''}`).join('<br>');
         }
 
         if (query.includes('agenda') || query.includes('eventos') || query.includes('tareas')) {
             if (!eventosCalendario.length) return "📅 No hay eventos ni tareas programadas.";
             const ord = [...eventosCalendario].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-            return "📅 <strong>Eventos / Tareas programadas:</strong><br>" + ord.map(e => `• <strong>[${e.fecha}]</strong> ${escaparHTML(e.desc)}`).join('<br>');
+            return "📅 <strong>Eventos / Tareas programadas:</strong><br>" + ord.map(e => `• <strong>[${escaparHTML(e.fecha)}]</strong> ${escaparHTML(e.desc)}`).join('<br>');
         }
 
         if (query.includes('consejo') || query.includes('estudiar') || query.includes('mejorar')) {
@@ -2065,16 +2139,34 @@
     }
 
     async function generarFirmaIntegridad(payload) {
+        const modulosSan = sanearModulos(payload.modulos || []);
+        const notasSan = sanearNotas(payload.notasCurso || {}, modulosSan);
+        const pondSan = sanearPonderaciones(payload.ponderacionesPorCategoria || {}, modulosSan);
+        const eventosSan = sanearEventos(payload.eventosCalendario || []).sort((a, b) => a.fecha.localeCompare(b.fecha) || String(a.desc).localeCompare(String(b.desc)));
+        const memoriaSan = sanearMemoria(payload.memoriaEvolutiva || []).map(item => ({
+            k: item.k,
+            v: item.v,
+            ts: Number(item.ts) || 0,
+            fechaEvento: item.fechaEvento || null,
+            estado: item.estado
+        }));
+
         const datosCanonicos = JSON.stringify({
-            m: payload.modulos.map(x => [x.id, x.nombre]),
-            n: Object.keys(payload.notasCurso).sort().reduce((acc, k) => {
-                acc[k] = payload.notasCurso[k].map(item => [Number(item.val), Number(item.peso), sanearTipoEvaluacion(item.tipo)]);
+            m: modulosSan.map(x => [x.id, x.nombre]),
+            n: Object.keys(notasSan).sort().reduce((acc, k) => {
+                acc[k] = notasSan[k].map(item => [Number(item.val), Number(item.peso), sanearTipoEvaluacion(item.tipo)]);
                 return acc;
             }, {}),
+            p: Object.keys(pondSan).sort().reduce((acc, k) => {
+                acc[k] = [Number(pondSan[k].examenes), Number(pondSan[k].tareas), Number(pondSan[k].proyectos)];
+                return acc;
+            }, {}),
+            e: eventosSan.map(ev => [ev.fecha, ev.desc]),
+            mem: memoriaSan,
             u: Number(payload.umbralObjetivo),
             r: payload.metaModulosRequeridos === null ? null : Number(payload.metaModulosRequeridos)
         });
-        const msgBuffer = new TextEncoder().encode("INTEGRITY_V3::" + datosCanonicos + "::ANALYTICS_PRO");
+        const msgBuffer = new TextEncoder().encode("INTEGRITY_V4::" + datosCanonicos + "::ANALYTICS_PRO");
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
         return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
     }
@@ -2094,28 +2186,33 @@
     async function procesarContenidoJSONImportado(textoJSON) {
         try {
             const parsed = JSON.parse(textoJSON);
-            if (!parsed.integridadSHA256) {
+            if (!parsed || typeof parsed !== 'object' || !parsed.integridadSHA256) {
                 alert("⛔ El archivo JSON no está firmado.");
                 return false;
             }
+            const memoriaImportada = sanearMemoria(parsed.memoriaEvolutiva || []);
             const datosParaVerificar = {
                 modulos: parsed.modulos || [],
                 notasCurso: parsed.notasCurso || {},
+                ponderacionesPorCategoria: parsed.ponderacionesPorCategoria || {},
                 umbralObjetivo: Number(parsed.umbralObjetivo) || 7.00,
                 metaModulosRequeridos: parsed.metaModulosRequeridos ?? null,
-                eventosCalendario: parsed.eventosCalendario || []
+                eventosCalendario: parsed.eventosCalendario || [],
+                memoriaEvolutiva: memoriaImportada
             };
             if (await generarFirmaIntegridad(datosParaVerificar) !== parsed.integridadSHA256) {
-                alert("⛔ La firma del archivo no coincide.");
+                alert("⛔ La firma del archivo no coincide o los datos fueron alterados.");
                 return false;
             }
             modulos = sanearModulos(parsed.modulos || []);
             notasCurso = sanearNotas(parsed.notasCurso || {}, modulos);
             ponderacionesPorCategoria = sanearPonderaciones(parsed.ponderacionesPorCategoria || {}, modulos);
-            umbralObjetivo = Number(parsed.umbralObjetivo) || 7.00;
-            metaModulosRequeridos = parsed.metaModulosRequeridos ?? null;
-            eventosCalendario = parsed.eventosCalendario || [];
-            if (Array.isArray(parsed.memoriaEvolutiva)) guardarMemoriaEvolutiva(parsed.memoriaEvolutiva);
+            umbralObjetivo = Math.max(0, Math.min(10, Number(parsed.umbralObjetivo) || 7.00));
+            metaModulosRequeridos = parsed.metaModulosRequeridos !== null && parsed.metaModulosRequeridos !== undefined
+                ? Math.max(0, parseInt(parsed.metaModulosRequeridos, 10) || 0)
+                : null;
+            eventosCalendario = sanearEventos(parsed.eventosCalendario || []);
+            guardarMemoriaEvolutiva(memoriaImportada);
 
             guardarTodoLocal();
             document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
