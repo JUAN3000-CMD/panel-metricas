@@ -484,7 +484,7 @@
         <div class="header-title-wrapper">
             <div class="header-badge-row">
                 <h1>Panel de Control y Métricas Pro</h1>
-                <span class="software-badge" onclick="abrirModalNovedades()" title="Haz clic para ver el registro de cambios (Changelog)">v4.2.3 • 2026 • IA Local • MIT 📋</span>
+                <span class="software-badge" onclick="abrirModalNovedades()" title="Haz clic para ver el registro de cambios (Changelog)">v4.2.4 • 2026 • IA Local • MIT 📋</span>
             </div>
             <p class="subtitle">Consola inteligente de monitorización de indicadores con procesamiento local y memoria evolutiva</p>
         </div>
@@ -599,7 +599,7 @@
     <footer class="app-footer">
         <div class="footer-brand">
             <span class="footer-title">📊 Panel de Control y Métricas Pro</span>
-            <span class="version-pill" id="footer-version-badge">v4.2.3</span>
+            <span class="version-pill" id="footer-version-badge">v4.2.4</span>
             <span>• <strong id="footer-year">2026</strong> • Licencia MIT</span>
         </div>
         <div class="footer-meta">
@@ -647,11 +647,16 @@
 <div class="modal-overlay" id="modalNovedades">
     <div class="modal-card" style="max-width: 500px;">
         <div class="modal-header">
-            <h3>📋 Novedades y Correcciones (v4.2.3)</h3>
+            <h3>📋 Novedades y Correcciones (v4.2.4)</h3>
             <button class="close-btn" onclick="cerrarModalNovedades()">×</button>
         </div>
         <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6; max-height: 300px; overflow-y: auto; padding-right: 4px;">
-            <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.2.3 (Actual):</strong></p>
+            <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.2.4 (Actual):</strong></p>
+            <ul style="padding-left: 18px; margin-bottom: 16px;">
+                <li><strong>Modal de Valoración y Diagnóstico de Errores:</strong> Nuevo botón <strong>⭐ Valorar</strong> con puntuación por estrellas, comentarios y casilla inteligente para adjuntar el diagnóstico del último error capturado solo cuando ocurre un fallo en la sesión.</li>
+                <li><strong>Envío Limpio y Consistencia de Versión:</strong> Envío estructurado vía Web3Forms con estado de error limpio (<code>"No adjuntado"</code> cuando no se incluye diagnóstico) y actualización de la etiqueta de versión a <strong>v4.2.4</strong>.</li>
+            </ul>
+            <p style="margin-bottom: 12px;"><strong>✨ Versión 4.2.3:</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
                 <li><strong>Autoguardado Automático Continuo y en .JSON:</strong> Todos los cambios en notas, categorías, ponderaciones y agenda se guardan automáticamente en el almacenamiento local y, al crear/vincular el archivo <code>.json</code>, se sincronizan en él de forma continua.</li>
                 <li><strong>Consistencia Completa:</strong> Conserva la ponderación porcentual (Exámenes, Tareas, Proyectos), el asistente NLP completo con memoria evolutiva y las predicciones por categoría.</li>
@@ -921,8 +926,8 @@
 <script>
     const APP_INFO = {
         nombre: "Panel de Control y Métricas Pro",
-        version: "4.2.3",
-        versionLabel: "v4.2.3",
+        version: "4.2.4",
+        versionLabel: "v4.2.4",
         anioDesarrollo: 2026,
         urlManifestRemoto: "https://gist.githubusercontent.com/JUAN3000-CMD/3b1f763a744b03a0874f7972208d7c7e/raw/version.json"
     };
