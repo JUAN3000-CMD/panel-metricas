@@ -878,7 +878,11 @@
             <button type="button" class="star-btn active" data-val="5" onclick="seleccionarEstrellas(5)">★</button>
         </div>
         <div style="margin-bottom: 12px;">
-            <textarea id="textareaComentarioValoracion" class="input-text" rows="3" style="width: 100%; resize: vertical;" placeholder="Escribe aquí tus sugerencias o comentarios..."></textarea>
+            <textarea id="textareaComentarioValoracion" class="input-text" rows="3" maxlength="1000" style="width: 100%; resize: vertical;" placeholder="Escribe aquí tus sugerencias o comentarios..."></textarea>
+            <div style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;" aria-hidden="true">
+                <label for="inputBotcheckValoracion">No rellenar este campo</label>
+                <input type="text" id="inputBotcheckValoracion" name="botcheck" tabindex="-1" autocomplete="off">
+            </div>
         </div>
         <div style="background: var(--bg-body); border: 1.5px solid var(--border-color); padding: 10px 12px; border-radius: 10px; margin-bottom: 14px;">
             <label id="lblCheckErrorValoracion" style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 700; color: var(--primary);">
@@ -1207,29 +1211,62 @@
         document.getElementById("modalValorar").style.display = "none";
     }
 
+    let ultimoEnvioValoracionTs = 0;
+    const COOLDOWN_VALORACION_MS = 15000;
+
+    function sanearTextoEnvio(texto, maxLen = 1000) {
+        return String(texto || "")
+            .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+            .trim()
+            .slice(0, maxLen);
+    }
+
     async function enviarValoracionWeb3Forms() {
         const btn = document.getElementById("btnEnviarValoracion");
         const estadoEl = document.getElementById("estadoEnvioValoracion");
-        const comentario = (document.getElementById("textareaComentarioValoracion").value || "").trim();
+        const botcheckEl = document.getElementById("inputBotcheckValoracion");
+        const comentario = sanearTextoEnvio(document.getElementById("textareaComentarioValoracion").value, 1000);
         const chkError = document.getElementById("chkAdjuntarErrorValoracion");
 
+        estadoEl.style.display = "block";
+
+        if (botcheckEl && botcheckEl.value.trim() !== "") {
+            estadoEl.style.color = "var(--danger-text)";
+            estadoEl.textContent = "⚠️ Envío bloqueado por filtro antispam.";
+            return;
+        }
+
+        const ahora = Date.now();
+        const restanteMs = COOLDOWN_VALORACION_MS - (ahora - ultimoEnvioValoracionTs);
+        if (ultimoEnvioValoracionTs > 0 && restanteMs > 0) {
+            const segRestantes = Math.ceil(restanteMs / 1000);
+            estadoEl.style.color = "var(--danger-text)";
+            estadoEl.textContent = `⚠️ Espera ${segRestantes}s antes de enviar otra valoración.`;
+            return;
+        }
+
         const adjuntarDiagnostico = Boolean(chkError && !chkError.disabled && chkError.checked && ultimoErrorCapturado);
-        const errorCapturadoTexto = adjuntarDiagnostico
+        const rawDiagnostico = adjuntarDiagnostico
             ? `[${ultimoErrorCapturado.fecha}] (${ultimoErrorCapturado.origen}) ${ultimoErrorCapturado.mensaje}${ultimoErrorCapturado.detalle ? " — " + ultimoErrorCapturado.detalle : ""}`
             : "No adjuntado";
+        const errorCapturadoTexto = adjuntarDiagnostico
+            ? sanearTextoEnvio(rawDiagnostico, 1500)
+            : "No adjuntado";
+
+        const puntuacionSegura = Math.min(5, Math.max(1, Number(puntuacionValoracionActual) || 5));
 
         const payload = {
             access_key: WEB3FORMS_ACCESS_KEY,
-            subject: `Valoración ${APP_INFO.nombre} v${APP_INFO.version} (${puntuacionValoracionActual}/5)`,
+            botcheck: "",
+            subject: `Valoración ${APP_INFO.nombre} v${APP_INFO.version} (${puntuacionSegura}/5)`,
             from_name: `${APP_INFO.nombre} v${APP_INFO.version}`,
-            puntuacion: `${puntuacionValoracionActual} / 5 estrellas`,
+            puntuacion: `${puntuacionSegura} / 5 estrellas`,
             comentario: comentario || "(Sin comentario adicional)",
             error_capturado: errorCapturadoTexto
         };
 
         btn.disabled = true;
         btn.textContent = "Enviando...";
-        estadoEl.style.display = "block";
         estadoEl.style.color = "var(--secondary)";
         estadoEl.textContent = "Enviando valoración...";
 
@@ -1244,6 +1281,7 @@
             });
             const data = await resp.json();
             if (resp.ok && data.success) {
+                ultimoEnvioValoracionTs = Date.now();
                 estadoEl.style.color = "var(--success-text)";
                 estadoEl.textContent = "✅ ¡Gracias! Tu valoración se ha enviado correctamente.";
                 document.getElementById("textareaComentarioValoracion").value = "";
