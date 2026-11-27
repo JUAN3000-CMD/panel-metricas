@@ -162,21 +162,10 @@
             background: var(--bg-body); color: var(--primary); font-family: var(--font-stack); font-size: 0.9rem; outline: none; margin-bottom: 12px;
         }
         .event-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
-        .event-list {
-            min-height: 76px;
-            max-height: 220px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            background: var(--bg-body);
-            border: 1.5px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px;
-        }
+        .event-list { max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .event-item {
             display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px;
-            background: var(--bg-card); border: 1.5px solid var(--border-color); border-radius: 8px; font-size: 0.85rem;
+            background: var(--bg-body); border: 1.5px solid var(--border-color); border-radius: 8px; font-size: 0.85rem;
         }
 
         .control-panel { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
@@ -244,6 +233,7 @@
         .score-badge.neutral { background: var(--bg-body); color: var(--primary); border: 1.5px solid var(--border-color); }
         .score-badge.pass { background: #ecfdf5; color: #047857; border: 1.5px solid #a7f3d0; }
         .score-badge.fail { background: #fef2f2; color: #b91c1c; border: 1.5px solid #fecaca; }
+
 
         .star-rating-row { display: flex; gap: 8px; margin-bottom: 14px; justify-content: center; }
         .star-btn {
@@ -494,19 +484,19 @@
         <div class="header-title-wrapper">
             <div class="header-badge-row">
                 <h1>Panel de Control y Métricas Pro</h1>
-                <span class="software-badge" onclick="abrirModalNovedades()" title="Haz clic para ver el registro de cambios (Changelog)">v4.2.5 • 2026 • IA Local • MIT 📋</span>
+                <span class="software-badge" onclick="abrirModalNovedades()" title="Haz clic para ver el registro de cambios (Changelog)">v4.2.4 • 2026 • IA Local • MIT 📋</span>
             </div>
             <p class="subtitle">Consola inteligente de monitorización de indicadores con procesamiento local y memoria evolutiva</p>
         </div>
         <div class="header-actions">
-            <button type="button" id="btn-save-status" class="btn-save-status" onclick="crearYVincularJSON()" title="Pulsa para crear el .json y activar el autoguardado automático">
+            <button id="btn-save-status" class="btn-save-status" onclick="crearYVincularJSON()" title="Pulsa para crear el .json y activar el autoguardado automático">
                 ⚠️ Crear .json
             </button>
-            <button type="button" class="btn btn-secondary" onclick="alternarNoMolestar()" id="btn-dnd" title="Silenciar avisos automáticos del asistente">
+            <button class="btn btn-secondary" onclick="alternarNoMolestar()" id="btn-dnd" title="Silenciar avisos automáticos del asistente">
                 🔔 Avisos: ON
             </button>
-            <button type="button" class="btn btn-secondary" onclick="abrirModalValorar()" title="Enviar valoración o reporte de error">⭐ Valorar</button>
-            <button type="button" class="btn btn-secondary" onclick="alternarTema()" id="btn-theme" title="Cambiar Modo Claro/Oscuro">🌙 Tema</button>
+            <button class="btn btn-secondary" onclick="abrirModalValorar()" title="Enviar valoración o reporte de error">⭐ Valorar</button>
+            <button class="btn btn-secondary" onclick="alternarTema()" id="btn-theme" title="Cambiar Modo Claro/Oscuro">🌙 Tema</button>
         </div>
     </header>
     
@@ -518,29 +508,29 @@
             <div class="metric-status" id="estado-global-txt">Esperando datos</div>
         </div>
         <div class="metric-card card-indigo">
-            <div class="metric-top"><span class="metric-label">Meta de Categorías</span><button type="button" class="btn-edit-target" onclick="abrirModalMeta()">✏️ Editar</button></div>
+            <div class="metric-top"><span class="metric-label">Meta de Categorías</span><button class="btn-edit-target" onclick="abrirModalMeta()">✏️ Editar</button></div>
             <div class="metric-value" id="modulos-aprobados">0 / 0</div>
             <div class="metric-status" id="estado-aprobados-txt">En seguimiento</div>
         </div>
         <div class="metric-card card-emerald">
-            <div class="metric-top"><span class="metric-label">Umbral Objetivo</span><button type="button" class="btn-edit-target" onclick="abrirModalObjetivo()">✏️ Editar</button></div>
+            <div class="metric-top"><span class="metric-label">Umbral Objetivo</span><button class="btn-edit-target" onclick="abrirModalObjetivo()">✏️ Editar</button></div>
             <div class="metric-value" id="valor-objetivo">7.00</div>
             <div class="metric-status" id="estado-objetivo-txt" style="color: var(--success-text);">Activo</div>
         </div>
         <div class="metric-card card-amber">
             <div class="metric-top">
                 <span class="metric-label">Pomodoro y Descanso</span>
-                <button type="button" class="btn-edit-target" onclick="abrirModalPomodoro()" title="Configurar minutos cómodamente">⚙️ Config</button>
+                <button class="btn-edit-target" onclick="abrirModalPomodoro()" title="Configurar minutos cómodamente">⚙️ Config</button>
             </div>
             <div class="timer-modes" style="margin-bottom: 2px;">
-                <button type="button" class="btn-tmode active" id="tmode-work" onclick="cambiarModoPomodoro(minutosEstudio, 'work')">Estudio</button>
-                <button type="button" class="btn-tmode" id="tmode-short" onclick="cambiarModoPomodoro(minutosDescansoCorto, 'short')">Desc. C.</button>
-                <button type="button" class="btn-tmode" id="tmode-long" onclick="cambiarModoPomodoro(minutosDescansoLargo, 'long')">Desc. L.</button>
+                <button class="btn-tmode active" id="tmode-work" onclick="cambiarModoPomodoro(minutosEstudio, 'work')">Estudio</button>
+                <button class="btn-tmode" id="tmode-short" onclick="cambiarModoPomodoro(minutosDescansoCorto, 'short')">Desc. C.</button>
+                <button class="btn-tmode" id="tmode-long" onclick="cambiarModoPomodoro(minutosDescansoLargo, 'long')">Desc. L.</button>
             </div>
             <div class="metric-value" id="timer-display" style="font-size: 2.2rem;">25:00</div>
             <div class="timer-controls">
-                <button type="button" class="btn-tctrl primary" id="btn-timer-toggle" onclick="toggleTemporizador()">Iniciar</button>
-                <button type="button" class="btn-tctrl" onclick="reiniciarTemporizador()">Reiniciar</button>
+                <button class="btn-tctrl primary" id="btn-timer-toggle" onclick="toggleTemporizador()">Iniciar</button>
+                <button class="btn-tctrl" onclick="reiniciarTemporizador()">Reiniciar</button>
             </div>
             <div class="metric-status" id="estado-timer-txt" style="margin-top: 4px;">Listo para concentrarse</div>
         </div>
@@ -566,7 +556,7 @@
                 <input type="date" id="inputFechaEvento">
                 <div class="event-input-row">
                     <input type="text" id="inputDescEvento" class="input-text" placeholder="Ej: Examen final de Matemáticas..." onkeydown="if(event.key==='Enter') agregarEventoCalendario()">
-                    <button type="button" class="btn btn-accent" onclick="agregarEventoCalendario()">+ Agendar</button>
+                    <button class="btn btn-accent" onclick="agregarEventoCalendario()">+ Agendar</button>
                 </div>
             </div>
             <div class="calendar-box">
@@ -579,13 +569,13 @@
     <div class="control-panel">
         <input type="text" id="buscadorTabla" class="search-box" placeholder="🔍 Buscar categoría..." oninput="filtrarTabla()">
         <div class="actions-row">
-            <button type="button" class="btn btn-secondary" onclick="abrirModal()">⚙️ Gestionar Categorías</button>
-            <button type="button" class="btn btn-secondary" onclick="abrirModalPonderaciones()">⚖️ Ponderación %</button>
-            <button type="button" class="btn btn-secondary" onclick="crearYVincularJSON()">💾 Exportar</button>
+            <button class="btn btn-secondary" onclick="abrirModal()">⚙️ Gestionar Categorías</button>
+            <button class="btn btn-secondary" onclick="abrirModalPonderaciones()">⚖️ Ponderación %</button>
+            <button class="btn btn-secondary" onclick="crearYVincularJSON()">💾 Exportar</button>
             <div class="btn btn-secondary btn-file-input">
                 📂 Importar <input type="file" id="importFile" accept=".json" onchange="importarDatos(event)">
             </div>
-            <button type="button" class="btn btn-success" onclick="abrirModalPDF()">📥 Emitir Informe PDF</button>
+            <button class="btn btn-success" onclick="abrirModalPDF()">📥 Emitir Informe PDF</button>
         </div>
     </div>
 
@@ -609,12 +599,12 @@
     <footer class="app-footer">
         <div class="footer-brand">
             <span class="footer-title">📊 Panel de Control y Métricas Pro</span>
-            <span class="version-pill" id="footer-version-badge">v4.2.5</span>
+            <span class="version-pill" id="footer-version-badge">v4.2.4</span>
             <span>• <strong id="footer-year">2026</strong> • Licencia MIT</span>
         </div>
         <div class="footer-meta">
             <span><span class="status-dot"></span>Autoguardado Local + Memoria (4m)</span>
-            <button type="button" class="btn-about" onclick="abrirModalAcercaDe()">ℹ️ Acerca del sistema</button>
+            <button class="btn-about" onclick="abrirModalAcercaDe()">ℹ️ Acerca del sistema</button>
         </div>
     </footer>
 </div>
@@ -624,7 +614,7 @@
     <div class="modal-card" style="max-width: 470px;">
         <div class="modal-header">
             <h3>ℹ️ Información del Software</h3>
-            <button type="button" class="close-btn" onclick="cerrarModalAcercaDe()">×</button>
+            <button class="close-btn" onclick="cerrarModalAcercaDe()">×</button>
         </div>
         <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
             Suite integral de seguimiento académico con motor NLP nativo 100% autónomo (sin dependencias externas), autoguardado local continuo, similitud semántica y memoria temporal auto-comprimible a 4 meses. Bajo Licencia MIT.
@@ -636,7 +626,7 @@
             </div>
             <div class="spec-box">
                 <div class="spec-label">Versión Actual</div>
-                <div class="spec-val" id="modal-version-val">v4.2.5 (Build 2026)</div>
+                <div class="spec-val" id="modal-version-val">v4.2.3 (Build 2026)</div>
             </div>
             <div class="spec-box">
                 <div class="spec-label">Motor IA Local</div>
@@ -648,35 +638,52 @@
             </div>
         </div>
         <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
-            <button type="button" class="btn btn-accent" onclick="cerrarModalAcercaDe()">Entendido</button>
+            <button class="btn btn-accent" onclick="cerrarModalAcercaDe()">Entendido</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL NOVEDADES Y CORRECCIONES (CHANGELOG) -->
+<!-- MODAL NOVEDADES Y CORRECCIONES (CHANGELOG v4.2.3) -->
 <div class="modal-overlay" id="modalNovedades">
     <div class="modal-card" style="max-width: 500px;">
         <div class="modal-header">
-            <h3>📋 Novedades y Correcciones (v4.2.5)</h3>
-            <button type="button" class="close-btn" onclick="cerrarModalNovedades()">×</button>
+            <h3>📋 Novedades y Correcciones (v4.2.4)</h3>
+            <button class="close-btn" onclick="cerrarModalNovedades()">×</button>
         </div>
         <div style="font-size: 0.85rem; color: var(--secondary); line-height: 1.6; max-height: 300px; overflow-y: auto; padding-right: 4px;">
-            <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.2.5 (Actual):</strong></p>
+            <p style="margin-bottom: 12px;"><strong>🚀 Versión 4.2.4 (Actual):</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
-                <li><strong>Almacenamiento Local Blindado:</strong> Fallback en memoria RAM automático cuando el navegador restringe <code>localStorage</code> en archivos locales, evitando bloqueos en los botones.</li>
-                <li><strong>Vista Reforzada de Eventos / Tareas Programadas:</strong> Contenedor visual siempre visible en la agenda y saneamiento seguro de fechas y descripciones.</li>
-            </ul>
-            <p style="margin-bottom: 12px;"><strong>✨ Versión 4.2.4:</strong></p>
-            <ul style="padding-left: 18px; margin-bottom: 16px;">
-                <li><strong>Modal de Valoración y Diagnóstico de Errores:</strong> Nuevo botón <strong>⭐ Valorar</strong> con puntuación por estrellas, comentarios y casilla inteligente para adjuntar el diagnóstico del último error capturado.</li>
+                <li><strong>Modal de Valoración y Diagnóstico de Errores:</strong> Nuevo botón <strong>⭐ Valorar</strong> con puntuación por estrellas, comentarios y casilla inteligente para adjuntar el diagnóstico del último error capturado solo cuando ocurre un fallo en la sesión.</li>
+                <li><strong>Envío Limpio y Consistencia de Versión:</strong> Envío estructurado vía Web3Forms con estado de error limpio (<code>"No adjuntado"</code> cuando no se incluye diagnóstico) y actualización de la etiqueta de versión a <strong>v4.2.4</strong>.</li>
             </ul>
             <p style="margin-bottom: 12px;"><strong>✨ Versión 4.2.3:</strong></p>
             <ul style="padding-left: 18px; margin-bottom: 16px;">
-                <li><strong>Autoguardado Automático Continuo y en .JSON:</strong> Sincronización automática de notas, categorías, ponderaciones y agenda.</li>
+                <li><strong>Autoguardado Automático Continuo y en .JSON:</strong> Todos los cambios en notas, categorías, ponderaciones y agenda se guardan automáticamente en el almacenamiento local y, al crear/vincular el archivo <code>.json</code>, se sincronizan en él de forma continua.</li>
+                <li><strong>Consistencia Completa:</strong> Conserva la ponderación porcentual (Exámenes, Tareas, Proyectos), el asistente NLP completo con memoria evolutiva y las predicciones por categoría.</li>
+            </ul>
+            <p style="margin-bottom: 12px;"><strong>✨ Versión 4.2.2:</strong></p>
+            <ul style="padding-left: 18px; margin-bottom: 16px;">
+                <li><strong>Sistema de Actualizaciones Optimizado:</strong> Comparación directa de versiones al iniciar sin bloqueos de referencia y sincronización automática con el almacenamiento local.</li>
+                <li><strong>Ponderación Porcentual y Predicción por Asignatura:</strong> Configuración de porcentajes por tipo (Exámenes, Tareas, Proyectos) y simulaciones rápidas por categoría en el asistente.</li>
+            </ul>
+            <p style="margin-bottom: 12px;"><strong>✨ Versión 4.2.1:</strong></p>
+            <ul style="padding-left: 18px; margin-bottom: 16px;">
+                <li><strong>Conversación Natural Mejorada:</strong> Respuestas cortas y contextuales ante saludos o estados de ánimo (<em>"bien"</em>, <em>"todo bien"</em>, <em>"regular"</em>, <em>"cansado"</em>) con sugerencias directas de funciones del panel.</li>
+            </ul>
+            <p style="margin-bottom: 12px;"><strong>✨ Versión 4.2.0:</strong></p>
+            <ul style="padding-left: 18px; margin-bottom: 16px;">
+                <li><strong>Resumen en PDF, Organizador de Tareas y Planes de Estudio:</strong> Descarga resúmenes y planes en <strong>PDF</strong> o <code>.txt</code>, añade tareas a la agenda por lenguaje natural y genera planes de estudio por días priorizados en local.</li>
+                <li><strong>Informe PDF con Valoración Opcional:</strong> Nuevo selector previo para incluir un resumen explicativo automático (felicitación o mensaje de ánimo según el progreso).</li>
+                <li><strong>Asistente Conversacional y UX:</strong> Normalización Unicode completa, cierre rápido con <code>Esc</code> o clic exterior y optimización general del código base.</li>
+            </ul>
+            <p style="margin-bottom: 8px;"><strong>✨ Versión 4.1.1:</strong></p>
+            <ul style="padding-left: 18px; margin-bottom: 16px;">
+                <li>Auto-guardado preventivo al cerrar la pestaña (`beforeunload`).</li>
+                <li>Corrección del informe PDF en blanco mediante contenedor aislado.</li>
             </ul>
         </div>
         <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
-            <button type="button" class="btn btn-accent" onclick="cerrarModalNovedades()">Cerrar</button>
+            <button class="btn btn-accent" onclick="cerrarModalNovedades()">Cerrar</button>
         </div>
     </div>
 </div>
@@ -686,7 +693,7 @@
     <div class="modal-card" style="max-width: 520px;">
         <div class="modal-header">
             <h3>⚖️ Ponderación por Tipo de Evaluación (%)</h3>
-            <button type="button" class="close-btn" onclick="cerrarModalPonderaciones()">×</button>
+            <button class="close-btn" onclick="cerrarModalPonderaciones()">×</button>
         </div>
         <p style="font-size: 0.82rem; color: var(--secondary); margin-bottom: 12px; line-height: 1.45;">
             Configura cuánto pesa cada tipo en una categoría (por ejemplo: <strong>Exámenes 80%</strong>, <strong>Tareas 20%</strong>, <strong>Proyectos 0%</strong>). Si dejas todos en <code>0</code> o no lo configuras, se usará el cálculo estándar habitual.
@@ -709,10 +716,10 @@
         </div>
         <div id="avisoSumaPond" style="font-size: 0.78rem; color: var(--secondary); margin-bottom: 14px; background: var(--bg-body); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);"></div>
         <div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-            <button type="button" class="btn btn-secondary" onclick="restablecerPondCategoria()">Usar modo normal</button>
+            <button class="btn btn-secondary" onclick="restablecerPondCategoria()">Usar modo normal</button>
             <div style="display: flex; gap: 8px;">
-                <button type="button" class="btn btn-secondary" onclick="cerrarModalPonderaciones()">Cancelar</button>
-                <button type="button" class="btn btn-accent" onclick="guardarPondCategoria()">Guardar %</button>
+                <button class="btn btn-secondary" onclick="cerrarModalPonderaciones()">Cancelar</button>
+                <button class="btn btn-accent" onclick="guardarPondCategoria()">Guardar %</button>
             </div>
         </div>
     </div>
@@ -723,12 +730,12 @@
     <div class="modal-card">
         <div class="modal-header">
             <h3>Gestionar Categorías</h3>
-            <button type="button" class="close-btn" onclick="cerrarModal()">×</button>
+            <button class="close-btn" onclick="cerrarModal()">×</button>
         </div>
         <div class="form-row" style="margin-bottom: 12px;">
             <input type="text" id="nuevoId" class="input-text" placeholder="Cód." style="max-width: 80px;" onkeydown="if(event.key==='Enter') crearModulo()">
             <input type="text" id="nuevoNombre" class="input-text" placeholder="Nombre de la categoría" onkeydown="if(event.key==='Enter') crearModulo()">
-            <button type="button" class="btn btn-accent" onclick="crearModulo()">+ Añadir</button>
+            <button class="btn btn-accent" onclick="crearModulo()">+ Añadir</button>
         </div>
         <div class="modules-list" id="listaModulosConfig"></div>
     </div>
@@ -739,7 +746,7 @@
     <div class="modal-card" style="max-width: 400px;">
         <div class="modal-header">
             <h3>Configurar Temporizador</h3>
-            <button type="button" class="close-btn" onclick="cerrarModalPomodoro()">×</button>
+            <button class="close-btn" onclick="cerrarModalPomodoro()">×</button>
         </div>
         <div class="form-row">
             <span class="form-label">Estudio (min):</span>
@@ -754,8 +761,8 @@
             <input type="number" id="inputConfigLargo" class="input-text" min="1" max="120" value="15">
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 8px;">
-            <button type="button" class="btn btn-secondary" onclick="cerrarModalPomodoro()">Cancelar</button>
-            <button type="button" class="btn btn-accent" onclick="guardarConfigPomodoro()">Guardar Cambios</button>
+            <button class="btn btn-secondary" onclick="cerrarModalPomodoro()">Cancelar</button>
+            <button class="btn btn-accent" onclick="guardarConfigPomodoro()">Guardar Cambios</button>
         </div>
     </div>
 </div>
@@ -765,15 +772,15 @@
     <div class="modal-card" style="max-width: 380px;">
         <div class="modal-header">
             <h3>Definir Umbral Objetivo</h3>
-            <button type="button" class="close-btn" onclick="cerrarModalObjetivo()">×</button>
+            <button class="close-btn" onclick="cerrarModalObjetivo()">×</button>
         </div>
         <div class="form-row" style="margin-bottom: 20px;">
             <span class="form-label">Umbral (0 a 10):</span>
             <input type="number" id="inputConfigObjetivo" class="input-text" min="0" max="10" step="0.1" value="7.00">
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 8px;">
-            <button type="button" class="btn btn-secondary" onclick="cerrarModalObjetivo()">Cancelar</button>
-            <button type="button" class="btn btn-accent" onclick="guardarConfigObjetivo()">Guardar</button>
+            <button class="btn btn-secondary" onclick="cerrarModalObjetivo()">Cancelar</button>
+            <button class="btn btn-accent" onclick="guardarConfigObjetivo()">Guardar</button>
         </div>
     </div>
 </div>
@@ -783,7 +790,7 @@
     <div class="modal-card" style="max-width: 420px;">
         <div class="modal-header">
             <h3>📥 Emitir Informe PDF</h3>
-            <button type="button" class="close-btn" onclick="cerrarModalPDF()">×</button>
+            <button class="close-btn" onclick="cerrarModalPDF()">×</button>
         </div>
         <p style="font-size: 0.85rem; color: var(--secondary); margin-bottom: 14px; line-height: 1.5;">
             Genera una vista limpia del informe lista para imprimir o guardar como PDF.
@@ -796,8 +803,8 @@
             </div>
         </label>
         <div style="display: flex; justify-content: flex-end; gap: 8px;">
-            <button type="button" class="btn btn-secondary" onclick="cerrarModalPDF()">Cancelar</button>
-            <button type="button" class="btn btn-success" onclick="confirmarYDescargarPDF()">Generar Informe</button>
+            <button class="btn btn-secondary" onclick="cerrarModalPDF()">Cancelar</button>
+            <button class="btn btn-success" onclick="confirmarYDescargarPDF()">Generar Informe</button>
         </div>
     </div>
 </div>
@@ -807,15 +814,15 @@
     <div class="modal-card" style="max-width: 380px;">
         <div class="modal-header">
             <h3>Meta de Categorías</h3>
-            <button type="button" class="close-btn" onclick="cerrarModalMeta()">×</button>
+            <button class="close-btn" onclick="cerrarModalMeta()">×</button>
         </div>
         <div class="form-row" style="margin-bottom: 20px;">
             <span class="form-label">Cantidad meta:</span>
             <input type="number" id="inputConfigMeta" class="input-text" min="1" max="100" value="0">
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 8px;">
-            <button type="button" class="btn btn-secondary" onclick="cerrarModalMeta()">Cancelar</button>
-            <button type="button" class="btn btn-accent" onclick="guardarConfigMeta()">Guardar</button>
+            <button class="btn btn-secondary" onclick="cerrarModalMeta()">Cancelar</button>
+            <button class="btn btn-accent" onclick="guardarConfigMeta()">Guardar</button>
         </div>
     </div>
 </div>
@@ -825,7 +832,7 @@
     <div class="modal-card" style="max-width: 500px;">
         <div class="modal-header">
             <h3>📎 Adjuntar y Resumir Tema</h3>
-            <button type="button" class="close-btn" onclick="cerrarModalAdjuntarTema()">×</button>
+            <button class="close-btn" onclick="cerrarModalAdjuntarTema()">×</button>
         </div>
         <p style="font-size: 0.83rem; color: var(--secondary); margin-bottom: 14px; line-height: 1.45;">
             Selecciona una asignatura/categoría, indica el título del tema y pega tus apuntes o sube un archivo de texto/markdown (<code>.txt</code>, <code>.md</code>, <code>.csv</code>). Todo se procesa <strong>100% en local</strong> sin enviarlo a terceros.
@@ -847,8 +854,8 @@
             <textarea id="textareaContenidoTema" class="input-text" rows="6" style="width: 100%; resize: vertical; line-height: 1.45;" placeholder="Pega aquí los apuntes o texto del tema que deseas resumir..."></textarea>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
-            <button type="button" class="btn btn-secondary" onclick="cerrarModalAdjuntarTema()">Cancelar</button>
-            <button type="button" class="btn btn-accent" onclick="ejecutarResumenTemaAdjunto()">✨ Resumir y Descargar</button>
+            <button class="btn btn-secondary" onclick="cerrarModalAdjuntarTema()">Cancelar</button>
+            <button class="btn btn-accent" onclick="ejecutarResumenTemaAdjunto()">✨ Resumir y Descargar</button>
         </div>
     </div>
 </div>
@@ -858,7 +865,7 @@
     <div class="modal-card" style="max-width: 460px;">
         <div class="modal-header">
             <h3>⭐ Valorar Panel de Control</h3>
-            <button type="button" class="close-btn" onclick="cerrarModalValorar()">×</button>
+            <button class="close-btn" onclick="cerrarModalValorar()">×</button>
         </div>
         <p style="font-size: 0.83rem; color: var(--secondary); margin-bottom: 12px; line-height: 1.45;">
             Tu opinión ayuda a mejorar el panel. Selecciona una puntuación y deja tu comentario opcional.
@@ -893,14 +900,14 @@
 </div>
 
 <!-- ASISTENTE FLOTANTE -->
-<button type="button" class="assistant-fab" id="assistantFab" onclick="alternarAsistente()" title="Abrir Asistente IA Local">💬</button>
+<button class="assistant-fab" id="assistantFab" onclick="alternarAsistente()" title="Abrir Asistente IA Local">💬</button>
 
 <div class="assistant-window" id="assistantWindow">
     <div class="assistant-header">
         <div class="assistant-title" id="assistantTitle">🧠 Asistente Pro NLP</div>
         <div class="assistant-header-actions">
-            <button type="button" class="assistant-help-btn" onclick="mostrarAyudaAsistente()" title="Ver Guía y Memoria">?</button>
-            <button type="button" class="assistant-close" onclick="alternarAsistente()" title="Cerrar">×</button>
+            <button class="assistant-help-btn" onclick="mostrarAyudaAsistente()" title="Ver Guía y Memoria">?</button>
+            <button class="assistant-close" onclick="alternarAsistente()" title="Cerrar">×</button>
         </div>
     </div>
     <div class="assistant-messages" id="assistantMessages"></div>
@@ -914,54 +921,23 @@
     </div>
     <div id="attachedTopicBanner" style="display: none;"></div>
     <div class="assistant-input-area">
-        <button type="button" class="assistant-attach-btn" onclick="abrirModalAdjuntarTema()" title="Adjuntar tema de asignatura para resumir">📎</button>
+        <button class="assistant-attach-btn" onclick="abrirModalAdjuntarTema()" title="Adjuntar tema de asignatura para resumir">📎</button>
         <input type="text" id="assistantInput" class="assistant-input" placeholder="Ej: recuerda que el examen es el lunes..." onkeydown="if(event.key==='Enter') enviarMensajeAsistente()">
-        <button type="button" class="assistant-send" onclick="enviarMensajeAsistente()">➤</button>
+        <button class="assistant-send" onclick="enviarMensajeAsistente()">➤</button>
     </div>
 </div>
 
 <script>
     const APP_INFO = {
         nombre: "Panel de Control y Métricas Pro",
-        version: "4.2.5",
-        versionLabel: "v4.2.5",
+        version: "4.2.4",
+        versionLabel: "v4.2.4",
         anioDesarrollo: 2026,
         urlManifestRemoto: "https://gist.githubusercontent.com/JUAN3000-CMD/3b1f763a744b03a0874f7972208d7c7e/raw/version.json"
     };
 
     const CUATRO_MESES_MS = 120 * 24 * 60 * 60 * 1000;
     const MAX_RECUERDOS_MEMORIA = 120;
-    const memoriaRespaldoEnRAM = {};
-
-    function storageGet(clave, valorPorDefecto = null) {
-        try {
-            const val = localStorage.getItem(clave);
-            return val !== null ? val : valorPorDefecto;
-        } catch (e) {
-            return Object.prototype.hasOwnProperty.call(memoriaRespaldoEnRAM, clave)
-                ? memoriaRespaldoEnRAM[clave]
-                : valorPorDefecto;
-        }
-    }
-
-    function storageSet(clave, valor) {
-        const texto = String(valor);
-        memoriaRespaldoEnRAM[clave] = texto;
-        try {
-            localStorage.setItem(clave, texto);
-        } catch (e) {
-            // Respaldo silencioso en RAM si localStorage está restringido
-        }
-    }
-
-    function storageRemove(clave) {
-        delete memoriaRespaldoEnRAM[clave];
-        try {
-            localStorage.removeItem(clave);
-        } catch (e) {
-            // Respaldo silencioso
-        }
-    }
 
     let modulos = [];
     let notasCurso = {}; 
@@ -984,20 +960,12 @@
     let temporizadorActivo = false;
     let tipoPomodoroActual = 'work';
 
-    function obtenerFechaHoyLocalISO() {
-        const d = new Date();
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${day}`;
-    }
-
     function escaparHTML(str) {
         const div = document.createElement('div');
         div.textContent = String(str);
         return div.innerHTML
-            .replace(/"/g, '"')
-            .replace(/'/g, ''');
+            .replace(/"/g, '\u0026quot;')
+            .replace(/'/g, '\u0026#039;');
     }
 
     function sanearModulos(listaBruta) {
@@ -1037,19 +1005,6 @@
         return notasLimpias;
     }
 
-    function sanearEventosCalendario(listaBruta) {
-        if (!Array.isArray(listaBruta)) return [];
-        return listaBruta
-            .filter(ev => ev && typeof ev === 'object')
-            .map((ev, idx) => {
-                const fechaLimpia = String(ev.fecha || obtenerFechaHoyLocalISO()).trim().slice(0, 20);
-                const descLimpia = String(ev.desc || ev.titulo || '').trim().replace(/[<>]/g, '').slice(0, 200);
-                const idLimpio = Number.isFinite(Number(ev.id)) ? Number(ev.id) : (Date.now() + idx);
-                return { id: idLimpio, fecha: fechaLimpia, desc: descLimpia };
-            })
-            .filter(ev => ev.fecha.length > 0 && ev.desc.length > 0);
-    }
-
     const STOPWORDS_ES = new Set(['el','la','los','las','un','una','unos','unas','de','del','al','a','en','con','por','para','que','qué','como','cómo','es','son','fue','era','me','te','se','nos','mi','mis','tu','tus','su','sus','y','o','pero','si','no','lo','le','les','sobre','este','esta','esto','estos','estas','ese','esa','eso','ya','muy','mas','más']);
 
     function extraerTokensLimpios(texto) {
@@ -1085,7 +1040,7 @@
 
     function cargarMemoriaEvolutiva() {
         try {
-            const raw = storageGet('smr_memoria_evolutiva');
+            const raw = localStorage.getItem('smr_memoria_evolutiva');
             return raw ? JSON.parse(raw) : [];
         } catch (e) {
             return [];
@@ -1093,13 +1048,8 @@
     }
 
     function guardarMemoriaEvolutiva(lista) {
-        try {
-            const listaSegura = Array.isArray(lista) ? lista : [];
-            const recortada = listaSegura.slice(-MAX_RECUERDOS_MEMORIA);
-            storageSet('smr_memoria_evolutiva', JSON.stringify(recortada));
-        } catch (err) {
-            console.error("Error al guardar memoria evolutiva:", err);
-        }
+        const recortada = lista.slice(-MAX_RECUERDOS_MEMORIA);
+        localStorage.setItem('smr_memoria_evolutiva', JSON.stringify(recortada));
     }
 
     function mantenerCicloVidaMemoria() {
@@ -1179,6 +1129,7 @@
         }
         return null;
     }
+
 
     // === SISTEMA DE VALORACIÓN Y CAPTURA DE ERRORES ===
     const WEB3FORMS_ACCESS_KEY = "c927f9fe-9b09-47e1-91ec-2f048f0f0fec";
@@ -1347,43 +1298,25 @@
         }
     }
 
-    function iniciarAplicacion() {
-        const pasosArranque = [
-            mantenerCicloVidaMemoria,
-            inicializarInfoSistema,
-            cargarTemaInicial,
-            cargarNoMolestarInicial,
-            cargarEstadoInicial,
-            () => actualizarEstadoBotonGuardado(storageGet('smr_respaldo_creado') === 'true'),
-            inicializarBienvenidaAleatoria,
-            actualizarDisplayTemporizador,
-            () => {
-                ['inputPondExamen', 'inputPondTareas', 'inputPondProyectos'].forEach(idInp => {
-                    const el = document.getElementById(idInp);
-                    if (el) el.addEventListener('input', actualizarAvisoSumaPond);
-                });
-                const inpFecha = document.getElementById('inputFechaEvento');
-                if (inpFecha) inpFecha.value = obtenerFechaHoyLocalISO();
-                renderizarEventosCalendario();
-            },
-            verificarActualizaciones
-        ];
-
-        pasosArranque.forEach(fn => {
-            try {
-                fn();
-            } catch (err) {
-                console.error("Error en paso de arranque:", err);
-                registrarErrorSesion("Arranque", err.message || String(err), err.stack || "");
-            }
+    window.addEventListener('DOMContentLoaded', () => {
+        mantenerCicloVidaMemoria();
+        inicializarInfoSistema();
+        cargarTemaInicial();
+        cargarNoMolestarInicial();
+        cargarEstadoInicial();
+        actualizarEstadoBotonGuardado(localStorage.getItem('smr_respaldo_creado') === 'true');
+        inicializarBienvenidaAleatoria();
+        actualizarDisplayTemporizador();
+        verificarActualizaciones();
+        
+        ['inputPondExamen', 'inputPondTareas', 'inputPondProyectos'].forEach(idInp => {
+            const el = document.getElementById(idInp);
+            if (el) el.addEventListener('input', actualizarAvisoSumaPond);
         });
-    }
-
-    if (document.readyState === 'loading') {
-        window.addEventListener('DOMContentLoaded', iniciarAplicacion);
-    } else {
-        iniciarAplicacion();
-    }
+        const hoy = new Date().toISOString().split('T')[0];
+        document.getElementById('inputFechaEvento').value = hoy;
+        renderizarEventosCalendario();
+    });
 
     window.addEventListener('beforeunload', () => {
         guardarTodoLocal();
@@ -1432,7 +1365,7 @@
             if (!respuesta.ok) return;
             const datosRemotos = await respuesta.json();
 
-            const versionLocalGuardada = storageGet('smr_ultima_version_aplicada');
+            const versionLocalGuardada = localStorage.getItem('smr_ultima_version_aplicada');
             const versionLocalActual = (versionLocalGuardada && compararVersionesSemver(versionLocalGuardada, APP_INFO.version) > 0)
                 ? versionLocalGuardada
                 : APP_INFO.version;
@@ -1528,7 +1461,7 @@
     }
 
     function guardarConfigMeta() {
-        const val = parseInt(document.getElementById('inputConfigMeta').value, 10);
+        const val = parseInt(document.getElementById('inputConfigMeta').value);
         if (!isNaN(val) && val >= 0) {
             metaModulosRequeridos = val;
             guardarTodoLocal();
@@ -1540,13 +1473,13 @@
     }
 
     function cargarNoMolestarInicial() {
-        modoNoMolestar = storageGet('smr_no_molestar') === 'true';
+        modoNoMolestar = localStorage.getItem('smr_no_molestar') === 'true';
         actualizarUINoMolestar();
     }
 
     function alternarNoMolestar(forzarEstado = null) {
         modoNoMolestar = (forzarEstado !== null) ? forzarEstado : !modoNoMolestar;
-        storageSet('smr_no_molestar', modoNoMolestar.toString());
+        localStorage.setItem('smr_no_molestar', modoNoMolestar.toString());
         actualizarUINoMolestar();
         return modoNoMolestar;
     }
@@ -1584,9 +1517,9 @@
     }
 
     function guardarConfigPomodoro() {
-        const est = parseInt(document.getElementById('inputConfigEstudio').value, 10);
-        const cor = parseInt(document.getElementById('inputConfigCorto').value, 10);
-        const lar = parseInt(document.getElementById('inputConfigLargo').value, 10);
+        const est = parseInt(document.getElementById('inputConfigEstudio').value);
+        const cor = parseInt(document.getElementById('inputConfigCorto').value);
+        const lar = parseInt(document.getElementById('inputConfigLargo').value);
 
         if (!isNaN(est) && est > 0 && est <= 180) minutosEstudio = est;
         if (!isNaN(cor) && cor > 0 && cor <= 60) minutosDescansoCorto = cor;
@@ -1623,10 +1556,8 @@
     function actualizarDisplayTemporizador() {
         const mins = Math.floor(tiempoRestanteSegundos / 60);
         const secs = tiempoRestanteSegundos % 60;
-        const el = document.getElementById('timer-display');
-        if (el) {
-            el.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-        }
+        document.getElementById('timer-display').innerText = 
+            `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
 
     function toggleTemporizador() {
@@ -1695,64 +1626,42 @@
     }
 
     function agregarEventoCalendario() {
-        const inpFecha = document.getElementById('inputFechaEvento');
-        const inpDesc = document.getElementById('inputDescEvento');
-        const fecha = inpFecha ? inpFecha.value : '';
-        const desc = inpDesc ? inpDesc.value.trim() : '';
+        const fecha = document.getElementById('inputFechaEvento').value;
+        const desc = document.getElementById('inputDescEvento').value.trim();
         if (!fecha || !desc) {
             alert("Por favor, selecciona una fecha y escribe una descripción para el evento.");
             return;
         }
         eventosCalendario.push({ id: Date.now(), fecha, desc });
-        inpDesc.value = '';
+        document.getElementById('inputDescEvento').value = '';
         renderizarEventosCalendario();
         guardarTodoLocal();
     }
 
     function eliminarEventoCalendario(id) {
-        eventosCalendario = eventosCalendario.filter(ev => Number(ev.id) !== Number(id));
+        eventosCalendario = eventosCalendario.filter(ev => ev.id !== id);
         renderizarEventosCalendario();
         guardarTodoLocal();
     }
 
     function renderizarEventosCalendario() {
         const contenedor = document.getElementById('listaEventosCalendario');
-        if (!contenedor) return;
         contenedor.innerHTML = '';
-
-        const listaValida = sanearEventosCalendario(eventosCalendario);
-        eventosCalendario = listaValida;
-
-        if (listaValida.length === 0) {
-            contenedor.innerHTML = '<div style="font-size: 0.82rem; color: var(--secondary); text-align: center; padding: 14px 8px;">No hay tareas ni exámenes programados todavía. Usa el formulario de la izquierda para añadir uno.</div>';
+        if (eventosCalendario.length === 0) {
+            contenedor.innerHTML = '<div style="font-size: 0.8rem; color: var(--secondary); text-align: center; padding: 10px;">No hay tareas ni exámenes programados.</div>';
             return;
         }
-        const ordenados = [...listaValida].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        const ordenados = [...eventosCalendario].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
         ordenados.forEach(ev => {
             const item = document.createElement('div');
             item.className = 'event-item';
-
-            const infoDiv = document.createElement('div');
-            infoDiv.style.wordBreak = 'break-word';
-
-            const strongFecha = document.createElement('strong');
-            strongFecha.style.cssText = 'color: var(--accent); font-size: 0.8rem; margin-right: 6px;';
-            strongFecha.textContent = `[${ev.fecha}]`;
-
-            const spanDesc = document.createElement('span');
-            spanDesc.textContent = ev.desc;
-
-            infoDiv.append(strongFecha, spanDesc);
-
-            const btnDel = document.createElement('button');
-            btnDel.type = 'button';
-            btnDel.className = 'btn btn-secondary';
-            btnDel.style.cssText = 'padding: 2px 8px; font-size: 0.75rem; flex-shrink: 0;';
-            btnDel.textContent = '×';
-            btnDel.title = 'Eliminar evento';
-            btnDel.onclick = () => eliminarEventoCalendario(ev.id);
-
-            item.append(infoDiv, btnDel);
+            item.innerHTML = `
+                <div style="word-break: break-word;">
+                    <strong style="color: var(--accent); font-size: 0.8rem; margin-right: 6px;">[${ev.fecha}]</strong>
+                    <span>${escaparHTML(ev.desc)}</span>
+                </div>
+                <button class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem; flex-shrink: 0;" onclick="eliminarEventoCalendario(${ev.id})">×</button>
+            `;
             contenedor.appendChild(item);
         });
     }
@@ -1764,17 +1673,17 @@
             btn.classList.add('saved');
             btn.innerHTML = '✅ Autoguardando .json';
             btn.title = 'Cada cambio se guarda automáticamente en tu archivo .json';
-            storageSet('smr_respaldo_creado', 'true');
+            localStorage.setItem('smr_respaldo_creado', 'true');
         } else if (estaGuardado) {
             btn.classList.add('saved');
             btn.innerHTML = '✅ Guardado';
             btn.title = 'Copia guardada.';
-            storageSet('smr_respaldo_creado', 'true');
+            localStorage.setItem('smr_respaldo_creado', 'true');
         } else {
             btn.classList.remove('saved');
             btn.innerHTML = '⚠️ Crear .json';
             btn.title = 'Pulsa para crear el .json y activar el autoguardado automático';
-            storageSet('smr_respaldo_creado', 'false');
+            localStorage.setItem('smr_respaldo_creado', 'false');
         }
     }
 
@@ -1789,17 +1698,16 @@
         ];
         const saludoAleatorio = saludos[Math.floor(Math.random() * saludos.length)];
         const container = document.getElementById('assistantMessages');
-        if (container && container.children.length === 0) {
+        if(container && container.children.length === 0) {
             container.innerHTML = `<div class="msg bot">${saludoAleatorio}</div>`;
         }
     }
 
     function cargarTemaInicial() {
-        const tema = storageGet('smr_tema', 'light');
+        const tema = localStorage.getItem('smr_tema') || 'light';
         if (tema === 'dark') {
             document.body.setAttribute('data-theme', 'dark');
-            const btn = document.getElementById('btn-theme');
-            if (btn) btn.innerText = '☀️ Tema';
+            document.getElementById('btn-theme').innerText = '☀️ Tema';
         }
     }
 
@@ -1807,57 +1715,38 @@
         const actual = document.body.getAttribute('data-theme');
         if (actual === 'dark') {
             document.body.removeAttribute('data-theme');
-            storageSet('smr_tema', 'light');
+            localStorage.setItem('smr_tema', 'light');
             document.getElementById('btn-theme').innerText = '🌙 Tema';
         } else {
             document.body.setAttribute('data-theme', 'dark');
-            storageSet('smr_tema', 'dark');
+            localStorage.setItem('smr_tema', 'dark');
             document.getElementById('btn-theme').innerText = '☀️ Tema';
-        }
-    }
-
-    function leerJSONLocalSeguro(clave, fallback) {
-        try {
-            const raw = storageGet(clave);
-            if (raw === null) return fallback;
-            const parsed = JSON.parse(raw);
-            return parsed !== null && parsed !== undefined ? parsed : fallback;
-        } catch (err) {
-            console.warn(`Dato local inválido en '${clave}', usando respaldo:`, err);
-            return fallback;
         }
     }
 
     function cargarEstadoInicial() {
         try {
-            const gM = leerJSONLocalSeguro('smr_modulos_list', null);
-            if (gM !== null) modulos = sanearModulos(gM);
+            const gM = localStorage.getItem('smr_modulos_list');
+            if (gM !== null) modulos = sanearModulos(JSON.parse(gM));
             
-            const gO = parseFloat(storageGet('smr_umbral_objetivo'));
-            if (Number.isFinite(gO) && gO >= 0 && gO <= 10) umbralObjetivo = gO;
+            const gO = localStorage.getItem('smr_umbral_objetivo');
+            if (gO) umbralObjetivo = parseFloat(gO) || 7.00;
 
-            const gMe = storageGet('smr_meta_modulos');
-            if (gMe && gMe !== "null") {
-                const parsedMeta = parseInt(gMe, 10);
-                metaModulosRequeridos = (Number.isInteger(parsedMeta) && parsedMeta >= 0) ? parsedMeta : null;
-            }
+            const gMe = localStorage.getItem('smr_meta_modulos');
+            if (gMe && gMe !== "null") metaModulosRequeridos = parseInt(gMe) || null;
 
-            const gN = leerJSONLocalSeguro('smr_calificaciones', null);
-            if (gN !== null) notasCurso = sanearNotas(gN, modulos);
+            const gN = localStorage.getItem('smr_calificaciones'); 
+            if (gN) notasCurso = sanearNotas(JSON.parse(gN), modulos);
 
-            const gEv = leerJSONLocalSeguro('smr_eventos_calendario', null);
-            if (Array.isArray(gEv)) {
-                eventosCalendario = sanearEventosCalendario(gEv);
-            }
+            const gEv = localStorage.getItem('smr_eventos_calendario');
+            if (gEv) eventosCalendario = JSON.parse(gEv);
 
-            const gPond = leerJSONLocalSeguro('smr_ponderaciones_pct', null);
-            if (gPond && typeof gPond === 'object' && !Array.isArray(gPond)) {
-                ponderacionesPorcentaje = gPond;
-            }
+            const gPond = localStorage.getItem('smr_ponderaciones_pct');
+            if (gPond) ponderacionesPorcentaje = JSON.parse(gPond);
 
-            const vLocal = storageGet('smr_ultima_version_aplicada');
+            const vLocal = localStorage.getItem('smr_ultima_version_aplicada');
             if (vLocal && compararVersionesSemver(vLocal, APP_INFO.version) < 0) {
-                storageSet('smr_ultima_version_aplicada', APP_INFO.version);
+                localStorage.setItem('smr_ultima_version_aplicada', APP_INFO.version);
             } else if (vLocal && compararVersionesSemver(vLocal, APP_INFO.version) > 0) {
                 APP_INFO.version = vLocal;
             }
@@ -1869,14 +1758,8 @@
             console.error("Error leyendo estado local:", e);
         }
 
-        if (!Array.isArray(modulos)) modulos = [];
-        if (!notasCurso || typeof notasCurso !== 'object') notasCurso = {};
-        if (!Array.isArray(eventosCalendario)) eventosCalendario = [];
-        if (!ponderacionesPorcentaje || typeof ponderacionesPorcentaje !== 'object') ponderacionesPorcentaje = {};
-
         modulos.forEach(m => { if (!notasCurso[m.id]) notasCurso[m.id] = []; });
-        const elValorObj = document.getElementById('valor-objetivo');
-        if (elValorObj) elValorObj.innerText = umbralObjetivo.toFixed(2);
+        document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
         renderizarTabla();
         renderizarEventosCalendario();
     }
@@ -1933,14 +1816,14 @@
 
     function guardarTodoLocal() {
         try {
-            storageSet('smr_modulos_list', JSON.stringify(modulos));
-            storageSet('smr_calificaciones', JSON.stringify(notasCurso));
-            storageSet('smr_umbral_objetivo', umbralObjetivo.toString());
-            storageSet('smr_meta_modulos', metaModulosRequeridos !== null ? metaModulosRequeridos.toString() : "null");
-            storageSet('smr_eventos_calendario', JSON.stringify(eventosCalendario));
-            storageSet('smr_ponderaciones_pct', JSON.stringify(ponderacionesPorcentaje));
+            localStorage.setItem('smr_modulos_list', JSON.stringify(modulos));
+            localStorage.setItem('smr_calificaciones', JSON.stringify(notasCurso));
+            localStorage.setItem('smr_umbral_objetivo', umbralObjetivo.toString());
+            localStorage.setItem('smr_meta_modulos', metaModulosRequeridos !== null ? metaModulosRequeridos.toString() : "null");
+            localStorage.setItem('smr_eventos_calendario', JSON.stringify(eventosCalendario));
+            localStorage.setItem('smr_ponderaciones_pct', JSON.stringify(ponderacionesPorcentaje));
         } catch (err) {
-            console.error("Error al guardar estado:", err);
+            console.error("Error al guardar en localStorage:", err);
         }
 
         if (archivoJSONHandle) {
@@ -1952,7 +1835,6 @@
 
     function renderizarTabla() {
         const tbody = document.getElementById('tabla-body');
-        if (!tbody) return;
         tbody.innerHTML = '';
 
         if (modulos.length === 0) {
@@ -2009,7 +1891,6 @@
             sel.innerHTML = `<option value="1">Peso x1</option><option value="2">Peso x2</option><option value="3">Peso x3</option>`;
 
             const btnPlus = document.createElement('button');
-            btnPlus.type = 'button';
             btnPlus.className = 'btn-plus';
             btnPlus.textContent = '+';
             btnPlus.onclick = () => agregarNotaAcumulada(m.id);
@@ -2174,7 +2055,7 @@
         const selectPeso = document.getElementById(`input-peso-${id}`);
         const valor = parseFloat(inputVal.value);
         const tipo = selectTipo ? selectTipo.value : 'tareas';
-        const peso = parseInt(selectPeso.value, 10);
+        const peso = parseInt(selectPeso.value);
 
         if (!isNaN(valor) && valor >= 0 && valor <= 10) {
             notasCurso[id].push({ val: valor, peso: peso, tipo: tipo });
@@ -2214,7 +2095,6 @@
             }
             wrapper.textContent = `${valNum.toFixed(2)}${extraTexto} `;
             const b = document.createElement('button');
-            b.type = 'button';
             b.textContent = '×';
             b.onclick = () => borrarNotaIndex(id, idx);
             wrapper.appendChild(b);
@@ -2375,7 +2255,6 @@
             span.append(strong, ` - ${m.nombre}`);
 
             const btn = document.createElement('button');
-            btn.type = 'button';
             btn.className = 'btn btn-secondary';
             btn.style.cssText = 'padding: 4px 10px; font-size:0.75rem; flex-shrink: 0;';
             btn.textContent = 'Eliminar';
@@ -2526,7 +2405,7 @@
     let pendientePreguntarTemario = false;
     let asuntoPendienteTemario = '';
 
-    function manejarFlujoTemarioYConsejos(queryRaw, queryLower) {
+    function manejarFlujoTemarioYConsejos(queryRaw, queryLower, evaluados, listaModulosConNota, mediaGlobal) {
         const textoTrim = queryRaw.trim();
 
         if (pendientePreguntarTemario) {
@@ -2620,6 +2499,55 @@
             ]
         },
         {
+            tags: ['que te gusta', 'qué te gusta', 'gustos', 'aficiones', 'hobbies', 'pasatiempos', 'que haces en tu tiempo libre', 'qué haces en tu tiempo libre'],
+            respuestas: [
+                "Me gusta ordenar información, calcular promedios ponderados y ayudar a que los planes de estudio o resúmenes queden claros y listos para usar.",
+                "Mi 'pasatiempo' favorito es buscar patrones en tus datos, recordar cosas importantes y darte un empujón cuando toca concentrarse o descansar."
+            ]
+        },
+        {
+            tags: ['musica', 'música', 'cancion', 'canción', 'pelicula', 'película', 'serie', 'libro', 'leer', 'videojuego', 'juego', 'jugar'],
+            respuestas: [
+                "Para estudiar o concentrarte, la música instrumental suave, el lo-fi o el ruido blanco suelen funcionar muy bien porque no compiten con la lectura.",
+                "Si buscas desconectar tras un bloque de estudio, una buena serie corta, leer un rato o dar un paseo ayudan bastante a despejar la mente."
+            ]
+        },
+        {
+            tags: ['dormir', 'sueno', 'sueño', 'descansar', 'descanso', 'madrugar', 'trasnochar', 'siesta'],
+            respuestas: [
+                "Dormir bien es clave para fijar lo que estudias o trabajas. Una siesta corta de 20 minutos puede refrescar la mente, pero dormir mal pasa factura al día siguiente.",
+                "Si notas la cabeza saturada, a veces descansar de verdad o cerrar por hoy rinde más que seguir insistiendo cansado."
+            ]
+        },
+        {
+            tags: ['comer', 'comida', 'hambre', 'cafe', 'café', 'agua', 'beber', 'merendar', 'cenar', 'desayunar'],
+            respuestas: [
+                "Un vaso de agua, algo ligero para comer y un breve respiro hacen maravillas cuando baja el ritmo.",
+                "Si llevas un rato delante de la pantalla, hidratarte y estirar un poco ayuda a mantener la atención sin forzarte."
+            ]
+        },
+        {
+            tags: ['dia', 'día', 'tarde', 'noche', 'manana', 'mañana', 'semana', 'finde', 'fin de semana'],
+            respuestas: [
+                "Cada momento del día tiene su ritmo: a veces toca avanzar a fondo y otras toca bajar revoluciones y organizar lo pendiente.",
+                "Si vas a planificar el día o la semana, empieza por una o dos cosas concretas y deja el resto bien anotado para no llevarlo todo en la cabeza."
+            ]
+        },
+        {
+            tags: ['duda', 'dudas', 'no entiendo', 'explica', 'explicame', 'explícame', 'como funciona', 'cómo funciona', 'para que sirves', 'para qué sirves'],
+            respuestas: [
+                "Puedo ayudarte a resumir apuntes o textos, organizar tareas, armar un plan de estudio por días, simular notas, guardar recuerdos y manejar el temporizador.",
+                "Si algo no queda claro, dime qué necesitas hacer o pega el texto que quieras revisar y lo vamos viendo paso a paso."
+            ]
+        },
+        {
+            tags: ['que opinas', 'qué opinas', 'piensas', 'crees', 'consejo de vida', 'reflexion', 'reflexión'],
+            respuestas: [
+                "La constancia pequeña y sostenida suele ganar a las maratones puntuales. Ir avanzando poco a poco es mucho más sostenible.",
+                "Tener las cosas apuntadas y un orden claro quita mucha presión mental; luego es más fácil centrarse en lo que toca ahora."
+            ]
+        },
+        {
             tags: ['quien eres', 'quién eres', 'que eres', 'qué eres', 'tu nombre', 'como te llamas', 'cómo te llamas'],
             respuestas: [
                 "Soy tu <strong>Asistente Pro NLP</strong> integrado en este panel. Funcionando 100% en local para ayudarte con tus métricas, tiempos de estudio, agenda y organización.",
@@ -2627,17 +2555,47 @@
             ]
         },
         {
-            tags: ['como estas', 'cómo estás', 'que tal', 'qué tal', 'como vas', 'cómo vas'],
+            tags: ['como estas', 'cómo estás', 'que tal', 'qué tal', 'como vas', 'cómo vas', 'todo bien'],
             respuestas: [
                 "¡Aquí al 100% de rendimiento y sin consumir datos en la nube! ¿Y tú qué tal llevas la jornada?",
                 "¡Todo en orden por aquí, listo para calcular promedios o guardar lo que necesites! ¿Cómo va tu día?"
             ]
         },
         {
-            tags: ['gracias', 'muchas gracias', 'te lo agradezco', 'perfecto', 'de lujo', 'crack', 'buen trabajo'],
+            tags: ['gracias', 'muchas gracias', 'te lo agradezco', 'genial', 'perfecto', 'de lujo', 'crack', 'buen trabajo'],
             respuestas: [
                 "¡De nada! Para eso estamos. Si necesitas revisar otra cosa, aquí sigo.",
-                "¡Un placer ayudar! Mucho éxito con lo que estés trabajando ahora."
+                "¡Un placer ayudar! Mucho éxito con lo que estés trabajando ahora.",
+                "¡A ti! Cualquier duda o dato que quieras guardar, solo dímelo."
+            ]
+        },
+        {
+            tags: ['aburrido', 'aburrimiento', 'no tengo ganas', 'procrastinar', 'pereza', 'bloqueado', 'sin ganas'],
+            respuestas: [
+                "Es normal tener momentos de bajón. Prueba la <strong>regla de los 5 minutos</strong>: pon el temporizador solo 5 minutos para hacer la tarea más pequeña. Si luego quieres parar, paras; pero casi siempre arrancas.",
+                "Cuando cuesta arrancar, divide lo que tienes delante en un paso ridículamente pequeño (abrir el documento, leer una página o anotar un dato). ¡El impulso viene después de empezar!"
+            ]
+        },
+        {
+            tags: ['concentrar', 'concentracion', 'concentración', 'foco', 'enfocarme', 'distraigo', 'distraccion', 'distracción'],
+            respuestas: [
+                "Para blindar tu foco: 1) Activa el modo <strong>No Molestar (🔕)</strong> arriba, 2) Pon el móvil lejos o en silencio, y 3) Inicia un bloque Pomodoro de 25 minutos en la tarjeta superior.",
+                "La multitarea reduce mucho el rendimiento. Elige una sola categoría o tarea de tu agenda, inicia el temporizador y ve a por ese único bloque."
+            ]
+        },
+        {
+            tags: ['examen', 'examenes', 'exámenes', 'aprobar', 'suspender', 'nervios', 'nervioso', 'nerviosa'],
+            respuestas: [
+                "Para preparar exámenes con calma: repasa primero los conceptos clave haciendo esquemas de memoria, practica ejercicios reales y asegúrate de dormir bien la noche anterior.",
+                "Los nervios significan que te importa hacerlo bien. Revisa tu calendario arriba para tener claras las fechas y reparte el temario en bloques cortos."
+            ]
+        },
+        {
+            tags: ['dato curioso', 'curiosidad', 'sabias que', 'sabías que', 'dime algo interesante'],
+            respuestas: [
+                "🧠 <strong>Dato curioso:</strong> El cerebro humano consolida gran parte de lo que aprendes durante el sueño profundo; estudiar hasta madrugada sin dormir reduce la retención hasta un 40%.",
+                "⏱️ <strong>Dato curioso:</strong> La técnica Pomodoro nació a finales de los años 80 cuando Francesco Cirillo usó un temporizador de cocina con forma de tomate para superar sus bloqueos de estudio.",
+                "✍️ <strong>Dato curioso:</strong> Tomar notas o hacer esquemas a mano activa más áreas de memoria espacial y comprensión que copiar texto literalmente."
             ]
         },
         {
@@ -2658,9 +2616,9 @@
                     if (!eventosCalendario || eventosCalendario.length === 0) {
                         return "📅 No tienes eventos ni tareas agendadas en el calendario ahora mismo. Puedes añadirlos en la sección <em>Calendario y Agenda</em>.";
                     }
-                    const ordenados = [...eventosCalendario].sort((a, b) => new Date(a.fecha) - new Date(b.fecha)).slice(0, 6);
+                    const ordenados = [...eventosCalendario].sort((a, b) => new Date(a.fecha) - new Date(b.fecha)).slice(0, 4);
                     const lista = ordenados.map(e => `• <strong>${escaparHTML(e.fecha)}:</strong> ${escaparHTML(e.desc)}`).join('<br>');
-                    return `📅 <strong>Eventos / Tareas programadas:</strong><br><br>${lista}`;
+                    return `📅 <strong>Próximos eventos en tu agenda:</strong><br><br>${lista}`;
                 }
             ]
         },
@@ -2794,8 +2752,7 @@
                </div>`
             : '';
 
-        try {
-            ventana.document.write(`
+        ventana.document.write(`
             <!DOCTYPE html>
             <html lang="es">
             <head>
@@ -2829,11 +2786,7 @@
             </body>
             </html>
         `);
-            ventana.document.close();
-        } catch (err) {
-            console.error("Error al generar la vista de impresión del resumen:", err);
-            alert("No se pudo preparar la ventana del PDF. Inténtalo de nuevo.");
-        }
+        ventana.document.close();
     }
 
     function construirBotonesDescargaResumen(idDescarga) {
@@ -3123,10 +3076,7 @@
         const d = new Date();
         d.setHours(12, 0, 0, 0);
         d.setDate(d.getDate() + dias);
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${day}`;
+        return d.toISOString().split('T')[0];
     }
 
     function ordenarModulosPorPrioridad() {
@@ -3276,13 +3226,27 @@
             "— ¿Cuál es el colmo de un astrónomo?<br>— Enamorarse de una estrella fugaz y perderla de vista 🌠",
             "— ¿Qué hace una abeja en el gimnasio?<br>— ¡Zum-ba! 🐝",
             "— ¿Por qué el libro de matemáticas estaba triste?<br>— Porque tenía demasiados problemas 📘",
-            "— ¿Qué le dice un jaguar a otro jaguar?<br>— Jaguar you! 🐆"
+            "— ¿Qué le dice un jaguar a otro jaguar?<br>— Jaguar you! 🐆",
+            "— ¿Cuál es el café más peligroso del mundo?<br>— El ex-preso ☕",
+            "— ¿Qué hace un pez en el cine?<br>— ¡Nada! 🐟",
+            "— ¿Cómo se llama el campeón de buceo japonés?<br>— Tokofondo 🤿",
+            "— ¿Y el subcampeón?<br>— Kasitoko 🏊",
+            "— ¿Qué le dice una impresora a otra?<br>— ¿Esa hoja es tuya o es impresión mía? 🖨️",
+            "— ¿Por qué los pájaros no usan Facebook?<br>— Porque ya tienen Twitter 🐦",
+            "— ¿Qué le dice un techo a otro?<br>— Techo de menos 🏠",
+            "— ¿Cuál es la fruta más divertida?<br>— La naranja ja, ja, ja 🍊",
+            "— ¿Qué hace una vaca con los ojos cerrados?<br>— Leche concentrada 🐄",
+            "— ¿Cómo se despiden los químicos?<br>— Ácido un placer 🧪",
+            "— ¿Qué le dice un cable a otro cable?<br>— Somos los intocables 🔌",
+            "— ¿Por qué la computadora fue al médico?<br>— Porque tenía un virus 💻",
+            "— ¿Qué hace un perro con un taladro?<br>— Taladrando 🐶",
+            "— ¿Cuál es el colmo de un jardinero?<br>— Que siempre lo dejen plantado 🌱"
         ];
         let disponibles = chistes.filter(c => !ultimosChistesUsados.includes(c));
         if (disponibles.length === 0) { ultimosChistesUsados = []; disponibles = chistes; }
         let elegido = disponibles[Math.floor(Math.random() * disponibles.length)];
         ultimosChistesUsados.push(elegido);
-        if (ultimosChistesUsados.length > 5) ultimosChistesUsados.shift();
+        if (ultimosChistesUsados.length > 12) ultimosChistesUsados.shift();
         return elegido;
     }
 
@@ -3298,7 +3262,7 @@
         }
 
         if (query === 'olvidar memoria' || query === 'borrar memoria') {
-            storageRemove('smr_memoria_evolutiva');
+            localStorage.removeItem('smr_memoria_evolutiva');
             guardarTodoLocal();
             return `🧹 <strong>Memoria evolutiva limpiada:</strong> Se han eliminado todos los recuerdos almacenados.`;
         }
@@ -3403,12 +3367,24 @@
                    `• Estado: <strong>${temporizadorActivo ? "En marcha ⏱️" : "Pausado ⏸️"}</strong>`;
         }
 
-        const respuestaFlujoTemaConsejo = manejarFlujoTemarioYConsejos(queryRaw, query);
+        if(query.includes('ánimo') || query.includes('animo') || query.includes('mal') || query.includes('cansado') || query.includes('estrés') || query.includes('estres')) {
+            return obtenerOpcionSinRepetir([
+                "❤️ Respira hondo. Un bache o un día gris no define tu esfuerzo ni tu capacidad. ¡Mucho valor!",
+                "☕ Tómate cinco minutos con el temporizador. Tu bienestar está por encima de cualquier nota.",
+                "🌟 Paso a paso se llega lejos. Hoy haz lo que puedas con calma, mañana seguirás avanzando."
+            ]);
+        }
+
+        const respuestaFlujoTemaConsejo = manejarFlujoTemarioYConsejos(queryRaw, query, evaluados, listaModulosConNota, mediaGlobal);
         if (respuestaFlujoTemaConsejo) {
             return respuestaFlujoTemaConsejo;
         }
 
-        function manejarPrediccionAsignatura(textoLower) {
+        if (esSolicitudDeChiste(query)) {
+            return responderChisteLocal();
+        }
+
+        function manejarPrediccionAsignatura(textoOriginal, textoLower) {
             if (modulos.length === 0) return null;
 
             const normSinTildes = textoLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -3484,7 +3460,7 @@
                    `${estadoPred}`;
         }
 
-        const respuestaPrediccion = manejarPrediccionAsignatura(query);
+        const respuestaPrediccion = manejarPrediccionAsignatura(queryRaw, query);
         if (respuestaPrediccion) {
             return respuestaPrediccion;
         }
@@ -3500,7 +3476,8 @@
             let mediaSimuladaGlobal = nuevoTotalPesos > 0 ? (nuevoTotalPonderado / nuevoTotalPesos) : notaSimulada;
 
             return `🔮 <strong>Resultado de Simulación Global:</strong><br><br>` +
-                   `Añadiendo un <strong>${notaSimulada.toFixed(2)}</strong>, tu media global pasaría de <strong>${mediaGlobal.toFixed(2)}</strong> a <strong>${mediaSimuladaGlobal.toFixed(2)}</strong>.`;
+                   `Añadiendo un <strong>${notaSimulada.toFixed(2)}</strong>, tu media global pasaría de <strong>${mediaGlobal.toFixed(2)}</strong> a <strong>${mediaSimuladaGlobal.toFixed(2)}</strong>.<br>` +
+                   `<span style="font-size:0.78rem; color:var(--secondary);">💡 Consejo: Si escribes el código de una categoría (ej: <em>"pp nota 7"</em>), calcularé la predicción exacta para esa asignatura.</span>`;
         }
 
         const respuestaOrganizacionPlan = manejarOrganizacionTareasYPlan(queryRaw, query);
@@ -3656,18 +3633,16 @@
 
                 modulos = sanearModulos(parsed.modulos || []);
                 notasCurso = sanearNotas(parsed.notasCurso || {}, modulos);
-                const umbralImp = Number(parsed.umbralObjetivo);
-                umbralObjetivo = (Number.isFinite(umbralImp) && umbralImp >= 0 && umbralImp <= 10) ? umbralImp : 7.00;
-                const metaImp = parsed.metaModulosRequeridos;
-                metaModulosRequeridos = (Number.isInteger(metaImp) && metaImp >= 0) ? metaImp : null;
-                eventosCalendario = sanearEventosCalendario(parsed.eventosCalendario || []);
-                if (parsed.ponderacionesPorcentaje && typeof parsed.ponderacionesPorcentaje === 'object' && !Array.isArray(parsed.ponderacionesPorcentaje)) {
+                umbralObjetivo = Number(parsed.umbralObjetivo) || 7.00;
+                metaModulosRequeridos = parsed.metaModulosRequeridos ?? null;
+                eventosCalendario = parsed.eventosCalendario || [];
+                if (parsed.ponderacionesPorcentaje && typeof parsed.ponderacionesPorcentaje === 'object') {
                     ponderacionesPorcentaje = parsed.ponderacionesPorcentaje;
                 }
                 
                 if (parsed.version) {
                     APP_INFO.version = parsed.version; 
-                    storageSet('smr_ultima_version_aplicada', parsed.version);
+                    localStorage.setItem('smr_ultima_version_aplicada', parsed.version);
                     
                     const badgeVersion = document.getElementById('footer-version-badge');
                     if (badgeVersion) badgeVersion.textContent = 'v' + parsed.version;
@@ -3816,8 +3791,7 @@
             return;
         }
 
-        try {
-            ventana.document.write(`
+        ventana.document.write(`
             <!DOCTYPE html>
             <html lang="es">
             <head>
@@ -3877,11 +3851,7 @@
             </body>
             </html>
         `);
-            ventana.document.close();
-        } catch (err) {
-            console.error("Error al generar la vista de impresión del informe:", err);
-            alert("No se pudo preparar la ventana del informe PDF. Inténtalo de nuevo.");
-        }
+        ventana.document.close();
     }
 </script>
 </body>
