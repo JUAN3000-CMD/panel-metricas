@@ -1048,8 +1048,13 @@
     }
 
     function guardarMemoriaEvolutiva(lista) {
-        const recortada = lista.slice(-MAX_RECUERDOS_MEMORIA);
-        localStorage.setItem('smr_memoria_evolutiva', JSON.stringify(recortada));
+        try {
+            const listaSegura = Array.isArray(lista) ? lista : [];
+            const recortada = listaSegura.slice(-MAX_RECUERDOS_MEMORIA);
+            localStorage.setItem('smr_memoria_evolutiva', JSON.stringify(recortada));
+        } catch (err) {
+            console.error("Error al guardar memoria evolutiva en localStorage:", err);
+        }
     }
 
     function mantenerCicloVidaMemoria() {
@@ -1724,25 +1729,44 @@
         }
     }
 
+    function leerJSONLocalSeguro(clave, fallback) {
+        try {
+            const raw = localStorage.getItem(clave);
+            if (raw === null) return fallback;
+            const parsed = JSON.parse(raw);
+            return parsed !== null && parsed !== undefined ? parsed : fallback;
+        } catch (err) {
+            console.warn(`Dato local inválido en '${clave}', usando respaldo:`, err);
+            return fallback;
+        }
+    }
+
     function cargarEstadoInicial() {
         try {
-            const gM = localStorage.getItem('smr_modulos_list');
-            if (gM !== null) modulos = sanearModulos(JSON.parse(gM));
+            const gM = leerJSONLocalSeguro('smr_modulos_list', null);
+            if (gM !== null) modulos = sanearModulos(gM);
             
-            const gO = localStorage.getItem('smr_umbral_objetivo');
-            if (gO) umbralObjetivo = parseFloat(gO) || 7.00;
+            const gO = parseFloat(localStorage.getItem('smr_umbral_objetivo'));
+            if (Number.isFinite(gO) && gO >= 0 && gO <= 10) umbralObjetivo = gO;
 
             const gMe = localStorage.getItem('smr_meta_modulos');
-            if (gMe && gMe !== "null") metaModulosRequeridos = parseInt(gMe) || null;
+            if (gMe && gMe !== "null") {
+                const parsedMeta = parseInt(gMe, 10);
+                metaModulosRequeridos = (Number.isInteger(parsedMeta) && parsedMeta >= 0) ? parsedMeta : null;
+            }
 
-            const gN = localStorage.getItem('smr_calificaciones'); 
-            if (gN) notasCurso = sanearNotas(JSON.parse(gN), modulos);
+            const gN = leerJSONLocalSeguro('smr_calificaciones', null);
+            if (gN !== null) notasCurso = sanearNotas(gN, modulos);
 
-            const gEv = localStorage.getItem('smr_eventos_calendario');
-            if (gEv) eventosCalendario = JSON.parse(gEv);
+            const gEv = leerJSONLocalSeguro('smr_eventos_calendario', null);
+            if (Array.isArray(gEv)) {
+                eventosCalendario = gEv.filter(ev => ev && typeof ev === 'object' && ev.titulo && ev.fecha);
+            }
 
-            const gPond = localStorage.getItem('smr_ponderaciones_pct');
-            if (gPond) ponderacionesPorcentaje = JSON.parse(gPond);
+            const gPond = leerJSONLocalSeguro('smr_ponderaciones_pct', null);
+            if (gPond && typeof gPond === 'object' && !Array.isArray(gPond)) {
+                ponderacionesPorcentaje = gPond;
+            }
 
             const vLocal = localStorage.getItem('smr_ultima_version_aplicada');
             if (vLocal && compararVersionesSemver(vLocal, APP_INFO.version) < 0) {
@@ -1758,8 +1782,14 @@
             console.error("Error leyendo estado local:", e);
         }
 
+        if (!Array.isArray(modulos)) modulos = [];
+        if (!notasCurso || typeof notasCurso !== 'object') notasCurso = {};
+        if (!Array.isArray(eventosCalendario)) eventosCalendario = [];
+        if (!ponderacionesPorcentaje || typeof ponderacionesPorcentaje !== 'object') ponderacionesPorcentaje = {};
+
         modulos.forEach(m => { if (!notasCurso[m.id]) notasCurso[m.id] = []; });
-        document.getElementById('valor-objetivo').innerText = umbralObjetivo.toFixed(2);
+        const elValorObj = document.getElementById('valor-objetivo');
+        if (elValorObj) elValorObj.innerText = umbralObjetivo.toFixed(2);
         renderizarTabla();
         renderizarEventosCalendario();
     }
@@ -2752,7 +2782,9 @@
                </div>`
             : '';
 
-        ventana.document.write(`
+        try {
+            try {
+            ventana.document.write(`
             <!DOCTYPE html>
             <html lang="es">
             <head>
@@ -2786,7 +2818,11 @@
             </body>
             </html>
         `);
-        ventana.document.close();
+            ventana.document.close();
+        } catch (err) {
+            console.error("Error al generar la vista de impresión del resumen:", err);
+            alert("No se pudo preparar la ventana del PDF. Inténtalo de nuevo.");
+        }
     }
 
     function construirBotonesDescargaResumen(idDescarga) {
@@ -3633,10 +3669,14 @@
 
                 modulos = sanearModulos(parsed.modulos || []);
                 notasCurso = sanearNotas(parsed.notasCurso || {}, modulos);
-                umbralObjetivo = Number(parsed.umbralObjetivo) || 7.00;
-                metaModulosRequeridos = parsed.metaModulosRequeridos ?? null;
-                eventosCalendario = parsed.eventosCalendario || [];
-                if (parsed.ponderacionesPorcentaje && typeof parsed.ponderacionesPorcentaje === 'object') {
+                const umbralImp = Number(parsed.umbralObjetivo);
+                umbralObjetivo = (Number.isFinite(umbralImp) && umbralImp >= 0 && umbralImp <= 10) ? umbralImp : 7.00;
+                const metaImp = parsed.metaModulosRequeridos;
+                metaModulosRequeridos = (Number.isInteger(metaImp) && metaImp >= 0) ? metaImp : null;
+                eventosCalendario = Array.isArray(parsed.eventosCalendario)
+                    ? parsed.eventosCalendario.filter(ev => ev && typeof ev === 'object' && ev.titulo && ev.fecha)
+                    : [];
+                if (parsed.ponderacionesPorcentaje && typeof parsed.ponderacionesPorcentaje === 'object' && !Array.isArray(parsed.ponderacionesPorcentaje)) {
                     ponderacionesPorcentaje = parsed.ponderacionesPorcentaje;
                 }
                 
@@ -3851,7 +3891,11 @@
             </body>
             </html>
         `);
-        ventana.document.close();
+            ventana.document.close();
+        } catch (err) {
+            console.error("Error al generar la vista de impresión del informe:", err);
+            alert("No se pudo preparar la ventana del informe PDF. Inténtalo de nuevo.");
+        }
     }
 </script>
 </body>
