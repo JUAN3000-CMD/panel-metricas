@@ -2783,7 +2783,6 @@
             : '';
 
         try {
-            try {
             ventana.document.write(`
             <!DOCTYPE html>
             <html lang="es">
@@ -3831,7 +3830,8 @@
             return;
         }
 
-        ventana.document.write(`
+        try {
+            ventana.document.write(`
             <!DOCTYPE html>
             <html lang="es">
             <head>
