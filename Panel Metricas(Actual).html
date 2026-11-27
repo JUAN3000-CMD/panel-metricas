@@ -1760,7 +1760,7 @@
 
             const gEv = leerJSONLocalSeguro('smr_eventos_calendario', null);
             if (Array.isArray(gEv)) {
-                eventosCalendario = gEv.filter(ev => ev && typeof ev === 'object' && ev.titulo && ev.fecha);
+                eventosCalendario = gEv.filter(ev => ev && typeof ev === 'object' && (ev.desc || ev.titulo) && ev.fecha);
             }
 
             const gPond = leerJSONLocalSeguro('smr_ponderaciones_pct', null);
@@ -3673,7 +3673,7 @@
                 const metaImp = parsed.metaModulosRequeridos;
                 metaModulosRequeridos = (Number.isInteger(metaImp) && metaImp >= 0) ? metaImp : null;
                 eventosCalendario = Array.isArray(parsed.eventosCalendario)
-                    ? parsed.eventosCalendario.filter(ev => ev && typeof ev === 'object' && ev.titulo && ev.fecha)
+                    ? parsed.eventosCalendario.filter(ev => ev && typeof ev === 'object' && (ev.desc || ev.titulo) && ev.fecha)
                     : [];
                 if (parsed.ponderacionesPorcentaje && typeof parsed.ponderacionesPorcentaje === 'object' && !Array.isArray(parsed.ponderacionesPorcentaje)) {
                     ponderacionesPorcentaje = parsed.ponderacionesPorcentaje;
